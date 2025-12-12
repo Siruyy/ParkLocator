@@ -25,4 +25,7 @@ Monorepo for the ParkLocator platform.
    - API: `cd apps/api && npm run lint && npm test`
    - Admin: `cd apps/admin && npm run test -- --watch=false`
 
+   ## Environment
+   - API: copy `apps/api/.env.example` to `.env` and adjust DB creds if needed. Defaults match docker-compose (DB user/db/password `parklocator`, host `localhost`, port `5432`, API port `3000`).
+
 Refer to docs for detailed requirements.
