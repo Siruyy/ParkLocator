@@ -23,12 +23,37 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+ParkLocator API - NestJS backend service with PostgreSQL/PostGIS
+
+## Environment Setup
+
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+
+Ensure Docker is running for the PostgreSQL database.
 
 ## Project setup
 
 ```bash
 $ npm install
+```
+
+## Database Migrations
+
+```bash
+# Run migrations
+$ npm run migration:run
+
+# Create a new migration
+$ npm run migration:create src/database/migrations/MigrationName
+
+# Generate migration from entities
+$ npm run migration:generate src/database/migrations/MigrationName
+
+# Revert last migration
+$ npm run migration:revert
 ```
 
 ## Compile and run the project
@@ -43,6 +68,19 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+## API Endpoints
+
+### Authentication
+- `POST /auth/register` - Register a new user
+- `POST /auth/login` - Login and receive JWT token
+
+### Health
+- `GET /health` - Health check with database status
+- `GET /health/version` - API version information
+
+### Protected Routes (Require JWT)
+- `GET /profile` - Get current user profile (example protected route)
 
 ## Run tests
 
