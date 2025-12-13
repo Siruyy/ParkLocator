@@ -15,12 +15,10 @@ class Venue {
 
   // Factory to create from API model with mocked data
   factory Venue.fromApi(api.Venue apiVenue) {
-    // Mock logic
-    final randomSpots = (apiVenue.distance ?? 0).toInt() % 50;
     return Venue(
       apiVenue: apiVenue,
-      pricePerHour: 30.0 + (apiVenue.name.length % 3) * 10,
-      availableSpots: randomSpots,
+      pricePerHour: 30.0 + (apiVenue.name.length % 3) * 10, // Still mocking price for now
+      availableSpots: apiVenue.availableSpots,
     );
   }
 

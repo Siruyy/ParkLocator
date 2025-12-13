@@ -7,6 +7,7 @@ class Venue extends Equatable {
     required this.address,
     this.imageUrl,
     this.distance,
+    this.availableSpots = 0,
   });
 
   factory Venue.fromJson(Map<String, dynamic> json) {
@@ -16,6 +17,7 @@ class Venue extends Equatable {
       address: json['address'] as String? ?? '',
       imageUrl: json['imageUrl'] as String?,
       distance: (json['distance'] as num?)?.toDouble(),
+      availableSpots: (json['availableSpots'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -24,7 +26,8 @@ class Venue extends Equatable {
   final String address;
   final String? imageUrl;
   final double? distance;
+  final int availableSpots;
 
   @override
-  List<Object?> get props => [id, name, address, imageUrl, distance];
+  List<Object?> get props => [id, name, address, imageUrl, distance, availableSpots];
 }
