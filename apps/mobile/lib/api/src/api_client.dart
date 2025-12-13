@@ -113,7 +113,8 @@ class ApiClient {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonList = jsonDecode(response.body) as List<dynamic>;
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final List<dynamic> jsonList = json['data'] as List<dynamic>;
       return jsonList.map((json) => Venue.fromJson(json as Map<String, dynamic>)).toList();
     } else {
       throw ApiException(

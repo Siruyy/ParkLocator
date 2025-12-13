@@ -119,8 +119,9 @@ export class VenuesService {
       .orderBy('distance', 'ASC')
       .getRawAndEntities();
 
-    return venues.entities.map((venue, index) => {
-      const raw = venues.raw[index];
+    return venues.entities.map((venue) => {
+      const raw = venues.raw.find((r) => r.venue_id === venue.id);
+      const distance = raw ? raw.distance : 0;
       const totalCapacity = venue.levels.reduce(
         (sum, level) => sum + level.totalCapacity,
         0,
