@@ -100,4 +100,26 @@ class ApiClient {
       );
     }
   }
+
+  /// Get nearby venues
+  Future<List<Venue>> getNearbyVenues({
+    required double lat,
+    required double lng,
+    required double radius,
+  }) async {
+    final response = await _httpClient.get(
+      Uri.parse('$_baseUrl/venues/nearby?lat=$lat&lng=$lng&radius=$radius'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body) as List<dynamic>;
+      return jsonList.map((json) => Venue.fromJson(json as Map<String, dynamic>)).toList();
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch venues',
+        statusCode: response.statusCode,
+      );
+    }
+  }
 }
