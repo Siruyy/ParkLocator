@@ -102,9 +102,13 @@ class VenueCard extends StatelessWidget {
                             children: [
                               const Icon(Icons.location_on, size: 16, color: Colors.grey),
                               const SizedBox(width: 4),
-                              Text(
-                                '${venue.address} • ${venue.distanceFormatted}',
-                                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                              Expanded(
+                                child: Text(
+                                  '${venue.address} • ${venue.distanceFormatted}',
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               ),
                             ],
                           ),
