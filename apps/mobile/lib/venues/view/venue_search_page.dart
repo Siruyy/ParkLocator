@@ -6,7 +6,9 @@ import 'package:mobile/venues/widgets/filter_chips.dart';
 import 'package:mobile/venues/widgets/venue_card.dart';
 
 class VenueSearchPage extends StatefulWidget {
-  const VenueSearchPage({super.key});
+  const VenueSearchPage({super.key, this.isRoot = false});
+
+  final bool isRoot;
 
   static Route<void> route() {
     return MaterialPageRoute<void>(builder: (_) => const VenueSearchPage());
@@ -74,14 +76,25 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Find Parking',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A), // slate-900
+                        if (widget.isRoot == false && Navigator.canPop(context))
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.black),
+                              onPressed: () => Navigator.pop(context),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ),
+                        const Expanded(
+                          child: Text(
+                            'Find Parking',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A), // slate-900
+                            ),
                           ),
                         ),
                         IconButton(
@@ -207,23 +220,6 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                 ],
               ),
             ),
-            // Bottom Navigation (Mock)
-            Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const _BottomNavItem(icon: Icons.search, label: 'Search', isActive: true),
-                  const _BottomNavItem(icon: Icons.confirmation_number_outlined, label: 'Bookings'),
-                  const _BottomNavItem(icon: Icons.account_balance_wallet_outlined, label: 'Wallet'),
-                  const _BottomNavItem(icon: Icons.person_outline, label: 'Profile'),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -231,33 +227,4 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
   }
 }
 
-class _BottomNavItem extends StatelessWidget {
-  const _BottomNavItem({
-    required this.icon,
-    required this.label,
-    this.isActive = false,
-  });
 
-  final IconData icon;
-  final String label;
-  final bool isActive;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isActive ? const Color(0xFF137FEC) : const Color(0xFF94A3B8);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}

@@ -18,4 +18,13 @@ class VenuesRepository {
     );
     return apiVenues.map((v) => Venue.fromApi(v)).toList();
   }
+
+  Future<Venue> getVenueDetails(String id) async {
+    final apiVenue = await _apiClient.getVenue(id);
+    return Venue.fromApi(apiVenue);
+  }
+
+  Future<api.Level> getLevelDetails(String id) async {
+    return _apiClient.getLevel(id);
+  }
 }

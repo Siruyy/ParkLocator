@@ -11,6 +11,7 @@ class Venue {
     required this.apiVenue,
     this.pricePerHour = 30.0,
     this.availableSpots = 0,
+    this.levels,
   });
 
   // Factory to create from API model with mocked data
@@ -19,12 +20,14 @@ class Venue {
       apiVenue: apiVenue,
       pricePerHour: 30.0 + (apiVenue.name.length % 3) * 10, // Still mocking price for now
       availableSpots: apiVenue.availableSpots,
+      levels: apiVenue.levels,
     );
   }
 
   final api.Venue apiVenue;
   final double pricePerHour;
   final int availableSpots;
+  final List<api.Level>? levels;
 
   String get id => apiVenue.id;
   String get name => apiVenue.name;

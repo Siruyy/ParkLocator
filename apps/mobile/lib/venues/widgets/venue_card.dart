@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/venues/models/venue.dart';
+import 'package:mobile/venues/view/venue_detail_page.dart';
 
 class VenueCard extends StatelessWidget {
   const VenueCard({required this.venue, super.key});
@@ -132,7 +133,11 @@ class VenueCard extends StatelessWidget {
                       ],
                     ),
                     ElevatedButton(
-                      onPressed: venue.status == VenueStatus.full ? null : () {},
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          VenueDetailPage.route(venueId: venue.id),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF137FEC), // Primary color
                         foregroundColor: Colors.white,

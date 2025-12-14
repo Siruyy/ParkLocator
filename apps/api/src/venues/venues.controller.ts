@@ -98,6 +98,16 @@ export class VenuesController {
     };
   }
 
+  @Get('levels/:id')
+  async findLevel(@Param('id', ParseUUIDPipe) id: string) {
+    const level = await this.venuesService.findLevelWithSpots(id);
+
+    return {
+      success: true,
+      data: level,
+    };
+  }
+
   // ==================== PROTECTED ENDPOINTS (MANAGER ONLY) ====================
 
   @Post()

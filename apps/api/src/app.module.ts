@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { VenuesModule } from './venues/venues.module';
+import { ReservationsModule } from './reservations/reservations.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { VenuesModule } from './venues/venues.module';
     HealthModule,
     AuthModule,
     VenuesModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

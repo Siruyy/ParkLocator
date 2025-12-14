@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/api/api.dart';
+import 'package:mobile/app/view/main_navigation_page.dart';
 import 'package:mobile/auth/bloc/auth_bloc.dart';
 import 'package:mobile/auth/repository/src/auth_repository.dart';
 import 'package:mobile/common/common.dart';
-import 'package:mobile/home/home.dart';
 import 'package:mobile/l10n/l10n.dart';
 import 'package:mobile/login/login.dart';
+import 'package:mobile/reservations/repository/reservations_repository.dart';
 import 'package:mobile/venues/repository/venues_repository.dart';
 
 class App extends StatefulWidget {
@@ -20,6 +21,7 @@ class _AppState extends State<App> {
   late final ApiClient _apiClient;
   late final AuthRepository _authRepository;
   late final VenuesRepository _venuesRepository;
+  late final ReservationsRepository _reservationsRepository;
   late final AuthBloc _authBloc;
 
   @override
@@ -28,6 +30,7 @@ class _AppState extends State<App> {
     _apiClient = ApiClient();
     _authRepository = AuthRepository(apiClient: _apiClient);
     _venuesRepository = VenuesRepository(apiClient: _apiClient);
+    _reservationsRepository = ReservationsRepository(apiClient: _apiClient);
     _authBloc = AuthBloc(authRepository: _authRepository)
       ..add(const AuthCheckRequested());
   }
@@ -45,6 +48,7 @@ class _AppState extends State<App> {
       providers: [
         RepositoryProvider.value(value: _authRepository),
         RepositoryProvider.value(value: _venuesRepository),
+        RepositoryProvider.value(value: _reservationsRepository),
       ],
       child: BlocProvider.value(
         value: _authBloc,
@@ -82,7 +86,7 @@ class AppView extends StatelessWidget {
               case AuthStatus.unknown:
                 return const _SplashScreen();
               case AuthStatus.authenticated:
-                return const HomePage();
+                return const MainNavigationPage();
               case AuthStatus.unauthenticated:
                 return const LoginPage();
             }

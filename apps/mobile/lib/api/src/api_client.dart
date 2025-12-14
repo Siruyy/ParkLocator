@@ -123,4 +123,149 @@ class ApiClient {
       );
     }
   }
+
+  /// Get venue details
+  Future<Venue> getVenue(String id) async {
+    final response = await _httpClient.get(
+      Uri.parse('$_baseUrl/venues/$id'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Venue.fromJson(json['data'] as Map<String, dynamic>);
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch venue details',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Get level details with spots
+  Future<Level> getLevel(String id) async {
+    final response = await _httpClient.get(
+      Uri.parse('$_baseUrl/venues/levels/$id'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Level.fromJson(json['data'] as Map<String, dynamic>);
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch level details',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Create a reservation
+  Future<Reservation> createReservation({
+    required String venueId,
+    required String levelId,
+    required String spotId,
+    int durationHours = 1,
+  }) async {
+    final response = await _httpClient.post(
+      Uri.parse('$_baseUrl/reservations'),
+      headers: _headers,
+      body: jsonEncode({
+        'venueId': venueId,
+        'levelId': levelId,
+        'spotId': spotId,
+        'durationHours': durationHours,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Reservation.fromJson(json['data'] as Map<String, dynamic>);
+    } else {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      throw ApiException(
+        message: body['message'] as String? ?? 'Failed to create reservation',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Get all reservations for the current user
+  Future<List<Reservation>> getReservations() async {
+    final response = await _httpClient.get(
+      Uri.parse('$_baseUrl/reservations'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final List<dynamic> jsonList = json['data'] as List<dynamic>;
+      return jsonList
+          .map((json) => Reservation.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch reservations',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Get active reservations for the current user
+  Future<List<Reservation>> getActiveReservations() async {
+    final response = await _httpClient.get(
+      Uri.parse('$_baseUrl/reservations/active'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final List<dynamic> jsonList = json['data'] as List<dynamic>;
+      return jsonList
+          .map((json) => Reservation.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch active reservations',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Get a single reservation by ID
+  Future<Reservation> getReservation(String id) async {
+    final response = await _httpClient.get(
+      Uri.parse('$_baseUrl/reservations/$id'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Reservation.fromJson(json['data'] as Map<String, dynamic>);
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch reservation',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Cancel a reservation
+  Future<Reservation> cancelReservation(String id) async {
+    final response = await _httpClient.delete(
+      Uri.parse('$_baseUrl/reservations/$id'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Reservation.fromJson(json['data'] as Map<String, dynamic>);
+    } else {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      throw ApiException(
+        message: body['message'] as String? ?? 'Failed to cancel reservation',
+        statusCode: response.statusCode,
+      );
+    }
+  }
 }

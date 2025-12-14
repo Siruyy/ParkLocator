@@ -230,6 +230,24 @@ export class VenuesService {
     return level;
   }
 
+  async findLevelWithSpots(levelId: string): Promise<Level> {
+    const level = await this.levelsRepository.findOne({
+      where: { id: levelId },
+      relations: ['venue', 'spots'],
+      order: {
+        spots: {
+          spotNumber: 'ASC',
+        },
+      },
+    });
+
+    if (!level) {
+      throw new NotFoundException(`Level with ID ${levelId} not found`);
+    }
+
+    return level;
+  }
+
   async updateLevel(
     levelId: string,
     updateLevelDto: UpdateLevelDto,
