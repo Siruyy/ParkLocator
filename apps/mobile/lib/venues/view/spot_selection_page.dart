@@ -9,20 +9,28 @@ class SpotSelectionPage extends StatefulWidget {
   const SpotSelectionPage({
     required this.venue,
     required this.initialLevelId,
+    this.startDate,
+    this.endDate,
     super.key,
   });
 
   final Venue venue;
   final String initialLevelId;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
   static Route<void> route({
     required Venue venue,
     required String initialLevelId,
+    DateTime? startDate,
+    DateTime? endDate,
   }) {
     return MaterialPageRoute<void>(
       builder: (_) => SpotSelectionPage(
         venue: venue,
         initialLevelId: initialLevelId,
+        startDate: startDate,
+        endDate: endDate,
       ),
     );
   }
@@ -52,9 +60,11 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
     });
 
     try {
-      final level = await context
-          .read<VenuesRepository>()
-          .getLevelDetails(_selectedLevelId);
+      final level = await context.read<VenuesRepository>().getLevelDetails(
+            _selectedLevelId,
+            startAt: widget.startDate,
+            endAt: widget.endDate,
+          );
 
       final spots = level.spots ?? [];
       final sectionA = <api.Spot>[];
@@ -122,6 +132,8 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
         venue: widget.venue.apiVenue,
         level: currentLevel,
         spot: spot,
+        startDate: widget.startDate,
+        endDate: widget.endDate,
       ),
     );
   }

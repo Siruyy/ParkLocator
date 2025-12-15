@@ -125,9 +125,18 @@ class ApiClient {
   }
 
   /// Get venue details
-  Future<Venue> getVenue(String id) async {
+  Future<Venue> getVenue(String id, {DateTime? startAt, DateTime? endAt}) async {
+    var url = '$_baseUrl/venues/$id';
+    
+    // If dates provided, append them as query params for availability calculation
+    if (startAt != null && endAt != null) {
+      final startParam = Uri.encodeComponent(startAt.toUtc().toIso8601String());
+      final endParam = Uri.encodeComponent(endAt.toUtc().toIso8601String());
+      url = '$url?startAt=$startParam&endAt=$endParam';
+    }
+
     final response = await _httpClient.get(
-      Uri.parse('$_baseUrl/venues/$id'),
+      Uri.parse(url),
       headers: _headers,
     );
 
@@ -142,10 +151,53 @@ class ApiClient {
     }
   }
 
-  /// Get level details with spots
-  Future<Level> getLevel(String id) async {
+  /// Get venue availability for a specific date range
+  Future<List<Level>> getVenueAvailability(
+    String venueId, {
+    DateTime? startAt,
+    DateTime? endAt,
+  }) async {
+    var url = '$_baseUrl/venues/$venueId/availability';
+    
+    if (startAt != null && endAt != null) {
+      final startParam = Uri.encodeComponent(startAt.toUtc().toIso8601String());
+      final endParam = Uri.encodeComponent(endAt.toUtc().toIso8601String());
+      url = '$url?startAt=$startParam&endAt=$endParam';
+    }
+
     final response = await _httpClient.get(
-      Uri.parse('$_baseUrl/venues/levels/$id'),
+      Uri.parse(url),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final List<dynamic> jsonList = json['data'] as List<dynamic>;
+      return jsonList.map((json) => Level.fromJson(json as Map<String, dynamic>)).toList();
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch venue availability',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Get level details with spots
+  Future<Level> getLevel(
+    String id, {
+    DateTime? startAt,
+    DateTime? endAt,
+  }) async {
+    var url = '$_baseUrl/venues/levels/$id';
+
+    if (startAt != null && endAt != null) {
+      final startParam = Uri.encodeComponent(startAt.toUtc().toIso8601String());
+      final endParam = Uri.encodeComponent(endAt.toUtc().toIso8601String());
+      url = '$url?startAt=$startParam&endAt=$endParam';
+    }
+
+    final response = await _httpClient.get(
+      Uri.parse(url),
       headers: _headers,
     );
 
@@ -166,16 +218,27 @@ class ApiClient {
     required String levelId,
     required String spotId,
     int durationHours = 1,
+    DateTime? startAt,
+    DateTime? endAt,
   }) async {
+    final body = <String, dynamic>{
+      'venueId': venueId,
+      'levelId': levelId,
+      'spotId': spotId,
+      'durationHours': durationHours,
+    };
+
+    if (startAt != null) {
+      body['startAt'] = startAt.toUtc().toIso8601String();
+    }
+    if (endAt != null) {
+      body['endAt'] = endAt.toUtc().toIso8601String();
+    }
+
     final response = await _httpClient.post(
       Uri.parse('$_baseUrl/reservations'),
       headers: _headers,
-      body: jsonEncode({
-        'venueId': venueId,
-        'levelId': levelId,
-        'spotId': spotId,
-        'durationHours': durationHours,
-      }),
+      body: jsonEncode(body),
     );
 
     if (response.statusCode == 201 || response.statusCode == 200) {

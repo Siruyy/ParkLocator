@@ -19,12 +19,30 @@ class VenuesRepository {
     return apiVenues.map((v) => Venue.fromApi(v)).toList();
   }
 
-  Future<Venue> getVenueDetails(String id) async {
-    final apiVenue = await _apiClient.getVenue(id);
+  Future<Venue> getVenueDetails(
+    String id, {
+    DateTime? startAt,
+    DateTime? endAt,
+  }) async {
+    final apiVenue = await _apiClient.getVenue(id, startAt: startAt, endAt: endAt);
     return Venue.fromApi(apiVenue);
   }
 
-  Future<api.Level> getLevelDetails(String id) async {
-    return _apiClient.getLevel(id);
+  /// Get venue availability for a specific date range.
+  /// Returns levels with accurate available spots count for the given time period.
+  Future<List<api.Level>> getVenueAvailability(
+    String venueId, {
+    DateTime? startAt,
+    DateTime? endAt,
+  }) async {
+    return _apiClient.getVenueAvailability(venueId, startAt: startAt, endAt: endAt);
+  }
+
+  Future<api.Level> getLevelDetails(
+    String id, {
+    DateTime? startAt,
+    DateTime? endAt,
+  }) async {
+    return _apiClient.getLevel(id, startAt: startAt, endAt: endAt);
   }
 }

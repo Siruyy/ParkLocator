@@ -111,6 +111,8 @@ export class ReservationsController {
       amount: parseFloat(reservation.amount),
       durationHours: reservation.durationHours,
       arrivalWindowMinutes: reservation.arrivalWindowMinutes,
+      startAt: reservation.startAt?.toISOString(),
+      endAt: reservation.endAt?.toISOString(),
       expiresAt: reservation.expiresAt?.toISOString(),
       checkedInAt: reservation.checkedInAt?.toISOString(),
       checkedOutAt: reservation.checkedOutAt?.toISOString(),

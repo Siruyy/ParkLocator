@@ -14,6 +14,10 @@ import {
   UpdateLevelDto,
   LevelAvailabilityDto,
 } from './dto';
+import {
+  Reservation,
+  ReservationStatus,
+} from '../reservations/entities/reservation.entity';
 
 @Injectable()
 export class VenuesService {
@@ -155,26 +159,83 @@ export class VenuesService {
 
   // ==================== AVAILABILITY ====================
 
-  async getAvailability(venueId: string): Promise<LevelAvailabilityDto[]> {
+  /**
+   * Get availability for a venue, optionally filtered by date range.
+   * If startAt and endAt are provided, it calculates availability based on
+   * spots that don't have overlapping reservations for that time period.
+   */
+  async getAvailability(
+    venueId: string,
+    startAt?: Date,
+    endAt?: Date,
+  ): Promise<LevelAvailabilityDto[]> {
     const venue = await this.findOne(venueId);
 
-    return venue.levels
-      .filter((level) => level.isActive)
-      .map((level) => ({
+    // If no date range provided, return real-time availability (for "Book Now")
+    if (!startAt || !endAt) {
+      return venue.levels
+        .filter((level) => level.isActive)
+        .map((level) => ({
+          id: level.id,
+          levelNumber: level.levelNumber,
+          name: level.name,
+          totalCapacity: level.totalCapacity,
+          availableSpots: level.availableSpots,
+          occupancyPercent:
+            level.totalCapacity > 0
+              ? Math.round(
+                  ((level.totalCapacity - level.availableSpots) /
+                    level.totalCapacity) *
+                    100,
+                )
+              : 0,
+        }));
+    }
+
+    // For "Book for Later" - calculate availability based on overlapping reservations
+    const results: LevelAvailabilityDto[] = [];
+
+    for (const level of venue.levels.filter((l) => l.isActive)) {
+      // Count spots that have overlapping reservations for the requested time range
+      const reservedSpotsCount = (await this.dataSource
+        .createQueryBuilder(Reservation, 'r')
+        .select('COUNT(DISTINCT r.spot_id)', 'count')
+        .innerJoin(Spot, 's', 's.id = r.spot_id')
+        .where('s.level_id = :levelId', { levelId: level.id })
+        .andWhere('r.status IN (:...activeStatuses)', {
+          activeStatuses: [
+            ReservationStatus.PENDING,
+            ReservationStatus.CONFIRMED,
+            ReservationStatus.CHECKED_IN,
+          ],
+        })
+        .andWhere(
+          // Overlap condition: reservation overlaps if it starts before our end AND ends after our start
+          '(r.start_at < :endAt AND r.end_at > :startAt)',
+          { startAt, endAt },
+        )
+        .getRawOne()) as { count: string } | undefined;
+
+      const reservedCount = parseInt(reservedSpotsCount?.count || '0', 10);
+      const availableSpots = Math.max(0, level.totalCapacity - reservedCount);
+
+      results.push({
         id: level.id,
         levelNumber: level.levelNumber,
         name: level.name,
         totalCapacity: level.totalCapacity,
-        availableSpots: level.availableSpots,
+        availableSpots,
         occupancyPercent:
           level.totalCapacity > 0
             ? Math.round(
-                ((level.totalCapacity - level.availableSpots) /
-                  level.totalCapacity) *
+                ((level.totalCapacity - availableSpots) / level.totalCapacity) *
                   100,
               )
             : 0,
-      }));
+      });
+    }
+
+    return results;
   }
 
   // ==================== LEVEL OPERATIONS ====================
@@ -230,7 +291,11 @@ export class VenuesService {
     return level;
   }
 
-  async findLevelWithSpots(levelId: string): Promise<Level> {
+  async findLevelWithSpots(
+    levelId: string,
+    startAt?: Date,
+    endAt?: Date,
+  ): Promise<Level> {
     const level = await this.levelsRepository.findOne({
       where: { id: levelId },
       relations: ['venue', 'spots'],
@@ -243,6 +308,42 @@ export class VenuesService {
 
     if (!level) {
       throw new NotFoundException(`Level with ID ${levelId} not found`);
+    }
+
+    // If date range provided, calculate date-specific availability for each spot
+    if (startAt && endAt && level.spots) {
+      // Get all spot IDs that have overlapping reservations
+      const reservedSpotIds = await this.dataSource
+        .createQueryBuilder(Reservation, 'r')
+        .select('DISTINCT r.spot_id', 'spotId')
+        .where('r.spot_id IN (:...spotIds)', {
+          spotIds: level.spots.map((s) => s.id),
+        })
+        .andWhere('r.status IN (:...activeStatuses)', {
+          activeStatuses: [
+            ReservationStatus.PENDING,
+            ReservationStatus.CONFIRMED,
+            ReservationStatus.CHECKED_IN,
+          ],
+        })
+        .andWhere('(r.start_at < :endAt AND r.end_at > :startAt)', {
+          startAt,
+          endAt,
+        })
+        .getRawMany<{ spotId: string }>();
+
+      const reservedSpotIdSet = new Set(reservedSpotIds.map((r) => r.spotId));
+
+      // Override spot status based on date-range availability
+      // If a spot is reserved for the requested date range, mark it as reserved
+      // Otherwise, mark it as available (even if currently reserved for a different time)
+      for (const spot of level.spots) {
+        if (reservedSpotIdSet.has(spot.id)) {
+          spot.status = SpotStatus.RESERVED;
+        } else {
+          spot.status = SpotStatus.AVAILABLE;
+        }
+      }
     }
 
     return level;

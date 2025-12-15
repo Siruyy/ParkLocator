@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/auth/bloc/auth_bloc.dart';
 import 'edit_profile_page.dart';
+import 'my_vehicles_page.dart';
+import 'security_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -72,31 +74,7 @@ class ProfilePage extends StatelessWidget {
                         icon: Icons.directions_car,
                         title: 'My Vehicles',
                         onTap: () {
-                          _showComingSoon(context);
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildMenuItem(
-                        context: context,
-                        icon: Icons.account_balance_wallet,
-                        title: 'Payment Methods',
-                        onTap: () {
-                          _showComingSoon(context);
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildMenuItem(
-                        context: context,
-                        icon: Icons.history,
-                        title: 'Parking History',
-                        onTap: () {
-                          _showComingSoon(context);
+                          Navigator.of(context).push(MyVehiclesPage.route());
                         },
                         isDark: isDark,
                         textColor: textColor,
@@ -132,7 +110,7 @@ class ProfilePage extends StatelessWidget {
                         icon: Icons.lock,
                         title: 'Security & Password',
                         onTap: () {
-                          _showComingSoon(context);
+                          Navigator.of(context).push(SecurityPage.route());
                         },
                         isDark: isDark,
                         textColor: textColor,

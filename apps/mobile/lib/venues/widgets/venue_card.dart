@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/venues/models/venue.dart';
+import 'package:mobile/venues/view/booking_type_page.dart';
 import 'package:mobile/venues/view/venue_detail_page.dart';
 
 class VenueCard extends StatelessWidget {
@@ -135,7 +136,7 @@ class VenueCard extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).push(
-                          VenueDetailPage.route(venueId: venue.id),
+                          BookingTypePage.route(venue: venue),
                         );
                       },
                       style: ElevatedButton.styleFrom(

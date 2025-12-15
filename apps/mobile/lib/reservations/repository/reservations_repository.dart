@@ -11,12 +11,16 @@ class ReservationsRepository {
     required String levelId,
     required String spotId,
     int durationHours = 1,
+    DateTime? startAt,
+    DateTime? endAt,
   }) async {
     return _apiClient.createReservation(
       venueId: venueId,
       levelId: levelId,
       spotId: spotId,
       durationHours: durationHours,
+      startAt: startAt,
+      endAt: endAt,
     );
   }
 

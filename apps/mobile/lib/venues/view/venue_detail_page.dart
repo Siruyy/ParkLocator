@@ -1,18 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile/api/api.dart' as api;
 import 'package:mobile/venues/models/venue.dart';
 import 'package:mobile/venues/repository/venues_repository.dart';
 import 'package:mobile/venues/view/spot_selection_page.dart';
 import 'package:mobile/venues/widgets/level_card.dart';
 
 class VenueDetailPage extends StatefulWidget {
-  const VenueDetailPage({required this.venueId, super.key});
+  const VenueDetailPage({
+    required this.venueId,
+    this.startDate,
+    this.endDate,
+    super.key,
+  });
 
   final String venueId;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
-  static Route<void> route({required String venueId}) {
+  static Route<void> route({
+    required String venueId,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
     return MaterialPageRoute<void>(
-      builder: (_) => VenueDetailPage(venueId: venueId),
+      builder: (_) => VenueDetailPage(
+        venueId: venueId,
+        startDate: startDate,
+        endDate: endDate,
+      ),
     );
   }
 
@@ -22,8 +38,11 @@ class VenueDetailPage extends StatefulWidget {
 
 class _VenueDetailPageState extends State<VenueDetailPage> {
   Venue? _venue;
+  List<api.Level>? _availabilityLevels; // Levels with date-specific availability
   bool _isLoading = true;
   String? _error;
+
+  bool get _isBookForLater => widget.startDate != null;
 
   @override
   void initState() {
@@ -38,10 +57,25 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         _error = null;
       });
 
-      final venue = await context.read<VenuesRepository>().getVenueDetails(widget.venueId);
+      final venue = await context.read<VenuesRepository>().getVenueDetails(
+        widget.venueId,
+        startAt: widget.startDate,
+        endAt: widget.endDate,
+      );
+
+      // If booking for later, fetch availability for the specific date range
+      List<api.Level>? availability;
+      if (_isBookForLater) {
+        availability = await context.read<VenuesRepository>().getVenueAvailability(
+          widget.venueId,
+          startAt: widget.startDate,
+          endAt: widget.endDate,
+        );
+      }
 
       setState(() {
         _venue = venue;
+        _availabilityLevels = availability;
         _isLoading = false;
       });
     } catch (e) {
@@ -50,6 +84,31 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         _isLoading = false;
       });
     }
+  }
+
+  /// Get the available spots count for a level, considering date range if booking for later
+  int _getAvailableSpotsForLevel(api.Level level) {
+    if (_availabilityLevels != null) {
+      // Find the matching level from availability data
+      final availLevel = _availabilityLevels!.firstWhere(
+        (l) => l.id == level.id,
+        orElse: () => level,
+      );
+      return availLevel.availableSpots;
+    }
+    return level.availableSpots;
+  }
+
+  /// Get total available spots across all levels
+  int _getTotalAvailableSpots() {
+    if (_venue == null) return 0;
+    
+    if (_availabilityLevels != null) {
+      // Sum from date-specific availability
+      return _availabilityLevels!.fold(0, (sum, level) => sum + level.availableSpots);
+    }
+    // Fall back to venue's default
+    return _venue!.availableSpots;
   }
 
   @override
@@ -113,7 +172,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   child: Column(
                     children: [
                       Text(
-                        '${venue.availableSpots} Spots Total',
+                        '${_getTotalAvailableSpots()} Spots ${_isBookForLater ? "Available" : "Total"}',
                         style: const TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -182,17 +241,24 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
+                      final level = levels[index];
+                      final availableSpots = _getAvailableSpotsForLevel(level);
                       return GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             SpotSelectionPage.route(
                               venue: _venue!,
-                              initialLevelId: levels[index].id,
+                              initialLevelId: level.id,
+                              startDate: widget.startDate,
+                              endDate: widget.endDate,
                             ),
                           );
                         },
-                        child: LevelCard(level: levels[index]),
+                        child: LevelCard(
+                          level: level,
+                          overrideAvailableSpots: _isBookForLater ? availableSpots : null,
+                        ),
                       );
                     },
                     childCount: levels.length,
@@ -202,11 +268,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             ],
           ),
           // Bottom Floating Action Button
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
+          if (widget.startDate == null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(

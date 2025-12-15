@@ -10,23 +10,31 @@ class CheckoutPage extends StatefulWidget {
     required this.venue,
     required this.level,
     required this.spot,
+    this.startDate,
+    this.endDate,
     super.key,
   });
 
   final api.Venue venue;
   final api.Level level;
   final api.Spot spot;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
   static Route<void> route({
     required api.Venue venue,
     required api.Level level,
     required api.Spot spot,
+    DateTime? startDate,
+    DateTime? endDate,
   }) {
     return MaterialPageRoute<void>(
       builder: (_) => CheckoutPage(
         venue: venue,
         level: level,
         spot: spot,
+        startDate: startDate,
+        endDate: endDate,
       ),
     );
   }
@@ -55,6 +63,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 venueId: widget.venue.id,
                 levelId: widget.level.id,
                 spotId: widget.spot.id,
+                startAt: widget.startDate,
+                endAt: widget.endDate,
               );
 
       if (mounted) {
@@ -80,7 +90,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = DateFormat('MMM d, yyyy').format(DateTime.now());
+    final dateStr = DateFormat('MMM d, yyyy • h:mm a').format(widget.startDate ?? DateTime.now());
+    
+    String durationStr = '1 hour';
+    double totalPrice = 40.00;
+
+    if (widget.startDate != null && widget.endDate != null) {
+      final duration = widget.endDate!.difference(widget.startDate!);
+      final hours = duration.inMinutes / 60.0;
+      
+      // Format duration string
+      final d = duration.inDays;
+      final h = duration.inHours % 24;
+      final m = duration.inMinutes % 60;
+      
+      final parts = <String>[];
+      if (d > 0) parts.add('$d days');
+      if (h > 0) parts.add('$h hrs');
+      if (m > 0) parts.add('$m mins');
+      durationStr = parts.isEmpty ? '0 mins' : parts.join(' ');
+
+      // Calculate price (mock logic: 30 per hour base)
+      // In a real app, this should come from the previous screen or be recalculated
+      totalPrice = hours * 30.0; 
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F8),
@@ -197,15 +230,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         _buildSummaryRow('Date', dateStr),
                         const SizedBox(height: 12),
                         _buildSummaryRow(
-                            'Duration', '1 hour'), // Fixed as per previous context
+                            'Duration', durationStr),
                         const SizedBox(height: 12),
-                        _buildSummaryRow('Reservation Fee', '₱40.00'),
+                        _buildSummaryRow('Reservation Fee', '₱${totalPrice.toStringAsFixed(2)}'),
                         const SizedBox(height: 12),
                         const Divider(color: Colors.transparent), // Spacer
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text(
+                          children: [
+                            const Text(
                               'Total',
                               style: TextStyle(
                                 fontSize: 16,
@@ -214,8 +247,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               ),
                             ),
                             Text(
-                              '₱40.00',
-                              style: TextStyle(
+                              '₱${totalPrice.toStringAsFixed(2)}',
+                              style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF0F172A),
@@ -313,12 +346,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Row(
+                      : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Pay ₱40.00',
-                              style: TextStyle(
+                              'Pay ₱${totalPrice.toStringAsFixed(2)}',
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,

@@ -4,6 +4,7 @@ import {
   IsInt,
   Min,
   Max,
+  IsDateString,
 } from 'class-validator';
 
 export class CreateReservationDto {
@@ -21,4 +22,12 @@ export class CreateReservationDto {
   @Min(1)
   @Max(24)
   durationHours?: number = 1;
+
+  @IsOptional()
+  @IsDateString()
+  startAt?: string; // ISO date string for "Book for Later"
+
+  @IsOptional()
+  @IsDateString()
+  endAt?: string; // ISO date string for "Book for Later"
 }

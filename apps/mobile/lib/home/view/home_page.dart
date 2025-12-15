@@ -9,6 +9,7 @@ import 'package:mobile/api/api.dart' as api;
 import 'package:mobile/notifications/notifications.dart';
 import 'package:mobile/reservations/repository/reservations_repository.dart';
 import 'package:mobile/reservations/view/booking_expired_page.dart';
+import 'package:mobile/reservations/view/reservation_detail_page.dart';
 import 'package:mobile/venues/view/venue_search_page.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -26,6 +27,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   api.Reservation? _activeReservation;
+  List<api.Reservation> _upcomingReservations = [];
   List<api.Reservation> _recentActivity = [];
   bool _isLoading = true;
   Timer? _timer;
@@ -65,8 +67,21 @@ class _HomePageState extends State<HomePage> {
       final expiredActive =
           active.where((r) => r.expiresAt.isBefore(now)).toList();
 
+      // Sort active reservations by start time (or creation time if start time is null)
+      trulyActive.sort((a, b) {
+        final aTime = a.startAt ?? a.createdAt ?? DateTime.now();
+        final bTime = b.startAt ?? b.createdAt ?? DateTime.now();
+        return aTime.compareTo(bTime);
+      });
+
       setState(() {
-        _activeReservation = trulyActive.isNotEmpty ? trulyActive.first : null;
+        if (trulyActive.isNotEmpty) {
+          _activeReservation = trulyActive.first;
+          _upcomingReservations = trulyActive.skip(1).toList();
+        } else {
+          _activeReservation = null;
+          _upcomingReservations = [];
+        }
         
         // Include time-expired reservations in recent activity
         // even if their status is still 'confirmed'
@@ -217,6 +232,24 @@ class _HomePageState extends State<HomePage> {
                   _buildActiveBookingCard()
                 else
                   _buildNoActiveBookingCard(),
+                
+                if (_upcomingReservations.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Upcoming Bookings',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildUpcomingBookingsList(),
+                ],
+
                 const SizedBox(height: 24),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
@@ -297,6 +330,13 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildActiveBookingCard() {
     final reservation = _activeReservation!;
+    final isMultiDay = reservation.isMultiDay;
+    final isFuture = reservation.isFutureReservation;
+    final isArrivalWindowActive = reservation.isArrivalWindowActive;
+    
+    // Only show countdown for non-multi-day reservations when arrival window is active
+    final shouldShowCountdown = !isMultiDay && isArrivalWindowActive;
+    
     final hours = _timeLeft.inHours.toString().padLeft(2, '0');
     final minutes = _timeLeft.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = _timeLeft.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -305,6 +345,20 @@ class _HomePageState extends State<HomePage> {
     final totalDuration = reservation.expiresAt.difference(reservation.createdAt ?? DateTime.now().subtract(const Duration(hours: 1)));
     final elapsed = DateTime.now().difference(reservation.createdAt ?? DateTime.now().subtract(const Duration(hours: 1)));
     final progress = (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0);
+    
+    // Determine status label and color
+    String statusLabel;
+    Color statusColor;
+    if (_timeLeft == Duration.zero) {
+      statusLabel = 'EXPIRED';
+      statusColor = Colors.red;
+    } else if (isFuture && !isArrivalWindowActive) {
+      statusLabel = 'RESERVED';
+      statusColor = const Color(0xFF4CAF50);
+    } else {
+      statusLabel = 'ACTIVE NOW';
+      statusColor = Colors.green;
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -356,15 +410,13 @@ class _HomePageState extends State<HomePage> {
                           width: 10,
                           height: 10,
                           decoration: BoxDecoration(
-                            color: _timeLeft == Duration.zero
-                                ? Colors.red
-                                : Colors.green,
+                            color: statusColor,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          _timeLeft == Duration.zero ? 'EXPIRED' : 'ACTIVE NOW',
+                          statusLabel,
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -442,104 +494,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Timer Widget
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[200]!),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'TIME REMAINING',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF64748B),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            if (_timeLeft.inMinutes < 15 &&
-                                _timeLeft > Duration.zero)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.warning,
-                                        size: 12, color: Colors.orange),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'EXPIRING SOON',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.orange,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            _buildTimeSegment(hours, 'HOURS'),
-                            _buildTimeSeparator(),
-                            _buildTimeSegment(minutes, 'MINS'),
-                            _buildTimeSeparator(),
-                            _buildTimeSegment(seconds, 'SECS', isPrimary: true),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                                Color(0xFF137FEC)),
-                            minHeight: 8,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Start: ${DateFormat('h:mm a').format(reservation.createdAt ?? DateTime.now())}',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFF94A3B8),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              'End: ${DateFormat('h:mm a').format(reservation.expiresAt)}',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFF94A3B8),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                  // Timer Widget or Reservation Info
+                  if (shouldShowCountdown)
+                    _buildCountdownWidget(reservation, hours, minutes, seconds, progress)
+                  else
+                    _buildReservationInfoWidget(reservation, isMultiDay, isFuture),
                   const SizedBox(height: 24),
 
                   // Action Buttons
@@ -673,6 +632,111 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildUpcomingBookingsList() {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _upcomingReservations.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final reservation = _upcomingReservations[index];
+        final startAt = reservation.startAt ?? reservation.createdAt ?? DateTime.now();
+        
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              ReservationDetailPage.route(reservation: reservation),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.event_available,
+                    color: Color(0xFF4CAF50),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        reservation.venue?.name ?? 'Unknown Venue',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: Color(0xFF64748B),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('MMM d, h:mm a').format(startAt),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Upcoming',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildRecentActivityList() {
     if (_recentActivity.isEmpty) {
       return const Padding(
@@ -765,6 +829,214 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCountdownWidget(
+    api.Reservation reservation,
+    String hours,
+    String minutes,
+    String seconds,
+    double progress,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'TIME REMAINING',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF64748B),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              if (_timeLeft.inMinutes < 15 && _timeLeft > Duration.zero)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.warning, size: 12, color: Colors.orange),
+                      SizedBox(width: 4),
+                      Text(
+                        'EXPIRING SOON',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              _buildTimeSegment(hours, 'HOURS'),
+              _buildTimeSeparator(),
+              _buildTimeSegment(minutes, 'MINS'),
+              _buildTimeSeparator(),
+              _buildTimeSegment(seconds, 'SECS', isPrimary: true),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[200],
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF137FEC)),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Start: ${DateFormat('h:mm a').format(reservation.createdAt ?? DateTime.now())}',
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Color(0xFF94A3B8),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                'End: ${DateFormat('h:mm a').format(reservation.expiresAt)}',
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Color(0xFF94A3B8),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReservationInfoWidget(
+    api.Reservation reservation,
+    bool isMultiDay,
+    bool isFuture,
+  ) {
+    final startAt = reservation.startAt;
+    final endAt = reservation.endAt;
+
+    // Format dates
+    String dateRange = '';
+    if (startAt != null && endAt != null) {
+      final startDate = DateFormat('MMM d, yyyy').format(startAt);
+      final endDate = DateFormat('MMM d, yyyy').format(endAt);
+      final startTime = DateFormat('h:mm a').format(startAt);
+      final endTime = DateFormat('h:mm a').format(endAt);
+
+      if (isMultiDay) {
+        dateRange = '$startDate $startTime\n→ $endDate $endTime';
+      } else {
+        dateRange = '$startDate\n$startTime - $endTime';
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isFuture
+            ? const Color(0xFF4CAF50).withValues(alpha: 0.05)
+            : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isFuture
+              ? const Color(0xFF4CAF50).withValues(alpha: 0.2)
+              : Colors.grey[200]!,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isFuture ? Icons.event_available : Icons.local_parking,
+                color: isFuture
+                    ? const Color(0xFF4CAF50)
+                    : const Color(0xFF137FEC),
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'RESERVATION DETAILS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isFuture
+                      ? const Color(0xFF4CAF50)
+                      : const Color(0xFF64748B),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          if (dateRange.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(
+              dateRange,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+                height: 1.4,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: isFuture
+                  ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
+                  : const Color(0xFF137FEC).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              isMultiDay
+                  ? 'Valid for the entire reservation period'
+                  : isFuture
+                      ? 'Arrival window opens 1 hour before start'
+                      : 'Your spot is ready',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isFuture
+                    ? const Color(0xFF4CAF50)
+                    : const Color(0xFF137FEC),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/api/api.dart' as api;
 import 'package:qr_flutter/qr_flutter.dart';
 
-class ReservationConfirmationPage extends StatefulWidget {
-  const ReservationConfirmationPage({
+class ReservationDetailPage extends StatefulWidget {
+  const ReservationDetailPage({
     required this.reservation,
     super.key,
   });
@@ -14,17 +14,15 @@ class ReservationConfirmationPage extends StatefulWidget {
 
   static Route<void> route({required api.Reservation reservation}) {
     return MaterialPageRoute<void>(
-      builder: (_) => ReservationConfirmationPage(reservation: reservation),
+      builder: (_) => ReservationDetailPage(reservation: reservation),
     );
   }
 
   @override
-  State<ReservationConfirmationPage> createState() =>
-      _ReservationConfirmationPageState();
+  State<ReservationDetailPage> createState() => _ReservationDetailPageState();
 }
 
-class _ReservationConfirmationPageState
-    extends State<ReservationConfirmationPage> {
+class _ReservationDetailPageState extends State<ReservationDetailPage> {
   Timer? _timer;
   Duration _timeLeft = Duration.zero;
 
@@ -149,10 +147,8 @@ class _ReservationConfirmationPageState
     // Format dates
     String dateRange = '';
     if (startAt != null && endAt != null) {
-      final startDate =
-          '${startAt.month}/${startAt.day}/${startAt.year}';
-      final endDate =
-          '${endAt.month}/${endAt.day}/${endAt.year}';
+      final startDate = '${startAt.month}/${startAt.day}/${startAt.year}';
+      final endDate = '${endAt.month}/${endAt.day}/${endAt.year}';
       final startTime = _formatTime(startAt);
       final endTime = _formatTime(endAt);
 
@@ -259,6 +255,22 @@ class _ReservationConfirmationPageState
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F8),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Reservation Details',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Stack(
           children: [
@@ -266,85 +278,9 @@ class _ReservationConfirmationPageState
               padding: const EdgeInsets.only(bottom: 100),
               child: Column(
                 children: [
-                  // Top Bar
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.of(context)
-                              .popUntil((route) => route.isFirst),
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.transparent,
-                            ),
-                            child: const Icon(Icons.close, color: Colors.black),
-                          ),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            'Ticket Details',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 48), // Balance
-                      ],
-                    ),
-                  ),
-
-                  // Success Header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: Colors.green[50],
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.check_circle,
-                            color: Colors.green[600],
-                            size: 40,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Booking Confirmed!',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0D141B),
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Payment successful! You're all set.",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color:
-                                const Color(0xFF0D141B).withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
                   // QR Code Card
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.all(24),
                     child: Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
@@ -417,11 +353,13 @@ class _ReservationConfirmationPageState
 
                   // Countdown Section or Reservation Status
                   Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: _shouldShowCountdown
                         ? _buildCountdownSection(minutes, seconds)
                         : _buildReservationStatusSection(),
                   ),
+
+                  const SizedBox(height: 24),
 
                   // Location Details Card
                   Padding(

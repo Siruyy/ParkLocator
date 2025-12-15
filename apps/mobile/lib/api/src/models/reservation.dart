@@ -18,6 +18,8 @@ class Reservation extends Equatable {
     required this.durationHours,
     required this.arrivalWindowMinutes,
     required this.expiresAt,
+    this.startAt,
+    this.endAt,
     this.checkedInAt,
     this.checkedOutAt,
     this.qrCode,
@@ -36,6 +38,12 @@ class Reservation extends Equatable {
       durationHours: json['durationHours'] as int? ?? 1,
       arrivalWindowMinutes: json['arrivalWindowMinutes'] as int? ?? 60,
       expiresAt: DateTime.parse(json['expiresAt'] as String),
+      startAt: json['startAt'] != null
+          ? DateTime.parse(json['startAt'] as String)
+          : null,
+      endAt: json['endAt'] != null
+          ? DateTime.parse(json['endAt'] as String)
+          : null,
       checkedInAt: json['checkedInAt'] != null
           ? DateTime.parse(json['checkedInAt'] as String)
           : null,
@@ -67,6 +75,8 @@ class Reservation extends Equatable {
   final int durationHours;
   final int arrivalWindowMinutes;
   final DateTime expiresAt;
+  final DateTime? startAt;
+  final DateTime? endAt;
   final DateTime? checkedInAt;
   final DateTime? checkedOutAt;
   final String? qrCode;
@@ -75,6 +85,27 @@ class Reservation extends Equatable {
   final ReservationVenue? venue;
   final ReservationLevel? level;
   final ReservationSpot? spot;
+
+  /// Check if this is a multi-day reservation
+  bool get isMultiDay {
+    if (startAt == null || endAt == null) return false;
+    final daysDifference = endAt!.difference(startAt!).inDays;
+    return daysDifference >= 1;
+  }
+
+  /// Check if this is a future reservation (Book for Later)
+  bool get isFutureReservation {
+    if (startAt == null) return false;
+    return startAt!.isAfter(DateTime.now());
+  }
+
+  /// Check if the arrival window is active (within 1 hour of start time)
+  bool get isArrivalWindowActive {
+    if (startAt == null) return true; // Book Now - always active
+    final now = DateTime.now();
+    final oneHourBeforeStart = startAt!.subtract(const Duration(hours: 1));
+    return now.isAfter(oneHourBeforeStart) && now.isBefore(expiresAt);
+  }
 
   static ReservationStatus _parseStatus(String? status) {
     switch (status) {
@@ -105,6 +136,8 @@ class Reservation extends Equatable {
         durationHours,
         arrivalWindowMinutes,
         expiresAt,
+        startAt,
+        endAt,
         checkedInAt,
         checkedOutAt,
         qrCode,

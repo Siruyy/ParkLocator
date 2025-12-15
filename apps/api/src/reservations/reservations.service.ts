@@ -37,7 +37,14 @@ export class ReservationsService {
     userId: string,
     createReservationDto: CreateReservationDto,
   ): Promise<Reservation> {
-    const { venueId, levelId, spotId, durationHours = 1 } = createReservationDto;
+    const {
+      venueId,
+      levelId,
+      spotId,
+      durationHours = 1,
+      startAt,
+      endAt,
+    } = createReservationDto;
 
     // Use a transaction to ensure atomicity
     const queryRunner = this.dataSource.createQueryRunner();
@@ -45,6 +52,22 @@ export class ReservationsService {
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
+      // Calculate start and end times
+      let reservationStartAt: Date;
+      let reservationEndAt: Date;
+
+      if (startAt && endAt) {
+        // "Book for Later" - use provided dates
+        reservationStartAt = new Date(startAt as string);
+        reservationEndAt = new Date(endAt as string);
+      } else {
+        // "Book Now" - start immediately
+        reservationStartAt = new Date();
+        reservationEndAt = new Date(
+          reservationStartAt.getTime() + durationHours * 60 * 60 * 1000,
+        );
+      }
+
       // Lock the spot row for update to prevent concurrent reservations
       const spot = await queryRunner.manager.findOne(Spot, {
         where: { id: spotId },
@@ -55,14 +78,34 @@ export class ReservationsService {
         throw new NotFoundException(`Spot with ID ${spotId} not found`);
       }
 
-      if (spot.status !== SpotStatus.AVAILABLE) {
-        throw new ConflictException(
-          `Spot ${spot.spotNumber} is not available. Current status: ${spot.status}`,
+      if (spot.levelId !== levelId) {
+        throw new BadRequestException(
+          'Spot does not belong to the specified level',
         );
       }
 
-      if (spot.levelId !== levelId) {
-        throw new BadRequestException('Spot does not belong to the specified level');
+      // Check for overlapping reservations on this spot for the requested time range
+      const overlappingReservation = await queryRunner.manager
+        .createQueryBuilder(Reservation, 'r')
+        .where('r.spot_id = :spotId', { spotId })
+        .andWhere('r.status IN (:...activeStatuses)', {
+          activeStatuses: [
+            ReservationStatus.PENDING,
+            ReservationStatus.CONFIRMED,
+            ReservationStatus.CHECKED_IN,
+          ],
+        })
+        .andWhere(
+          // Check for time overlap: new reservation overlaps if it starts before existing ends AND ends after existing starts
+          '(r.start_at < :endAt AND r.end_at > :startAt)',
+          { startAt: reservationStartAt, endAt: reservationEndAt },
+        )
+        .getOne();
+
+      if (overlappingReservation) {
+        throw new ConflictException(
+          `Spot ${spot.spotNumber} is already reserved for the selected time period`,
+        );
       }
 
       // Verify venue and level exist
@@ -79,13 +122,21 @@ export class ReservationsService {
       });
 
       if (!level || level.venueId !== venueId) {
-        throw new BadRequestException('Level does not belong to the specified venue');
+        throw new BadRequestException(
+          'Level does not belong to the specified venue',
+        );
       }
 
-      // Calculate price and expiry
-      const amount = PRICE_PER_HOUR * durationHours;
-      const expiresAt = new Date();
-      expiresAt.setMinutes(expiresAt.getMinutes() + ARRIVAL_WINDOW_MINUTES);
+      // Calculate price based on actual duration
+      const actualDurationHours =
+        (reservationEndAt.getTime() - reservationStartAt.getTime()) /
+        (1000 * 60 * 60);
+      const amount = PRICE_PER_HOUR * actualDurationHours;
+
+      // Calculate arrival window expiry (for "Book Now", expires in 1 hour; for "Book for Later", expires at start time + window)
+      const expiresAt = new Date(
+        reservationStartAt.getTime() + ARRIVAL_WINDOW_MINUTES * 60 * 1000,
+      );
 
       // Generate unique QR code
       const qrCode = uuidv4();
@@ -98,7 +149,9 @@ export class ReservationsService {
         spotId,
         status: ReservationStatus.CONFIRMED, // Skip pending for now, assume payment is instant
         amount,
-        durationHours,
+        durationHours: Math.ceil(actualDurationHours),
+        startAt: reservationStartAt,
+        endAt: reservationEndAt,
         arrivalWindowMinutes: ARRIVAL_WINDOW_MINUTES,
         expiresAt,
         qrCode,
@@ -106,13 +159,19 @@ export class ReservationsService {
 
       await queryRunner.manager.save(reservation);
 
-      // Update spot status to reserved
-      spot.status = SpotStatus.RESERVED;
-      await queryRunner.manager.save(spot);
+      // For "Book Now" only: Update spot status to reserved immediately
+      // For "Book for Later": spot status remains available until the reservation time
+      const isBookNow =
+        !startAt ||
+        new Date(startAt as string).getTime() - Date.now() < 60 * 60 * 1000; // within 1 hour
+      if (isBookNow) {
+        spot.status = SpotStatus.RESERVED;
+        await queryRunner.manager.save(spot);
 
-      // Update level available spots count
-      level.availableSpots = Math.max(0, level.availableSpots - 1);
-      await queryRunner.manager.save(level);
+        // Update level available spots count only for immediate bookings
+        level.availableSpots = Math.max(0, level.availableSpots - 1);
+        await queryRunner.manager.save(level);
+      }
 
       await queryRunner.commitTransaction();
 

@@ -4,19 +4,25 @@ import 'package:mobile/api/api.dart' as api;
 class LevelCard extends StatelessWidget {
   const LevelCard({
     required this.level,
+    this.overrideAvailableSpots,
     super.key,
   });
 
   final api.Level level;
+  /// Optional override for available spots count (used for date-specific availability)
+  final int? overrideAvailableSpots;
 
   @override
   Widget build(BuildContext context) {
+    // Use override if provided, otherwise use level's default
+    final availableSpots = overrideAvailableSpots ?? level.availableSpots;
+    
     final occupancy = level.totalCapacity > 0
-        ? (level.totalCapacity - level.availableSpots) / level.totalCapacity
+        ? (level.totalCapacity - availableSpots) / level.totalCapacity
         : 1.0;
     
-    final isFull = level.availableSpots == 0;
-    final isFillingFast = !isFull && level.availableSpots < 10;
+    final isFull = availableSpots == 0;
+    final isFillingFast = !isFull && availableSpots < 10;
     
     Color statusColor;
     String statusText;
@@ -115,7 +121,7 @@ class LevelCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    level.availableSpots.toString(),
+                    availableSpots.toString(),
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

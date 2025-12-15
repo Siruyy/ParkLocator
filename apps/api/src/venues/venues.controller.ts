@@ -74,14 +74,23 @@ export class VenuesController {
   }
 
   @Get(':id/availability')
-  async getAvailability(@Param('id', ParseUUIDPipe) id: string) {
-    const availability = await this.venuesService.getAvailability(id);
+  async getAvailability(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('startAt') startAt?: string,
+    @Query('endAt') endAt?: string,
+  ) {
+    const startDate = startAt ? new Date(startAt) : undefined;
+    const endDate = endAt ? new Date(endAt) : undefined;
+
+    const availability = await this.venuesService.getAvailability(id, startDate, endDate);
 
     return {
       success: true,
       data: availability,
       meta: {
         venueId: id,
+        startAt: startAt || null,
+        endAt: endAt || null,
         timestamp: new Date().toISOString(),
       },
     };
@@ -99,8 +108,19 @@ export class VenuesController {
   }
 
   @Get('levels/:id')
-  async findLevel(@Param('id', ParseUUIDPipe) id: string) {
-    const level = await this.venuesService.findLevelWithSpots(id);
+  async findLevel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('startAt') startAt?: string,
+    @Query('endAt') endAt?: string,
+  ) {
+    const startDate = startAt ? new Date(startAt) : undefined;
+    const endDate = endAt ? new Date(endAt) : undefined;
+
+    const level = await this.venuesService.findLevelWithSpots(
+      id,
+      startDate,
+      endDate,
+    );
 
     return {
       success: true,

@@ -74,6 +74,14 @@ export class Reservation {
   @Column({ name: 'duration_hours', type: 'int', default: 1 })
   durationHours: number;
 
+  @Column({ name: 'start_at', type: 'timestamp' })
+  @Index()
+  startAt: Date;
+
+  @Column({ name: 'end_at', type: 'timestamp' })
+  @Index()
+  endAt: Date;
+
   @Column({ name: 'arrival_window_minutes', type: 'int', default: 60 })
   arrivalWindowMinutes: number;
 
