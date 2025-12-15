@@ -1,0 +1,37 @@
+<header class="h-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-10 border-b border-gray-100 dark:border-gray-800 px-6 sm:px-8 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+        <button class="lg:hidden p-2 -ml-2 text-text-primary-light dark:text-text-primary-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+        <nav class="hidden sm:flex items-center gap-2 text-sm">
+            <ng-container *ngFor="let item of breadcrumbs; let last = last">
+                <a *ngIf="!last && item.url" [routerLink]="item.url" class="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors">{{ item.label }}</a>
+                <span *ngIf="!last && !item.url" class="text-text-secondary-light dark:text-text-secondary-dark">{{ item.label }}</span>
+                
+                <span *ngIf="!last" class="text-text-secondary-light dark:text-text-secondary-dark/50">/</span>
+                
+                <span *ngIf="last" class="font-semibold text-text-primary-light dark:text-text-primary-dark bg-primary/20 px-3 py-1 rounded-full">{{ item.label }}</span>
+            </ng-container>
+        </nav>
+    </div>
+    <div class="flex items-center gap-4">
+        <div class="hidden md:flex items-center bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-full px-4 h-10 w-64 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+            <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark text-[20px]">search</span>
+            <input class="bg-transparent border-none text-sm w-full focus:ring-0 text-text-primary-light dark:text-text-primary-dark placeholder:text-text-secondary-light/70 dark:placeholder:text-text-secondary-dark/70" [placeholder]="searchPlaceholder" type="text"/>
+        </div>
+        <button class="relative p-2.5 text-text-primary-light dark:text-text-primary-dark bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-full hover:bg-gray-50 dark:hover:bg-white/10 transition-colors">
+            <span class="material-symbols-outlined text-[20px]">notifications</span>
+            <span class="absolute top-2 right-2.5 size-2 bg-accent-error rounded-full border-2 border-white dark:border-gray-800"></span>
+        </button>
+        <div class="flex items-center gap-3 pl-1 pr-2 py-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-full cursor-pointer hover:border-primary/50 transition-colors group">
+            <div class="size-8 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
+                <img alt="Smiling man with glasses portrait" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAU5BkXqM_AXNu4JASymOSQcG3sS7iPTVLInpBg_H_SrNWyjHHIAHhKC-dDdzYvcarOwUadtncRDcuDnmlveuzLqoYe3OEOf0iKsgHFdzJeyQWfd05Lfe8KvWSrtgBxPkjQQW3_0dy0BrkNDIDfQWIEZ2-yR-ZBLK1iBz8dthz1YFR9SjatdSGC46UNSdtEQUASr30qUcjV02Nt4u2pyo6CncNTviRskrmK-zQzO5RdcCm6a5oh1U_jHy6-4p35bZc_tngWUOKSmr4"/>
+            </div>
+            <div class="hidden md:flex flex-col items-start mr-2">
+                <p class="text-xs font-bold text-text-primary-light dark:text-text-primary-dark leading-none">Juan Dela Cruz</p>
+                <p class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark leading-none mt-1">Manager</p>
+            </div>
+            <span class="hidden md:block material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark text-[18px] group-hover:text-primary transition-colors">expand_more</span>
+        </div>
+    </div>
+</header>

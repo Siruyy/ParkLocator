@@ -1,0 +1,217 @@
+<div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark selection:bg-primary selection:text-black">
+    <!-- Sidebar -->
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- Header -->
+        <app-header 
+            [breadcrumbs]="[{ label: 'Admin', url: '#' }, { label: 'Dashboard' }]"
+            searchPlaceholder="Search venues or users...">
+        </app-header>
+
+        <!-- Dashboard Content -->
+        <main class="flex-1 overflow-y-auto p-6 sm:p-8 scroll-smooth">
+            <div class="max-w-7xl mx-auto flex flex-col gap-8 pb-10">
+                <!-- Title Section -->
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold tracking-tight mb-2">Dashboard Overview</h2>
+                        <p class="text-text-secondary-light dark:text-text-secondary-dark">Real-time parking operations status</p>
+                    </div>
+                    <div class="flex flex-col items-end text-right">
+                        <span class="text-sm font-bold text-text-primary-light dark:text-text-primary-dark">Wednesday, Oct 24</span>
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Last updated: 14:32 PM</span>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Occupancy Card -->
+                    <div class="p-6 rounded-3xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between h-48 relative overflow-hidden">
+                        <div class="flex items-start justify-between">
+                            <div class="size-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-text-primary-light dark:text-text-primary-dark">
+                                <span class="material-symbols-outlined">directions_car</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-accent-success text-xs font-bold bg-accent-success/10 px-2 py-1 rounded-lg">
+                                <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +5% vs 1h ago
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm mb-1">Occupancy Rate</p>
+                            <div class="flex items-baseline gap-2 mb-3">
+                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">85%</span>
+                                <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark font-medium">(120/140)</span>
+                            </div>
+                            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Reservations Card -->
+                    <div class="p-6 rounded-3xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between h-48 relative overflow-hidden">
+                        <div class="flex items-start justify-between">
+                            <div class="size-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-text-primary-light dark:text-text-primary-dark">
+                                <span class="material-symbols-outlined">confirmation_number</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-text-secondary-light dark:text-text-secondary-dark text-xs font-bold bg-gray-100 dark:bg-white/10 px-2 py-1 rounded-lg">
+                                Coming up
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm mb-1">Active Reservations</p>
+                            <div class="flex items-baseline gap-2 mb-3">
+                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">42</span>
+                                <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark font-medium">Arriving &lt; 1hr</span>
+                            </div>
+                            <div class="flex -space-x-2">
+                                <div class="w-7 h-7 rounded-full border-2 border-white dark:border-surface-dark bg-blue-200"></div>
+                                <div class="w-7 h-7 rounded-full border-2 border-white dark:border-surface-dark bg-green-200"></div>
+                                <div class="w-7 h-7 rounded-full border-2 border-white dark:border-surface-dark bg-purple-200"></div>
+                                <div class="w-7 h-7 rounded-full border-2 border-white dark:border-surface-dark bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-600">+39</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Card -->
+                    <div class="p-6 rounded-3xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between h-48 relative overflow-hidden">
+                        <div class="flex items-start justify-between">
+                            <div class="size-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-text-primary-light dark:text-text-primary-dark">
+                                <span class="material-symbols-outlined">attach_money</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-accent-success text-xs font-bold bg-accent-success/10 px-2 py-1 rounded-lg">
+                                <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +12% vs Avg
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm mb-1">Today's Revenue</p>
+                            <div class="flex items-baseline gap-2 mb-2">
+                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">₱15,400</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-accent-success text-xs font-medium">
+                                <span class="material-symbols-outlined text-[16px]">trending_up</span>
+                                On track to beat weekly goal
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="w-full p-6 sm:p-8 rounded-3xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Hourly Occupancy Trends</h3>
+                            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Vehicles parked over the last 24 hours</p>
+                        </div>
+                        <button class="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-white/5 text-xs font-bold text-text-primary-light dark:text-text-primary-dark hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+                            Last 24 Hours
+                            <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                        </button>
+                    </div>
+                    <div class="relative w-full h-[300px]">
+                        <div class="absolute left-0 top-0 bottom-8 flex flex-col justify-between text-[10px] text-text-secondary-light/60 dark:text-text-secondary-dark/60 font-medium pr-2">
+                            <span>100%</span>
+                            <span>75%</span>
+                            <span>50%</span>
+                            <span>25%</span>
+                            <span>0%</span>
+                        </div>
+                        <div class="ml-8 h-full relative">
+                            <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 1000 300">
+                                <defs>
+                                    <linearGradient id="yellowGradient" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stop-color="#f9f506" stop-opacity="0.3"></stop>
+                                        <stop offset="100%" stop-color="#f9f506" stop-opacity="0"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <line stroke="currentColor" stroke-dasharray="4,4" stroke-opacity="0.05" x1="0" x2="1000" y1="0" y2="0"></line>
+                                <line stroke="currentColor" stroke-dasharray="4,4" stroke-opacity="0.05" x1="0" x2="1000" y1="75" y2="75"></line>
+                                <line stroke="currentColor" stroke-dasharray="4,4" stroke-opacity="0.05" x1="0" x2="1000" y1="150" y2="150"></line>
+                                <line stroke="currentColor" stroke-dasharray="4,4" stroke-opacity="0.05" x1="0" x2="1000" y1="225" y2="225"></line>
+                                <line stroke="currentColor" stroke-opacity="0.1" x1="0" x2="1000" y1="300" y2="300"></line>
+                                <path d="M0,300 
+                                             C100,300 150,225 250,225 
+                                             S350,240 450,150 
+                                             S550,120 650,130 
+                                             S800,160 1000,220 
+                                             V300 H0 Z" fill="url(#yellowGradient)"></path>
+                                <path d="M0,300 
+                                             C100,300 150,225 250,225 
+                                             S350,240 450,150 
+                                             S550,120 650,130 
+                                             S800,160 1000,220" fill="none" stroke="#f9f506" stroke-linecap="round" stroke-width="4"></path>
+                                <circle cx="250" cy="225" fill="#1c1c0d" r="4"></circle>
+                                <circle cx="650" cy="130" fill="#1c1c0d" r="5" stroke="#f9f506" stroke-width="2"></circle>
+                            </svg>
+                            <div class="flex justify-between mt-2 text-[10px] text-text-secondary-light/60 dark:text-text-secondary-dark/60 font-medium">
+                                <span>00:00</span>
+                                <span>04:00</span>
+                                <span>08:00</span>
+                                <span>12:00</span>
+                                <span>16:00</span>
+                                <span>20:00</span>
+                                <span>23:59</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Alerts -->
+                    <div class="p-6 sm:p-8 rounded-3xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full">
+                        <div class="flex items-center gap-2 mb-6 text-accent-error">
+                            <span class="material-symbols-outlined">warning</span>
+                            <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Capacity Alerts</h3>
+                        </div>
+                        <div class="flex flex-col gap-4 flex-1">
+                            <div class="p-5 rounded-2xl bg-[#FFF9E6] border border-yellow-100 dark:bg-yellow-900/10 dark:border-yellow-900/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h4 class="font-bold text-sm text-text-primary-light dark:text-text-primary-dark mb-1">Level 2 Critical</h4>
+                                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark leading-relaxed max-w-xs">Level 2 is nearing capacity (95%). Consider redirecting traffic.</p>
+                                </div>
+                                <button class="bg-primary text-black text-xs font-bold px-4 py-2 rounded-full hover:brightness-105 transition-all shadow-sm">
+                                    MANAGE
+                                </button>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h4 class="font-bold text-sm text-text-primary-light dark:text-text-primary-dark mb-1">North Entrance</h4>
+                                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark leading-relaxed max-w-xs">Gate 4 barrier sensor maintenance required.</p>
+                                </div>
+                                <button class="bg-white dark:bg-transparent border border-gray-200 dark:border-gray-600 text-text-primary-light dark:text-text-primary-dark text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
+                                    VIEW
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="p-6 sm:p-8 rounded-3xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Recent Activity</h3>
+                            <a class="text-xs font-bold text-primary hover:underline cursor-pointer">View All</a>
+                        </div>
+                        <div class="flex flex-col gap-6">
+                            <div *ngFor="let activity of recentActivities" class="flex items-start gap-4">
+                                <div [class]="'size-10 rounded-full flex items-center justify-center shrink-0 ' + activity.iconClass">
+                                    <span class="material-symbols-outlined text-[20px]">{{ activity.icon }}</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-start">
+                                        <h4 class="text-sm font-bold text-text-primary-light dark:text-text-primary-dark truncate">{{ activity.title }}</h4>
+                                        <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark whitespace-nowrap ml-2">{{ activity.time }}</span>
+                                    </div>
+                                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5 truncate">{{ activity.details }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

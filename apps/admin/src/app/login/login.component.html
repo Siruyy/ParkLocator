@@ -1,0 +1,140 @@
+<div class="min-h-screen flex flex-col lg:flex-row">
+    <!-- Left Section: Form -->
+    <div class="flex-1 flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 bg-background-light dark:bg-background-dark relative overflow-hidden">
+        <!-- Decorative background element for left side -->
+        <div class="absolute top-0 left-0 w-full h-2 bg-primary"></div>
+        <div class="mx-auto w-full max-w-sm lg:max-w-md z-10">
+            <!-- Header / Logo Area -->
+            <div class="flex flex-col gap-6 mb-10">
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-text-main">
+                        <span class="material-symbols-outlined">local_parking</span>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-text-main dark:text-white">ParkLocator</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-black leading-tight tracking-[-0.033em] text-text-main dark:text-white mb-2">
+                        Admin Portal
+                    </h1>
+                    <p class="text-text-muted dark:text-gray-400 text-base font-normal leading-normal">
+                        Welcome back. Please enter your details to manage parking operations in Cebu City.
+                    </p>
+                </div>
+            </div>
+            <!-- Login Form -->
+            <div class="flex flex-col gap-6">
+                <!-- Username Input -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal ml-1" for="email">
+                        Email or Username
+                    </label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-4 text-text-muted material-symbols-outlined select-none z-10">person</span>
+                        <input pInputText 
+                               [(ngModel)]="email"
+                               class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-full text-text-main dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#e9e8ce] dark:border-[#444] bg-surface-light dark:bg-surface-dark h-12 sm:h-14 placeholder:text-text-muted !pl-12 pr-4 text-base font-normal leading-normal shadow-sm transition-all" 
+                               id="email" 
+                               placeholder="admin@parklocator.com" 
+                               type="text" />
+                    </div>
+                </div>
+                <!-- Password Input -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal ml-1" for="password">
+                        Password
+                    </label>
+                    <div class="relative flex items-center group">
+                        <span class="absolute left-4 text-text-muted material-symbols-outlined select-none z-10">lock</span>
+                        <input pInputText
+                               [(ngModel)]="password"
+                               [type]="passwordVisible ? 'text' : 'password'"
+                               class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-full text-text-main dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#e9e8ce] dark:border-[#444] bg-surface-light dark:bg-surface-dark h-12 sm:h-14 placeholder:text-text-muted !pl-12 pr-12 text-base font-normal leading-normal shadow-sm transition-all" 
+                               id="password" 
+                               placeholder="••••••••" />
+                        <button (click)="passwordVisible = !passwordVisible" 
+                                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-text-muted hover:text-text-main dark:hover:text-white transition-colors rounded-full" 
+                                type="button">
+                            <span class="material-symbols-outlined block" style="font-size: 20px;">{{ passwordVisible ? 'visibility_off' : 'visibility' }}</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Actions Row -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-x-3 cursor-pointer group">
+                        <p-checkbox [(ngModel)]="rememberMe" [binary]="true" inputId="rememberMe" styleClass="text-primary"></p-checkbox>
+                        <label for="rememberMe" class="text-text-main dark:text-gray-300 text-sm font-normal leading-normal group-hover:text-primary transition-colors cursor-pointer">Remember me</label>
+                    </div>
+                    <a class="text-sm font-medium text-text-main dark:text-white underline decoration-primary/50 hover:decoration-primary decoration-2 underline-offset-4 transition-all" href="#">
+                        Forgot password?
+                    </a>
+                </div>
+                <!-- Sign In Button -->
+                <button pButton 
+                        label="Sign In" 
+                        (click)="onLogin()"
+                        class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 sm:h-14 bg-primary hover:bg-[#e6e205] active:scale-[0.99] text-[#1c1c0d] text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/20 transition-all duration-200 mt-2 border-none">
+                </button>
+            </div>
+            <!-- Footer -->
+            <div class="mt-10 text-center">
+                <p class="text-text-muted dark:text-gray-500 text-sm">
+                    Need help accessing the portal? <br class="hidden sm:block"/>
+                    <a class="text-text-main dark:text-gray-300 font-medium hover:text-primary transition-colors" href="#">Contact Super Admin</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- Right Section: Visual -->
+    <div class="hidden lg:block relative w-0 flex-1 bg-surface-dark">
+        <div class="absolute inset-0 h-full w-full bg-surface-dark">
+            <!-- Background Image -->
+            <div class="h-full w-full bg-cover bg-center opacity-80 mix-blend-overlay" data-alt="Aerial view of city streets and parking structures resembling a map" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuACLo7O63dzVQgwIAv_O_TV6-djraxtGts-Y8-uuHisHpvl0DgslTLxyUbGgOipR10Rs8zf5_DJNa7fx_T8r8hPCIRhpFT0-yyJwDczM8dPrrxUh9H6AsvpT5l-MEe1NSDiM6rali9PFycMLeA3B0mH3HIaYLjdoUHdceQXsisaP2O2DdoTtHWxSamTSJbYuQjtL37IHrkhpmORQPGpTVEycboC7Iwb5LXQnKlj_zcvYGVPTb7R55Xp83JeWig8V3jbAtPUXN3t5ro');"></div>
+            <!-- Overlay Gradient -->
+            <div class="absolute inset-0 bg-gradient-to-t from-background-dark/90 via-background-dark/20 to-transparent"></div>
+            <!-- Map UI Elements (Abstract) -->
+            <div class="absolute bottom-0 left-0 right-0 p-12 text-white">
+                <div class="max-w-lg">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-6">
+                        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        <span class="text-xs font-bold text-primary tracking-wide uppercase">System Operational</span>
+                    </div>
+                    <h2 class="text-4xl font-black tracking-tight mb-4">Real-time Parking Intelligence</h2>
+                    <p class="text-lg text-gray-300 font-normal leading-relaxed">
+                        Monitor occupancy rates, validate reservations, and manage finance operations across all Cebu City zones from a single dashboard.
+                    </p>
+                </div>
+            </div>
+            <!-- Floating Abstract Card 1 -->
+            <div class="absolute top-1/4 right-20 p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl w-48 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-black">
+                        <span class="material-symbols-outlined text-sm">local_parking</span>
+                    </div>
+                    <div>
+                        <div class="text-xs text-white/60">IT Park Zone</div>
+                        <div class="text-sm font-bold text-white">94% Full</div>
+                    </div>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-1.5">
+                    <div class="bg-primary h-1.5 rounded-full" style="width: 94%"></div>
+                </div>
+            </div>
+            <!-- Floating Abstract Card 2 -->
+            <div class="absolute top-1/3 right-48 p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl w-48 shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500 delay-100">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black">
+                        <span class="material-symbols-outlined text-sm">attach_money</span>
+                    </div>
+                    <div>
+                        <div class="text-xs text-white/60">Daily Revenue</div>
+                        <div class="text-sm font-bold text-white">PHP 45,200</div>
+                    </div>
+                </div>
+                <div class="flex text-[10px] text-primary gap-1 items-center">
+                    <span class="material-symbols-outlined text-[12px]">trending_up</span>
+                    <span>+12% vs yesterday</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
