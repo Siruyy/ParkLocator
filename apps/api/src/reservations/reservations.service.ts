@@ -13,6 +13,8 @@ import { Level } from '../venues/entities/level.entity';
 import { Venue } from '../venues/entities/venue.entity';
 import { v4 as uuidv4 } from 'uuid';
 
+import { User, UserRole } from '../users/entities/user.entity';
+
 const PRICE_PER_HOUR = 40; // Base price per hour in PHP
 const ARRIVAL_WINDOW_MINUTES = 60; // 1 hour arrival window
 
@@ -192,6 +194,23 @@ export class ReservationsService {
     return this.reservationsRepository.find({
       where: { userId },
       relations: ['venue', 'level', 'spot'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findAllForAdmin(user: User): Promise<Reservation[]> {
+    const where: any = {};
+
+    if (user.role === UserRole.MANAGER) {
+      if (!user.venueId) {
+        return [];
+      }
+      where.venueId = user.venueId;
+    }
+
+    return this.reservationsRepository.find({
+      where,
+      relations: ['user', 'venue', 'level', 'spot'],
       order: { createdAt: 'DESC' },
     });
   }

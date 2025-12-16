@@ -5,9 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Venue } from '../../venues/entities/venue.entity';
 
 export enum UserRole {
+  SUPER_ADMIN = 'super_admin',
   DRIVER = 'driver',
   MANAGER = 'manager',
   ATTENDANT = 'attendant',
@@ -31,6 +35,13 @@ export class User {
     default: UserRole.DRIVER,
   })
   role: UserRole;
+
+  @Column({ name: 'venue_id', nullable: true })
+  venueId: string | null;
+
+  @ManyToOne(() => Venue, (venue) => venue.users)
+  @JoinColumn({ name: 'venue_id' })
+  venue: Venue | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

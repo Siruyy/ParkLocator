@@ -19,6 +19,8 @@ import {
   ReservationStatus,
 } from '../reservations/entities/reservation.entity';
 
+import { User, UserRole } from '../users/entities/user.entity';
+
 @Injectable()
 export class VenuesService {
   constructor(
@@ -55,9 +57,18 @@ export class VenuesService {
     return this.findOne(result[0].id);
   }
 
-  async findAll(): Promise<Venue[]> {
+  async findAll(user?: User): Promise<Venue[]> {
+    const where: any = { isActive: true };
+
+    if (user && user.role === UserRole.MANAGER) {
+      if (!user.venueId) {
+        return []; // Manager with no venue assigned sees nothing
+      }
+      where.id = user.venueId;
+    }
+
     return this.venuesRepository.find({
-      where: { isActive: true },
+      where,
       relations: ['levels'],
     });
   }

@@ -8,6 +8,7 @@ import {
   Index,
 } from 'typeorm';
 import { Level } from './level.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('venues')
 export class Venue {
@@ -35,6 +36,9 @@ export class Venue {
 
   @OneToMany(() => Level, (level) => level.venue, { cascade: true })
   levels: Level[];
+
+  @OneToMany(() => User, (user) => user.venue)
+  users: User[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

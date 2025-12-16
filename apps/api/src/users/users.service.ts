@@ -25,11 +25,21 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async findAll(query: QueryUsersDto): Promise<PaginatedUsers> {
+  async findAll(query: QueryUsersDto, currentUser?: User): Promise<PaginatedUsers> {
     const { search, role, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
+
+    // Filter by venue if Manager
+    if (currentUser && currentUser.role === UserRole.MANAGER) {
+      if (currentUser.venueId) {
+        queryBuilder.andWhere('user.venueId = :venueId', { venueId: currentUser.venueId });
+      } else {
+        // Manager with no venue sees nothing (or maybe just themselves?)
+        queryBuilder.andWhere('1 = 0'); 
+      }
+    }
 
     if (search) {
       queryBuilder.where('user.email ILIKE :search', {

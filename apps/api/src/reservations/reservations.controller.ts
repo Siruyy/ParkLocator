@@ -12,6 +12,9 @@ import {
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 
 @Controller('reservations')
 @UseGuards(JwtAuthGuard)
@@ -32,6 +35,19 @@ export class ReservationsController {
       success: true,
       data: this.transformReservation(reservation),
       message: 'Reservation created successfully',
+    };
+  }
+
+  @Get('admin/all')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
+  async findAllAdmin(@Request() req) {
+    const reservations = await this.reservationsService.findAllForAdmin(req.user);
+
+    return {
+      success: true,
+      data: reservations.map((r) => this.transformReservation(r)),
+      meta: { count: reservations.length },
     };
   }
 

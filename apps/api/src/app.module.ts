@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VenuesModule } from './venues/venues.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ReservationsModule } from './reservations/reservations.module';
     UsersModule,
     VenuesModule,
     ReservationsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

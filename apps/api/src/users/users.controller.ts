@@ -26,20 +26,23 @@ export class UsersController {
 
   /**
    * Get all users with optional filtering and pagination
-   * Only accessible by Managers
+   * Only accessible by Managers and Super Admins
    */
   @Get()
-  @Roles(UserRole.MANAGER)
-  async findAll(@Query() query: QueryUsersDto): Promise<PaginatedUsers> {
-    return this.usersService.findAll(query);
+  @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
+  async findAll(
+    @Query() query: QueryUsersDto,
+    @CurrentUser() currentUser: User,
+  ): Promise<PaginatedUsers> {
+    return this.usersService.findAll(query, currentUser);
   }
 
   /**
    * Get a single user by ID
-   * Only accessible by Managers
+   * Only accessible by Managers and Super Admins
    */
   @Get(':id')
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<Omit<User, 'password'>> {

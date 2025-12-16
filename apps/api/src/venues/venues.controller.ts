@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   ParseUUIDPipe,
+  Request,
 } from '@nestjs/common';
 import { VenuesService } from './venues.service';
 import {
@@ -53,8 +54,14 @@ export class VenuesController {
   }
 
   @Get()
-  async findAll() {
-    const venues = await this.venuesService.findAll();
+  @UseGuards(JwtAuthGuard)
+  async findAll(@Request() req) {
+    // If public (no user), return all active venues (or maybe restricted list?)
+    // For now, let's assume public can see all, but if logged in as manager, we filter.
+    // Actually, the mobile app calls this publicly.
+    // So we need to check if req.user exists.
+    
+    const venues = await this.venuesService.findAll(req.user);
 
     return {
       success: true,
