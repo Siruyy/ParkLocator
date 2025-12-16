@@ -1,0 +1,20 @@
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.main-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.main-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.main-scroll::-webkit-scrollbar-thumb {
+    background-color: #e9e8ce;
+    border-radius: 20px;
+}
+.dark .main-scroll::-webkit-scrollbar-thumb {
+    background-color: #33332d;
+}

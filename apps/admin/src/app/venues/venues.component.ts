@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
 
 @Component({
   selector: 'app-venues',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, HeaderComponent],
   templateUrl: './venues.component.html',
   styleUrl: './venues.component.scss'
 })

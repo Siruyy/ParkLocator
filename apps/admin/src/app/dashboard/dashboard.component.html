@@ -41,11 +41,11 @@
                         <div>
                             <p class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm mb-1">Occupancy Rate</p>
                             <div class="flex items-baseline gap-2 mb-3">
-                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">85%</span>
+                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ occupancyRate }}%</span>
                                 <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark font-medium">(120/140)</span>
                             </div>
                             <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
-                                <div class="bg-primary h-2 rounded-full" style="width: 85%"></div>
+                                <div class="bg-primary h-2 rounded-full" [style.width.%]="occupancyRate"></div>
                             </div>
                         </div>
                     </div>
@@ -63,7 +63,7 @@
                         <div>
                             <p class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm mb-1">Active Reservations</p>
                             <div class="flex items-baseline gap-2 mb-3">
-                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">42</span>
+                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ activeReservations }}</span>
                                 <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark font-medium">Arriving &lt; 1hr</span>
                             </div>
                             <div class="flex -space-x-2">
@@ -89,7 +89,7 @@
                         <div>
                             <p class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm mb-1">Today's Revenue</p>
                             <div class="flex items-baseline gap-2 mb-2">
-                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">₱15,400</span>
+                                <span class="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ todaysRevenue | currency:'PHP':'symbol':'1.0-0' }}</span>
                             </div>
                             <div class="flex items-center gap-1 text-accent-success text-xs font-medium">
                                 <span class="material-symbols-outlined text-[16px]">trending_up</span>
@@ -197,7 +197,7 @@
                         </div>
                         <div class="flex flex-col gap-6">
                             <div *ngFor="let activity of recentActivities" class="flex items-start gap-4">
-                                <div [class]="'size-10 rounded-full flex items-center justify-center shrink-0 ' + activity.iconClass">
+                                <div [class]="'size-10 rounded-full flex items-center justify-center shrink-0 ' + activity.iconBg + ' ' + activity.iconColor">
                                     <span class="material-symbols-outlined text-[20px]">{{ activity.icon }}</span>
                                 </div>
                                 <div class="flex-1 min-w-0">

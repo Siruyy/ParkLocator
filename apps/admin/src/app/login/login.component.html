@@ -68,11 +68,19 @@
                         Forgot password?
                     </a>
                 </div>
+                <!-- Error Message -->
+                @if (authService.error() || validationError) {
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300">
+                        <span class="material-symbols-outlined text-[20px]">error</span>
+                        <span class="text-sm">{{ authService.error() || validationError }}</span>
+                    </div>
+                }
                 <!-- Sign In Button -->
                 <button pButton 
-                        label="Sign In" 
+                        [label]="authService.isLoading() ? 'Signing in...' : 'Sign In'" 
                         (click)="onLogin()"
-                        class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 sm:h-14 bg-primary hover:bg-[#e6e205] active:scale-[0.99] text-[#1c1c0d] text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/20 transition-all duration-200 mt-2 border-none">
+                        [disabled]="authService.isLoading()"
+                        class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 sm:h-14 bg-primary hover:bg-[#e6e205] active:scale-[0.99] text-[#1c1c0d] text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/20 transition-all duration-200 mt-2 border-none disabled:opacity-50 disabled:cursor-not-allowed">
                 </button>
             </div>
             <!-- Footer -->

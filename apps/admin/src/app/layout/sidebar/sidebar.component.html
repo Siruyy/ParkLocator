@@ -21,6 +21,12 @@
             </a>
         </nav>
         <div class="mt-auto flex flex-col gap-4">
+            <button (click)="logout()" 
+               class="group flex items-center gap-3 px-4 py-3 rounded-full text-text-secondary-light dark:text-text-secondary-dark hover:bg-accent-error/10 hover:text-accent-error transition-all cursor-pointer w-full">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm font-medium">Logout</span>
+            </button>
+
             <div class="px-4 py-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-700">
                 <div class="flex items-center gap-2 mb-2">
                     <span class="relative flex h-2.5 w-2.5">

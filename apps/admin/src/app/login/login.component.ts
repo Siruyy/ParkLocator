@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -18,12 +19,34 @@ export class LoginComponent {
   password = '';
   rememberMe = false;
   passwordVisible = false;
+  validationError = '';
 
-  constructor(private router: Router) {}
+  private returnUrl = '/dashboard';
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    public authService: AuthService
+  ) {
+    // Get return URL from route parameters or default to dashboard
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+  }
 
   onLogin() {
-    console.log('Login attempt', this.email, this.password);
-    // For now, just navigate to dashboard
-    this.router.navigate(['/dashboard']);
+    this.validationError = '';
+    
+    if (!this.email || !this.password) {
+      this.validationError = 'Please enter both email and password.';
+      return;
+    }
+
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: () => {
+        this.router.navigate([this.returnUrl]);
+      },
+      error: (err) => {
+        console.error('Login failed:', err);
+      }
+    });
   }
 }

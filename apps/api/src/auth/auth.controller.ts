@@ -1,9 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Logger } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
@@ -13,7 +15,15 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto) {
+    try {
+      this.logger.log(`Login attempt for: ${loginDto.email}`);
+      const result = await this.authService.login(loginDto);
+      this.logger.log(`Login successful for: ${loginDto.email}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Login failed for ${loginDto.email}:`, error.stack);
+      throw error;
+    }
   }
 }
