@@ -18,7 +18,7 @@ import { Reservation } from '../reservations/entities/reservation.entity';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
         entities: [User, Venue, Level, Spot, Reservation],
-        synchronize: false, // Use migrations instead
+        synchronize: true, // Enabled for dev to update schema
       }),
     }),
   ],

@@ -2,11 +2,15 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
-import { User, UserRole } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import { User, UserRole, UserStatus } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 
 export interface PaginatedUsers {
   data: Omit<User, 'password'>[];
@@ -26,7 +30,7 @@ export class UsersService {
   ) {}
 
   async findAll(query: QueryUsersDto, currentUser?: User): Promise<PaginatedUsers> {
-    const { search, role, page = 1, limit = 20 } = query;
+    const { search, role, venueId, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
@@ -39,6 +43,9 @@ export class UsersService {
         // Manager with no venue sees nothing (or maybe just themselves?)
         queryBuilder.andWhere('1 = 0'); 
       }
+    } else if (venueId) {
+      // Super Admin filtering by venue
+      queryBuilder.andWhere('user.venueId = :venueId', { venueId });
     }
 
     if (search) {
@@ -51,13 +58,21 @@ export class UsersService {
       queryBuilder.andWhere('user.role = :role', { role });
     }
 
+    if (query.status) {
+      queryBuilder.andWhere('user.status = :status', { status: query.status });
+    }
+
     queryBuilder
+      .leftJoin('user.venue', 'venue')
       .select([
         'user.id',
         'user.email',
         'user.role',
+        'user.status',
         'user.createdAt',
         'user.updatedAt',
+        'venue.name',
+        'venue.id'
       ])
       .orderBy('user.createdAt', 'DESC')
       .skip(skip)
@@ -76,17 +91,47 @@ export class UsersService {
     };
   }
 
+  async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
+    const { email, password, role, venueId } = createUserDto;
+    
+    const existingUser = await this.usersRepository.findOne({ where: { email } });
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = this.usersRepository.create({
+      email,
+      password: hashedPassword,
+      role,
+      venueId
+    });
+
+    await this.usersRepository.save(user);
+    
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...result } = user;
+    return result;
+  }
+
   async findOne(id: string): Promise<Omit<User, 'password'>> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      select: ['id', 'email', 'role', 'createdAt', 'updatedAt'],
+      relations: ['venue'],
     });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = user;
+    return result;
+  }
+
+  async updateProfile(id: string, updateUserDto: UpdateUserDto): Promise<Omit<User, 'password'>> {
+    await this.usersRepository.update(id, updateUserDto);
+    return this.findOne(id);
   }
 
   async updateRole(
@@ -106,6 +151,30 @@ export class UsersService {
     }
 
     user.role = newRole;
+    await this.usersRepository.save(user);
+
+    // Return user without password
+    const { password, ...result } = user;
+    return result;
+  }
+
+  async updateStatus(
+    id: string,
+    newStatus: UserStatus,
+    currentUserId: string,
+  ): Promise<Omit<User, 'password'>> {
+    // Prevent users from changing their own status
+    if (id === currentUserId) {
+      throw new ForbiddenException('You cannot change your own status');
+    }
+
+    const user = await this.usersRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    user.status = newStatus;
     await this.usersRepository.save(user);
 
     // Return user without password

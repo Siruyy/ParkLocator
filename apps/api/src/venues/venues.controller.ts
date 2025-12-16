@@ -10,7 +10,12 @@ import {
   UseGuards,
   ParseUUIDPipe,
   Request,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { VenuesService } from './venues.service';
 import {
   CreateVenueDto,
@@ -140,7 +145,22 @@ export class VenuesController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MANAGER)
-  async create(@Body() createVenueDto: CreateVenueDto) {
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads/venues',
+      filename: (req, file, cb) => {
+        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+        return cb(null, `${randomName}${extname(file.originalname)}`);
+      }
+    })
+  }))
+  async create(
+    @Body() createVenueDto: CreateVenueDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (file) {
+      createVenueDto.imageUrl = `/uploads/venues/${file.filename}`;
+    }
     const venue = await this.venuesService.create(createVenueDto);
 
     return {
@@ -222,6 +242,18 @@ export class LevelsController {
       success: true,
       data: level,
       message: 'Level updated successfully',
+    };
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MANAGER)
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.venuesService.removeLevel(id);
+
+    return {
+      success: true,
+      message: 'Level deleted successfully',
     };
   }
 }

@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Delete,
   Param,
@@ -11,6 +12,9 @@ import {
 } from '@nestjs/common';
 import { UsersService, PaginatedUsers } from './users.service';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -38,6 +42,23 @@ export class UsersController {
   }
 
   /**
+   * Create a new user
+   * Only accessible by Managers and Super Admins
+   */
+  @Post()
+  @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
+  async create(
+    @Body() createUserDto: CreateUserDto,
+    @CurrentUser() currentUser: User,
+  ): Promise<Omit<User, 'password'>> {
+    // If Manager, force venueId to be their venue
+    if (currentUser.role === UserRole.MANAGER) {
+       createUserDto.venueId = currentUser.venueId || undefined;
+    }
+    return this.usersService.create(createUserDto);
+  }
+
+  /**
    * Get a single user by ID
    * Only accessible by Managers and Super Admins
    */
@@ -50,11 +71,22 @@ export class UsersController {
   }
 
   /**
+   * Update own profile
+   */
+  @Patch('profile')
+  async updateProfile(
+    @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() currentUser: User,
+  ): Promise<Omit<User, 'password'>> {
+    return this.usersService.updateProfile(currentUser.id, updateUserDto);
+  }
+
+  /**
    * Update a user's role
-   * Only accessible by Managers
+   * Only accessible by Managers and Super Admins
    */
   @Patch(':id/role')
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
   async updateRole(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRoleDto: UpdateRoleDto,
@@ -64,11 +96,25 @@ export class UsersController {
   }
 
   /**
+   * Update a user's status
+   * Only accessible by Managers and Super Admins
+   */
+  @Patch(':id/status')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
+  async updateStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateStatusDto: UpdateStatusDto,
+    @CurrentUser() currentUser: AuthUser,
+  ): Promise<Omit<User, 'password'>> {
+    return this.usersService.updateStatus(id, updateStatusDto.status, currentUser.userId);
+  }
+
+  /**
    * Delete a user
-   * Only accessible by Managers
+   * Only accessible by Managers and Super Admins
    */
   @Delete(':id')
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
   async delete(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() currentUser: AuthUser,

@@ -393,6 +393,16 @@ export class VenuesService {
     return this.levelsRepository.save(level);
   }
 
+  async removeLevel(id: string): Promise<void> {
+    const level = await this.levelsRepository.findOne({ where: { id } });
+
+    if (!level) {
+      throw new NotFoundException(`Level with ID ${id} not found`);
+    }
+
+    await this.levelsRepository.remove(level);
+  }
+
   // ==================== HELPERS ====================
 
   private parseLocation(location: unknown): {

@@ -17,6 +17,12 @@ export enum UserRole {
   ATTENDANT = 'attendant',
 }
 
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  LOCKED = 'locked',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -36,8 +42,24 @@ export class User {
   })
   role: UserRole;
 
+  @Column({
+    type: 'enum',
+    enum: UserStatus,
+    default: UserStatus.ACTIVE,
+  })
+  status: UserStatus;
+
   @Column({ name: 'venue_id', nullable: true })
   venueId: string | null;
+
+  @Column({ name: 'employee_id', nullable: true, type: 'varchar' })
+  employeeId: string | null;
+
+  @Column({ nullable: true, type: 'varchar' })
+  department: string | null;
+
+  @Column({ nullable: true, type: 'varchar' })
+  location: string | null;
 
   @ManyToOne(() => Venue, (venue) => venue.users)
   @JoinColumn({ name: 'venue_id' })
