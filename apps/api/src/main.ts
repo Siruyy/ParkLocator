@@ -12,9 +12,9 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
   
-  // Enable CORS for Angular admin
+  // Enable CORS for Angular admin and mobile app
   app.enableCors({
-    origin: ['http://localhost:4200', 'http://localhost:4201'],
+    origin: true, // Allow all origins for development
     credentials: true,
   });
 
@@ -30,7 +30,8 @@ async function bootstrap() {
   // API prefix
   app.setGlobalPrefix('api/v1');
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 API running on http://localhost:${process.env.PORT ?? 3000}/api/v1`);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port, '0.0.0.0'); // Listen on all interfaces for mobile device access
+  console.log(`🚀 API running on http://0.0.0.0:${port}/api/v1`);
 }
 void bootstrap();

@@ -10,7 +10,9 @@ class ApiClient {
     http.Client? httpClient,
     String? baseUrl,
   })  : _httpClient = httpClient ?? http.Client(),
-        _baseUrl = baseUrl ?? (Platform.isAndroid ? 'http://10.0.2.2:3000/api/v1' : 'http://localhost:3000/api/v1');
+        // For physical devices: use your laptop's IP on the network
+        // For emulators: 10.0.2.2 maps to host machine's localhost
+        _baseUrl = baseUrl ?? 'http://10.165.42.46:3000/api/v1';
 
   final http.Client _httpClient;
   final String _baseUrl;
