@@ -191,7 +191,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -412,8 +412,9 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                                 value: _startTime,
                                 items: _generateTimeSlots(),
                                 onChanged: (val) {
-                                  if (val != null)
+                                  if (val != null) {
                                     setState(() => _startTime = val);
+                                  }
                                 },
                                 isDark: isDark,
                                 textColor: textColor,
@@ -440,8 +441,9 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                                 value: _endTime,
                                 items: _generateTimeSlots(),
                                 onChanged: (val) {
-                                  if (val != null)
+                                  if (val != null) {
                                     setState(() => _endTime = val);
+                                  }
                                 },
                                 isDark: isDark,
                                 textColor: textColor,
@@ -467,7 +469,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.schedule, size: 20, color: primaryColor),
+                          const Icon(Icons.schedule, size: 20, color: primaryColor),
                           const SizedBox(width: 8),
                           Text(
                             'Total duration: ',
@@ -667,7 +669,6 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
     final firstDayOfMonth = DateTime(
       _focusedMonth.year,
       _focusedMonth.month,
-      1,
     );
     final firstWeekday = firstDayOfMonth.weekday; // 1 = Mon, 7 = Sun
 
@@ -730,7 +731,6 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
       } else if (isInRange) {
         decoration = BoxDecoration(
           color: primaryColor.withOpacity(0.2),
-          shape: BoxShape.rectangle,
         );
         itemTextColor = primaryColor;
       } else {

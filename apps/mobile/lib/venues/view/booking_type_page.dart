@@ -58,7 +58,7 @@ class BookingTypePage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
               // Venue Summary Card
@@ -206,7 +206,6 @@ class BookingTypePage extends StatelessWidget {
                     ? Colors.purple[900]!.withOpacity(0.3)
                     : Colors.purple[50]!,
                 isRecommended: false,
-                enabled: true,
                 onTap: () {
                   Navigator.of(context).push(
                     BookForLaterPage.route(venue: venue),

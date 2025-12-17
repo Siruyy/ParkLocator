@@ -16,17 +16,17 @@ class SignUpCubit extends Cubit<SignUpState> {
 
   /// Update email field
   void emailChanged(String value) {
-    emit(state.copyWith(email: value, errorMessage: null));
+    emit(state.copyWith(email: value));
   }
 
   /// Update password field
   void passwordChanged(String value) {
-    emit(state.copyWith(password: value, errorMessage: null));
+    emit(state.copyWith(password: value));
   }
 
   /// Update confirm password field
   void confirmPasswordChanged(String value) {
-    emit(state.copyWith(confirmPassword: value, errorMessage: null));
+    emit(state.copyWith(confirmPassword: value));
   }
 
   /// Toggle password visibility
@@ -60,7 +60,7 @@ class SignUpCubit extends Cubit<SignUpState> {
       return;
     }
 
-    emit(state.copyWith(status: SignUpStatus.loading, errorMessage: null));
+    emit(state.copyWith(status: SignUpStatus.loading));
 
     try {
       await _authRepository.register(

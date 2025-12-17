@@ -69,7 +69,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -368,12 +368,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
     required TextEditingController controller,
     required String label,
     required String placeholder,
-    IconData? icon,
-    required bool isDark,
-    required Color surfaceColor,
-    required Color textColor,
-    required Color subTextColor,
-    required Color primaryColor,
+    required bool isDark, required Color surfaceColor, required Color textColor, required Color subTextColor, required Color primaryColor, IconData? icon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

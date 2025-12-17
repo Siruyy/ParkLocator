@@ -53,7 +53,7 @@ class _SecurityPageState extends State<SecurityPage> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 24.0),
+          padding: const EdgeInsets.only(bottom: 24),
           child: Column(
             children: [
               // Hero Section
@@ -67,7 +67,7 @@ class _SecurityPageState extends State<SecurityPage> {
                         color: isDark ? Colors.grey[800] : Colors.blue[50],
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.shield,
                         size: 40,
                         color: primaryColor,
@@ -270,7 +270,7 @@ class _SecurityPageState extends State<SecurityPage> {
     required List<Widget> children,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         decoration: BoxDecoration(
           color: surfaceColor,
@@ -304,18 +304,13 @@ class _SecurityPageState extends State<SecurityPage> {
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
-    String? subtitle,
-    required VoidCallback onTap,
-    required bool isDark,
-    required Color textColor,
-    required Color subTextColor,
-    required Color primaryColor,
+    required VoidCallback onTap, required bool isDark, required Color textColor, required Color subTextColor, required Color primaryColor, String? subtitle,
     Widget? trailing,
   }) {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
@@ -384,7 +379,7 @@ class _SecurityPageState extends State<SecurityPage> {
     required Color primaryColor,
   }) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Container(

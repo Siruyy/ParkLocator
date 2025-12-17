@@ -18,13 +18,13 @@ class WalletPage extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 24.0),
+            padding: const EdgeInsets.only(bottom: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Top App Bar
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -59,10 +59,10 @@ class WalletPage extends StatelessWidget {
 
                 // Balance Card
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: primaryColor,
                       borderRadius: BorderRadius.circular(16),
@@ -285,7 +285,7 @@ class WalletPage extends StatelessWidget {
 
                 // Link E-Wallet Button
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Column(
                     children: [
                       ElevatedButton(
@@ -303,7 +303,7 @@ class WalletPage extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_circle, color: primaryColor),
+                            const Icon(Icons.add_circle, color: primaryColor),
                             const SizedBox(width: 8),
                             Text(
                               'Link E-Wallet (GCash / Maya)',
@@ -349,7 +349,7 @@ class WalletPage extends StatelessWidget {
 
                 // Transaction List
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
                       _buildTransactionItem(
@@ -446,7 +446,7 @@ class WalletPage extends StatelessWidget {
       child: Container(
         width: 48,
         height: 48,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.transparent,
         ),
@@ -604,7 +604,6 @@ class WalletPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
-              style: BorderStyle.solid, // Dashed border is harder in Flutter without package, solid is fine or use CustomPainter
               width: 2,
             ),
           ),

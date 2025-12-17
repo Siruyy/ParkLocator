@@ -29,15 +29,15 @@ class VenueConfiguration extends Equatable {
     }
 
     return VenueConfiguration(
-      reservationFee: parseDouble(json['reservationFee'], 50.0),
-      baseRate: parseDouble(json['baseRate'], 0.0),
+      reservationFee: parseDouble(json['reservationFee'], 50),
+      baseRate: parseDouble(json['baseRate'], 0),
       baseDuration: parseInt(json['baseDuration'], 1),
-      succeedingHourRate: parseDouble(json['succeedingHourRate'], 20.0),
-      overnightFlatRate: parseDouble(json['overnightFlatRate'], 300.0),
-      weekendSurcharge: parseDouble(json['weekendSurcharge'], 0.0),
+      succeedingHourRate: parseDouble(json['succeedingHourRate'], 20),
+      overnightFlatRate: parseDouble(json['overnightFlatRate'], 300),
+      weekendSurcharge: parseDouble(json['weekendSurcharge'], 0),
       isWeekendSurchargeActive:
           json['isWeekendSurchargeActive'] as bool? ?? false,
-      motorcycleFlatRate: parseDouble(json['motorcycleFlatRate'], 30.0),
+      motorcycleFlatRate: parseDouble(json['motorcycleFlatRate'], 30),
       isMotorcycleFlatRateActive:
           json['isMotorcycleFlatRateActive'] as bool? ?? false,
     );

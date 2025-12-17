@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/auth/bloc/auth_bloc.dart';
-import 'edit_profile_page.dart';
-import 'my_vehicles_page.dart';
-import 'security_page.dart';
+import 'package:mobile/profile/view/edit_profile_page.dart';
+import 'package:mobile/profile/view/my_vehicles_page.dart';
+import 'package:mobile/profile/view/security_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -49,7 +49,7 @@ class ProfilePage extends StatelessWidget {
           ),
           body: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 40.0),
+              padding: const EdgeInsets.only(bottom: 40),
               child: Column(
                 children: [
                   // Profile Header
@@ -209,7 +209,7 @@ class ProfilePage extends StatelessWidget {
   String _extractNameFromEmail(String email) {
     final localPart = email.split('@').first;
     // Convert dots and underscores to spaces and capitalize each word
-    final words = localPart.split(RegExp(r'[._]'));
+    final words = localPart.split(RegExp('[._]'));
     return words.map((word) {
       if (word.isEmpty) return '';
       return word[0].toUpperCase() + word.substring(1).toLowerCase();
@@ -241,7 +241,7 @@ class ProfilePage extends StatelessWidget {
     List<Widget> children,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         decoration: BoxDecoration(
           color: surfaceColor,
@@ -278,7 +278,7 @@ class ProfilePage extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
@@ -336,7 +336,7 @@ class ProfilePage extends StatelessWidget {
     required Color primaryColor,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           Container(
@@ -402,7 +402,7 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       child: Column(
         children: [
           Stack(
@@ -524,7 +524,7 @@ class _LogoutSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           SizedBox(

@@ -45,27 +45,27 @@ class LoginView extends StatelessWidget {
               );
           }
         },
-        child: SafeArea(
+        child: const SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
+                SizedBox(height: 60),
                 // Logo and Title
-                const _Header(),
-                const SizedBox(height: 48),
+                _Header(),
+                SizedBox(height: 48),
                 // Email Field
-                const _EmailInput(),
-                const SizedBox(height: 16),
+                _EmailInput(),
+                SizedBox(height: 16),
                 // Password Field
-                const _PasswordInput(),
-                const SizedBox(height: 24),
+                _PasswordInput(),
+                SizedBox(height: 24),
                 // Login Button
-                const _LoginButton(),
-                const SizedBox(height: 24),
+                _LoginButton(),
+                SizedBox(height: 24),
                 // Sign Up Link
-                const _SignUpLink(),
+                _SignUpLink(),
               ],
             ),
           ),
@@ -249,7 +249,7 @@ class _SignUpLink extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
+        const Text(
           "Don't have an account? ",
           style: TextStyle(color: AppColors.textSecondary),
         ),

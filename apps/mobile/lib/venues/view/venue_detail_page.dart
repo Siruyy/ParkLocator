@@ -282,7 +282,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   colors: [
                     const Color(0xFFF6F7F8),
                     const Color(0xFFF6F7F8).withValues(alpha: 0.8),
-                    const Color(0xFFF6F7F8).withValues(alpha: 0.0),
+                    const Color(0xFFF6F7F8).withValues(alpha: 0),
                   ],
                 ),
               ),
@@ -310,7 +310,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            letterSpacing: 1.0,
+                            letterSpacing: 1,
                             color: Colors.white70,
                           ),
                         ),

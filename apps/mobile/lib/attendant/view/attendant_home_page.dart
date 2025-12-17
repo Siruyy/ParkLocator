@@ -20,10 +20,10 @@ class _AttendantHomePageState extends State<AttendantHomePage> {
   bool _isScanning = false;
   bool _isLoading = false;
 
-  void _onScan(BarcodeCapture capture) async {
+  Future<void> _onScan(BarcodeCapture capture) async {
     if (_isLoading) return;
     
-    final List<Barcode> barcodes = capture.barcodes;
+    final barcodes = capture.barcodes;
     if (barcodes.isEmpty) return;
     
     final qrCode = barcodes.first.rawValue;

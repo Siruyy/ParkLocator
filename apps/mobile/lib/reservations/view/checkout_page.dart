@@ -95,8 +95,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
       'MMM d, yyyy • h:mm a',
     ).format(widget.startDate ?? DateTime.now());
 
-    String durationStr = '1 hour';
-    double totalPrice = 50.00; // Default reservation fee
+    var durationStr = '1 hour';
+    var totalPrice = 50; // Default reservation fee
 
     if (widget.startDate != null && widget.endDate != null) {
       final duration = widget.endDate!.difference(widget.startDate!);
@@ -376,8 +376,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                 color: Colors.white,
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, color: Colors.white),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward, color: Colors.white),
                           ],
                         ),
                 ),

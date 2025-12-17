@@ -42,9 +42,7 @@ class _ReservationConfirmationPageState
       _calculateTimeLeft();
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) {
-          setState(() {
-            _calculateTimeLeft();
-          });
+          setState(_calculateTimeLeft);
         }
       });
     }
@@ -147,7 +145,7 @@ class _ReservationConfirmationPageState
     final isFuture = reservation.isFutureReservation;
 
     // Format dates
-    String dateRange = '';
+    var dateRange = '';
     if (startAt != null && endAt != null) {
       final startDate =
           '${startAt.month}/${startAt.day}/${startAt.year}';
@@ -389,7 +387,6 @@ class _ReservationConfirmationPageState
                             child: QrImageView(
                               data: widget.reservation.qrCode ??
                                   widget.reservation.id,
-                              version: QrVersions.auto,
                               size: 220,
                             ),
                           ),

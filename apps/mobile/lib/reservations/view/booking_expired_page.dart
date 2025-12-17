@@ -4,7 +4,7 @@ import 'package:mobile/api/api.dart';
 import 'package:mobile/venues/view/venue_search_page.dart';
 
 class BookingExpiredPage extends StatelessWidget {
-  const BookingExpiredPage({super.key, required this.reservation});
+  const BookingExpiredPage({required this.reservation, super.key});
 
   final Reservation reservation;
 

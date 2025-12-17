@@ -5,24 +5,24 @@ class FilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return const SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          const _FilterChip(
+          _FilterChip(
             label: 'Nearest',
             icon: Icons.near_me,
             isSelected: true,
           ),
-          const SizedBox(width: 8),
-          const _FilterChip(label: 'Cheapest'),
-          const SizedBox(width: 8),
-          const _FilterChip(label: 'Covered'),
-          const SizedBox(width: 8),
-          const _FilterChip(label: '24/7'),
-          const SizedBox(width: 8),
-          const _FilterChip(label: 'Valet'),
+          SizedBox(width: 8),
+          _FilterChip(label: 'Cheapest'),
+          SizedBox(width: 8),
+          _FilterChip(label: 'Covered'),
+          SizedBox(width: 8),
+          _FilterChip(label: '24/7'),
+          SizedBox(width: 8),
+          _FilterChip(label: 'Valet'),
         ],
       ),
     );

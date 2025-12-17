@@ -195,22 +195,18 @@ class NotificationsPage extends StatelessWidget {
         iconData = Icons.check_circle;
         color = Colors.green;
         bgColor = Colors.green.withOpacity(0.1);
-        break;
       case _NotificationType.warning:
         iconData = Icons.warning_amber_rounded;
         color = Colors.orange;
         bgColor = Colors.orange.withOpacity(0.1);
-        break;
       case _NotificationType.error:
         iconData = Icons.error_outline;
         color = Colors.red;
         bgColor = Colors.red.withOpacity(0.1);
-        break;
       case _NotificationType.info:
         iconData = Icons.notifications;
         color = const Color(0xFF137FEC);
         bgColor = const Color(0xFF137FEC).withOpacity(0.1);
-        break;
     }
 
     return Container(
@@ -232,11 +228,6 @@ class NotificationsPage extends StatelessWidget {
 enum _NotificationType { success, info, warning, error }
 
 class _NotificationItem {
-  final String title;
-  final String message;
-  final String time;
-  final bool isUnread;
-  final _NotificationType type;
 
   _NotificationItem({
     required this.title,
@@ -245,4 +236,9 @@ class _NotificationItem {
     required this.isUnread,
     required this.type,
   });
+  final String title;
+  final String message;
+  final String time;
+  final bool isUnread;
+  final _NotificationType type;
 }

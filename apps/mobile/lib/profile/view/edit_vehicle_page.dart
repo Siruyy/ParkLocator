@@ -3,12 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class EditVehiclePage extends StatefulWidget {
   const EditVehiclePage({
-    super.key,
-    required this.make,
-    required this.model,
-    required this.plateNumber,
-    required this.color,
-    required this.isDefault,
+    required this.make, required this.model, required this.plateNumber, required this.color, required this.isDefault, super.key,
   });
 
   final String make;
@@ -105,7 +100,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

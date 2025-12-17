@@ -53,24 +53,24 @@ class SignUpView extends StatelessWidget {
               );
           }
         },
-        child: SafeArea(
+        child: const SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
-                const _Header(),
-                const SizedBox(height: 40),
-                const _EmailInput(),
-                const SizedBox(height: 16),
-                const _PasswordInput(),
-                const SizedBox(height: 16),
-                const _ConfirmPasswordInput(),
-                const SizedBox(height: 24),
-                const _SignUpButton(),
-                const SizedBox(height: 24),
-                const _LoginLink(),
+                SizedBox(height: 20),
+                _Header(),
+                SizedBox(height: 40),
+                _EmailInput(),
+                SizedBox(height: 16),
+                _PasswordInput(),
+                SizedBox(height: 16),
+                _ConfirmPasswordInput(),
+                SizedBox(height: 24),
+                _SignUpButton(),
+                SizedBox(height: 24),
+                _LoginLink(),
               ],
             ),
           ),
@@ -276,7 +276,7 @@ class _LoginLink extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
+        const Text(
           'Already have an account? ',
           style: TextStyle(color: AppColors.textSecondary),
         ),

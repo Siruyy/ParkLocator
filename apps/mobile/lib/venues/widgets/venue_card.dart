@@ -177,15 +177,12 @@ class _StatusBadge extends StatelessWidget {
       case VenueStatus.available:
         color = Colors.green;
         text = 'Available';
-        break;
       case VenueStatus.fillingFast:
         color = Colors.orange;
         text = 'Filling Fast';
-        break;
       case VenueStatus.full:
         color = Colors.red;
         text = 'Full';
-        break;
     }
 
     return Container(
@@ -235,15 +232,12 @@ class _SpotsLeftBadge extends StatelessWidget {
       case VenueStatus.available:
         color = Colors.green;
         bgColor = Colors.green.withValues(alpha: 0.1);
-        break;
       case VenueStatus.fillingFast:
         color = Colors.orange;
         bgColor = Colors.orange.withValues(alpha: 0.1);
-        break;
       case VenueStatus.full:
         color = Colors.red;
         bgColor = Colors.red.withValues(alpha: 0.1);
-        break;
     }
 
     return Container(

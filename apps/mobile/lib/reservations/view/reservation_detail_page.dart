@@ -40,9 +40,7 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
       _calculateTimeLeft();
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) {
-          setState(() {
-            _calculateTimeLeft();
-          });
+          setState(_calculateTimeLeft);
         }
       });
     }
@@ -145,7 +143,7 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
     final isFuture = reservation.isFutureReservation;
 
     // Format dates
-    String dateRange = '';
+    var dateRange = '';
     if (startAt != null && endAt != null) {
       final startDate = '${startAt.month}/${startAt.day}/${startAt.year}';
       final endDate = '${endAt.month}/${endAt.day}/${endAt.year}';
@@ -325,7 +323,6 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
                             child: QrImageView(
                               data: widget.reservation.qrCode ??
                                   widget.reservation.id,
-                              version: QrVersions.auto,
                               size: 220,
                             ),
                           ),

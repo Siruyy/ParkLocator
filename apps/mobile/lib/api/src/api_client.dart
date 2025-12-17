@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:mobile/api/src/api_exception.dart';
 import 'package:mobile/api/src/models/models.dart';
@@ -120,7 +119,7 @@ class ApiClient {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final List<dynamic> jsonList = json['data'] as List<dynamic>;
+      final jsonList = json['data'] as List<dynamic>;
       return jsonList.map((json) => Venue.fromJson(json as Map<String, dynamic>)).toList();
     } else {
       throw ApiException(
@@ -178,7 +177,7 @@ class ApiClient {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final List<dynamic> jsonList = json['data'] as List<dynamic>;
+      final jsonList = json['data'] as List<dynamic>;
       return jsonList.map((json) => Level.fromJson(json as Map<String, dynamic>)).toList();
     } else {
       throw ApiException(
@@ -268,7 +267,7 @@ class ApiClient {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final List<dynamic> jsonList = json['data'] as List<dynamic>;
+      final jsonList = json['data'] as List<dynamic>;
       return jsonList
           .map((json) => Reservation.fromJson(json as Map<String, dynamic>))
           .toList();
@@ -289,7 +288,7 @@ class ApiClient {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final List<dynamic> jsonList = json['data'] as List<dynamic>;
+      final jsonList = json['data'] as List<dynamic>;
       return jsonList
           .map((json) => Reservation.fromJson(json as Map<String, dynamic>))
           .toList();

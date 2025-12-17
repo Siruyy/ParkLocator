@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'add_vehicle_page.dart';
-import 'edit_vehicle_page.dart';
+import 'package:mobile/profile/view/add_vehicle_page.dart';
+import 'package:mobile/profile/view/edit_vehicle_page.dart';
 
 class MyVehiclesPage extends StatelessWidget {
   const MyVehiclesPage({super.key});
@@ -47,7 +47,7 @@ class MyVehiclesPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -144,7 +144,7 @@ class MyVehiclesPage extends StatelessWidget {
               
               // Footer Text
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
                   'Ensure your plate numbers are accurate to avoid issues with parking enforcement. You can manage up to 5 vehicles.',
                   textAlign: TextAlign.center,
@@ -209,7 +209,7 @@ class _VehicleCard extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

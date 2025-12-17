@@ -31,7 +31,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String _extractNameFromEmail(String email) {
     if (email.isEmpty) return '';
     final localPart = email.split('@').first;
-    final words = localPart.split(RegExp(r'[._]'));
+    final words = localPart.split(RegExp('[._]'));
     return words.map((word) {
       if (word.isEmpty) return '';
       return word[0].toUpperCase() + word.substring(1).toLowerCase();
@@ -86,7 +86,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     const SizedBox(height: 16),

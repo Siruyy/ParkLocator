@@ -40,7 +40,7 @@ class Venue extends Equatable {
             json['configuration'] as Map<String, dynamic>)
         : null;
 
-    int? availableSpots = parseInt(json['availableSpots']);
+    var availableSpots = parseInt(json['availableSpots']);
 
     // If availableSpots is missing (detail view) and we have levels, calculate it
     if (availableSpots == null && levels != null) {

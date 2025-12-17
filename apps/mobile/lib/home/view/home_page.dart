@@ -39,9 +39,7 @@ class _HomePageState extends State<HomePage> {
     _fetchData();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted && _activeReservation != null) {
-        setState(() {
-          _calculateTimeLeft();
-        });
+        setState(_calculateTimeLeft);
       }
     });
   }
@@ -177,7 +175,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Wrap(
                       children: <Widget>[
-                        for (var map in availableMaps)
+                        for (final map in availableMaps)
                           ListTile(
                             onTap: () {
                               Navigator.pop(context);
@@ -190,8 +188,8 @@ class _HomePageState extends State<HomePage> {
                             title: Text(map.mapName),
                             leading: SvgPicture.asset(
                               map.icon,
-                              height: 30.0,
-                              width: 30.0,
+                              height: 30,
+                              width: 30,
                             ),
                           ),
                       ],
@@ -280,7 +278,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      floatingActionButton: null,
     );
   }
 
@@ -577,7 +574,6 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        flex: 1,
                         child: OutlinedButton(
                           onPressed: () => _onMapPressed(reservation),
                           style: OutlinedButton.styleFrom(
@@ -1004,7 +1000,7 @@ class _HomePageState extends State<HomePage> {
     final endAt = reservation.endAt;
 
     // Format dates
-    String dateRange = '';
+    var dateRange = '';
     if (startAt != null && endAt != null) {
       final startDate = DateFormat('MMM d, yyyy').format(startAt);
       final endDate = DateFormat('MMM d, yyyy').format(endAt);
@@ -1166,7 +1162,6 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 24),
               QrImageView(
                 data: reservation.qrCode ?? reservation.id,
-                version: QrVersions.auto,
                 size: 200,
               ),
               const SizedBox(height: 24),

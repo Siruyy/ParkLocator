@@ -84,7 +84,7 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
                       children: [
-                        if (widget.isRoot == false && Navigator.canPop(context))
+                        if (!widget.isRoot && Navigator.canPop(context))
                           Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: IconButton(
@@ -169,9 +169,9 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                   else if (_isMapView)
                     FlutterMap(
                       mapController: _mapController,
-                      options: MapOptions(
-                        initialCenter: const LatLng(_initialLat, _initialLng),
-                        initialZoom: 14.0,
+                      options: const MapOptions(
+                        initialCenter: LatLng(_initialLat, _initialLng),
+                        initialZoom: 14,
                       ),
                       children: [
                         TileLayer(
@@ -262,7 +262,7 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF94A3B8), // slate-400
-                                  letterSpacing: 1.0,
+                                  letterSpacing: 1,
                                 ),
                               ),
                             );
