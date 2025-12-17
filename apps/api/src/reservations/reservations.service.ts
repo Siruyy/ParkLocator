@@ -11,12 +11,11 @@ import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Spot, SpotStatus } from '../venues/entities/spot.entity';
 import { Level } from '../venues/entities/level.entity';
 import { Venue } from '../venues/entities/venue.entity';
+import { VenueConfiguration } from '../venues/entities/venue-configuration.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { EventsGateway } from '../events/events.gateway';
 
 import { User, UserRole } from '../users/entities/user.entity';
-
-const PRICE_PER_HOUR = 40; // Base price per hour in PHP
-const ARRIVAL_WINDOW_MINUTES = 60; // 1 hour arrival window
 
 @Injectable()
 export class ReservationsService {
@@ -29,7 +28,10 @@ export class ReservationsService {
     private levelsRepository: Repository<Level>,
     @InjectRepository(Venue)
     private venuesRepository: Repository<Venue>,
+    @InjectRepository(VenueConfiguration)
+    private venueConfigurationRepository: Repository<VenueConfiguration>,
     private dataSource: DataSource,
+    private eventsGateway: EventsGateway,
   ) {}
 
   /**
@@ -54,22 +56,6 @@ export class ReservationsService {
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
-      // Calculate start and end times
-      let reservationStartAt: Date;
-      let reservationEndAt: Date;
-
-      if (startAt && endAt) {
-        // "Book for Later" - use provided dates
-        reservationStartAt = new Date(startAt as string);
-        reservationEndAt = new Date(endAt as string);
-      } else {
-        // "Book Now" - start immediately
-        reservationStartAt = new Date();
-        reservationEndAt = new Date(
-          reservationStartAt.getTime() + durationHours * 60 * 60 * 1000,
-        );
-      }
-
       // Lock the spot row for update to prevent concurrent reservations
       const spot = await queryRunner.manager.findOne(Spot, {
         where: { id: spotId },
@@ -85,6 +71,65 @@ export class ReservationsService {
           'Spot does not belong to the specified level',
         );
       }
+
+      // Verify venue and level exist
+      const venue = await queryRunner.manager.findOne(Venue, {
+        where: { id: venueId },
+        relations: ['configuration'],
+      });
+
+      if (!venue) {
+        throw new NotFoundException(`Venue with ID ${venueId} not found`);
+      }
+
+      const level = await queryRunner.manager.findOne(Level, {
+        where: { id: levelId },
+      });
+
+      if (!level || level.venueId !== venueId) {
+        throw new BadRequestException(
+          'Level does not belong to the specified venue',
+        );
+      }
+
+      // Fetch venue configuration first (needed for baseDuration calculation)
+      let venueConfig = venue.configuration;
+
+      if (!venueConfig) {
+        // Create default configuration in memory if it doesn't exist
+        venueConfig = this.venueConfigurationRepository.create({
+          venueId: venueId,
+          reservationFee: 50, // Default reservation fee
+          baseDuration: 2, // Default 2 hours base duration
+          baseRate: 0,
+          succeedingHourRate: 20,
+          overnightFlatRate: 300,
+          motorcycleFlatRate: 30,
+          weekendSurcharge: 0,
+        });
+      }
+
+      // Get base duration from config (default 2 hours if not set)
+      const baseDurationHours = venueConfig.baseDuration || 2;
+
+      // Calculate reservation times
+      // End time is always Start + Base Duration
+      // After base duration, succeeding hour rate applies (tracked by sensors, paid on exit)
+      let reservationStartAt: Date;
+      let reservationEndAt: Date;
+
+      if (startAt) {
+        // "Book for Later" - use provided start date
+        reservationStartAt = new Date(startAt as string);
+      } else {
+        // "Book Now" - start immediately
+        reservationStartAt = new Date();
+      }
+      
+      // End time = Start + Base Duration (succeeding hours tracked separately)
+      reservationEndAt = new Date(
+        reservationStartAt.getTime() + baseDurationHours * 60 * 60 * 1000,
+      );
 
       // Check for overlapping reservations on this spot for the requested time range
       const overlappingReservation = await queryRunner.manager
@@ -110,34 +155,15 @@ export class ReservationsService {
         );
       }
 
-      // Verify venue and level exist
-      const venue = await queryRunner.manager.findOne(Venue, {
-        where: { id: venueId },
-      });
+      // Calculate price - For reservations, only charge the reservation fee.
+      // The actual parking fees (baseRate, succeedingHourRate) will be calculated
+      // by sensors when the user checks out after the base duration.
+      const amount = Number(venueConfig.reservationFee) || 50;
 
-      if (!venue) {
-        throw new NotFoundException(`Venue with ID ${venueId} not found`);
-      }
-
-      const level = await queryRunner.manager.findOne(Level, {
-        where: { id: levelId },
-      });
-
-      if (!level || level.venueId !== venueId) {
-        throw new BadRequestException(
-          'Level does not belong to the specified venue',
-        );
-      }
-
-      // Calculate price based on actual duration
-      const actualDurationHours =
-        (reservationEndAt.getTime() - reservationStartAt.getTime()) /
-        (1000 * 60 * 60);
-      const amount = PRICE_PER_HOUR * actualDurationHours;
-
-      // Calculate arrival window expiry (for "Book Now", expires in 1 hour; for "Book for Later", expires at start time + window)
+      // Calculate arrival window expiry (time user has to arrive before reservation expires)
+      const arrivalWindow = venueConfig.maxReservationHold || 45;
       const expiresAt = new Date(
-        reservationStartAt.getTime() + ARRIVAL_WINDOW_MINUTES * 60 * 1000,
+        reservationStartAt.getTime() + arrivalWindow * 60 * 1000,
       );
 
       // Generate unique QR code
@@ -151,10 +177,10 @@ export class ReservationsService {
         spotId,
         status: ReservationStatus.CONFIRMED, // Skip pending for now, assume payment is instant
         amount,
-        durationHours: Math.ceil(actualDurationHours),
+        durationHours: baseDurationHours,
         startAt: reservationStartAt,
         endAt: reservationEndAt,
-        arrivalWindowMinutes: ARRIVAL_WINDOW_MINUTES,
+        arrivalWindowMinutes: arrivalWindow,
         expiresAt,
         qrCode,
       });
@@ -173,6 +199,12 @@ export class ReservationsService {
         // Update level available spots count only for immediate bookings
         level.availableSpots = Math.max(0, level.availableSpots - 1);
         await queryRunner.manager.save(level);
+
+        // Emit real-time update
+        this.eventsGateway.emitLevelUpdate(level.id, {
+          availableSpots: level.availableSpots,
+          totalCapacity: level.totalCapacity,
+        });
       }
 
       await queryRunner.commitTransaction();
@@ -314,6 +346,12 @@ export class ReservationsService {
       if (level) {
         level.availableSpots += 1;
         await queryRunner.manager.save(level);
+
+        // Emit real-time update
+        this.eventsGateway.emitLevelUpdate(level.id, {
+          availableSpots: level.availableSpots,
+          totalCapacity: level.totalCapacity,
+        });
       }
 
       await queryRunner.commitTransaction();
@@ -400,6 +438,12 @@ export class ReservationsService {
       if (level) {
         level.availableSpots += 1;
         await queryRunner.manager.save(level);
+
+        // Emit real-time update
+        this.eventsGateway.emitLevelUpdate(level.id, {
+          availableSpots: level.availableSpots,
+          totalCapacity: level.totalCapacity,
+        });
       }
 
       await queryRunner.commitTransaction();
@@ -469,5 +513,61 @@ export class ReservationsService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  private calculateTotalPrice(
+    config: VenueConfiguration,
+    durationHours: number,
+    vehicleType: string,
+    startDate: Date,
+  ): number {
+    // Apply Entry Grace Period (deduct from duration)
+    const gracePeriodHours = config.entryGracePeriod / 60;
+    const billableDuration = Math.max(0, durationHours - gracePeriodHours);
+
+    if (billableDuration === 0) {
+      return 0;
+    }
+
+    // Check for multi-day booking (over 24 hours)
+    if (billableDuration > 24) {
+      const days = Math.ceil(billableDuration / 24);
+      return days * Number(config.overnightFlatRate);
+    }
+
+    // Single day booking
+    
+    // Check for motorcycle flat rate
+    if (
+      vehicleType === 'Motorcycle' &&
+      config.isMotorcycleFlatRateActive
+    ) {
+      return Number(config.motorcycleFlatRate);
+    }
+
+    // Standard Rate Calculation
+    let price = Number(config.baseRate);
+    const baseDuration = config.baseDuration || 1; // Default to 1 hour if not set
+    
+    if (billableDuration > baseDuration) {
+      const succeedingHours = Math.ceil(billableDuration - baseDuration);
+      price += succeedingHours * Number(config.succeedingHourRate);
+    }
+
+    // Weekend Surcharge
+    if (config.isWeekendSurchargeActive) {
+      const day = startDate.getDay();
+      // 0 is Sunday, 6 is Saturday
+      if (day === 0 || day === 6) {
+        price += Number(config.weekendSurcharge);
+      }
+    }
+
+    // Add Reservation Fee
+    if (config.reservationFee) {
+      price += Number(config.reservationFee);
+    }
+
+    return price;
   }
 }

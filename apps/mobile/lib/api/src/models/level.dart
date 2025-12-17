@@ -8,6 +8,8 @@ class Level extends Equatable {
     required this.totalCapacity,
     required this.availableSpots,
     this.isActive = true,
+    this.isCovered = false,
+    this.vehicleTypes = const ['Car'],
     this.spots,
   });
 
@@ -18,6 +20,8 @@ class Level extends Equatable {
       totalCapacity: json['totalCapacity'] as int? ?? 0,
       availableSpots: json['availableSpots'] as int? ?? 0,
       isActive: json['isActive'] as bool? ?? true,
+      isCovered: json['isCovered'] as bool? ?? false,
+      vehicleTypes: (json['vehicleTypes'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const ['Car'],
       spots: (json['spots'] as List<dynamic>?)
           ?.map((e) => Spot.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -29,8 +33,10 @@ class Level extends Equatable {
   final int totalCapacity;
   final int availableSpots;
   final bool isActive;
+  final bool isCovered;
+  final List<String> vehicleTypes;
   final List<Spot>? spots;
 
   @override
-  List<Object?> get props => [id, name, totalCapacity, availableSpots, isActive, spots];
+  List<Object?> get props => [id, name, totalCapacity, availableSpots, isActive, isCovered, vehicleTypes, spots];
 }

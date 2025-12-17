@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { Venue, Level, Spot, SpotStatus } from './entities';
+import { Venue, Level, Spot, SpotStatus, VenueConfiguration } from './entities';
 import {
   CreateVenueDto,
   UpdateVenueDto,
@@ -13,6 +13,7 @@ import {
   CreateLevelDto,
   UpdateLevelDto,
   LevelAvailabilityDto,
+  UpdateVenueConfigurationDto,
 } from './dto';
 import {
   Reservation,
@@ -30,6 +31,8 @@ export class VenuesService {
     private levelsRepository: Repository<Level>,
     @InjectRepository(Spot)
     private spotsRepository: Repository<Spot>,
+    @InjectRepository(VenueConfiguration)
+    private venueConfigurationRepository: Repository<VenueConfiguration>,
     private dataSource: DataSource,
   ) {}
 
@@ -76,7 +79,7 @@ export class VenuesService {
   async findOne(id: string): Promise<Venue> {
     const venue = await this.venuesRepository.findOne({
       where: { id },
-      relations: ['levels'],
+      relations: ['levels', 'configuration'],
     });
 
     if (!venue) {
@@ -192,6 +195,7 @@ export class VenuesService {
           name: level.name,
           totalCapacity: level.totalCapacity,
           availableSpots: level.availableSpots,
+          isCovered: level.isCovered,
           occupancyPercent:
             level.totalCapacity > 0
               ? Math.round(
@@ -236,6 +240,7 @@ export class VenuesService {
         name: level.name,
         totalCapacity: level.totalCapacity,
         availableSpots,
+        isCovered: level.isCovered,
         occupancyPercent:
           level.totalCapacity > 0
             ? Math.round(
@@ -257,27 +262,69 @@ export class VenuesService {
   ): Promise<Level> {
     const venue = await this.findOne(venueId);
 
+    // Check if level number already exists for this venue
+    const existingLevel = await this.levelsRepository.findOne({
+      where: { venueId: venue.id, levelNumber: createLevelDto.levelNumber },
+    });
+
+    if (existingLevel) {
+      throw new BadRequestException(
+        `Level number ${createLevelDto.levelNumber} already exists for this venue`,
+      );
+    }
+
     const level = this.levelsRepository.create({
       ...createLevelDto,
       venueId: venue.id,
       availableSpots: createLevelDto.totalCapacity, // Initially all spots are available
+      isCovered: createLevelDto.isCovered ?? false,
     });
 
-    const savedLevel = await this.levelsRepository.save(level);
+    try {
+      const savedLevel = await this.levelsRepository.save(level);
 
-    // Create individual spots for the level
-    const spots: Partial<Spot>[] = [];
-    for (let i = 1; i <= createLevelDto.totalCapacity; i++) {
-      spots.push({
-        spotNumber: `${level.levelNumber}-${i.toString().padStart(3, '0')}`,
-        levelId: savedLevel.id,
-        status: SpotStatus.AVAILABLE,
-      });
+      // Create individual spots for the level
+      const spots: Partial<Spot>[] = [];
+      
+      if (createLevelDto.sections && createLevelDto.sections.length > 0) {
+        // Create spots based on sections
+        for (const section of createLevelDto.sections) {
+          for (let i = 1; i <= section.totalCapacity; i++) {
+            spots.push({
+              spotNumber: `${section.name}-${i.toString().padStart(3, '0')}`,
+              levelId: savedLevel.id,
+              status: SpotStatus.AVAILABLE,
+              section: section.name,
+              vehicleType: section.vehicleType || 'Car',
+            });
+          }
+        }
+      } else {
+        // Default behavior: create spots sequentially
+        // Use the first vehicle type from the level, or default to 'Car'
+        const defaultVehicleType = (createLevelDto.vehicleTypes && createLevelDto.vehicleTypes.length > 0) 
+          ? createLevelDto.vehicleTypes[0] 
+          : 'Car';
+
+        for (let i = 1; i <= createLevelDto.totalCapacity; i++) {
+          spots.push({
+            spotNumber: `${level.levelNumber}-${i.toString().padStart(3, '0')}`,
+            levelId: savedLevel.id,
+            status: SpotStatus.AVAILABLE,
+            vehicleType: defaultVehicleType,
+          });
+        }
+      }
+
+      await this.spotsRepository.save(spots);
+
+      return savedLevel;
+    } catch (error) {
+      // If spots creation fails, we should probably delete the level to maintain consistency
+      // But for now, let's just log and rethrow
+      console.error('Error creating level:', error);
+      throw new BadRequestException('Failed to create level: ' + error.message);
     }
-
-    await this.spotsRepository.save(spots);
-
-    return savedLevel;
   }
 
   async findLevelsByVenue(venueId: string): Promise<Level[]> {
@@ -432,5 +479,39 @@ export class VenuesService {
     }
     // Default fallback
     return { latitude: 0, longitude: 0 };
+  }
+
+  // ==================== CONFIGURATION OPERATIONS ====================
+
+  async getVenueConfiguration(venueId: string): Promise<VenueConfiguration> {
+    const venue = await this.venuesRepository.findOne({
+      where: { id: venueId },
+      relations: ['configuration'],
+    });
+
+    if (!venue) {
+      throw new NotFoundException(`Venue with ID ${venueId} not found`);
+    }
+
+    if (!venue.configuration) {
+      // Create default configuration if it doesn't exist
+      const config = this.venueConfigurationRepository.create({
+        venue: venue,
+      });
+      return this.venueConfigurationRepository.save(config);
+    }
+
+    return venue.configuration;
+  }
+
+  async updateVenueConfiguration(
+    venueId: string,
+    updateVenueConfigurationDto: UpdateVenueConfigurationDto,
+  ): Promise<VenueConfiguration> {
+    const config = await this.getVenueConfiguration(venueId);
+
+    Object.assign(config, updateVenueConfigurationDto);
+
+    return this.venueConfigurationRepository.save(config);
   }
 }

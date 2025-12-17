@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:mobile/api/src/models/level.dart';
+import 'package:mobile/api/src/models/venue_configuration.dart';
 
 class Venue extends Equatable {
   const Venue({
@@ -12,14 +13,34 @@ class Venue extends Equatable {
     this.levels,
     this.latitude,
     this.longitude,
+    this.configuration,
   });
 
   factory Venue.fromJson(Map<String, dynamic> json) {
+    double? parseDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
+    int? parseInt(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toInt();
+      if (value is String) return int.tryParse(value);
+      return null;
+    }
+
     final levels = (json['levels'] as List<dynamic>?)
         ?.map((e) => Level.fromJson(e as Map<String, dynamic>))
         .toList();
 
-    int? availableSpots = (json['availableSpots'] as num?)?.toInt();
+    final configuration = json['configuration'] != null
+        ? VenueConfiguration.fromJson(
+            json['configuration'] as Map<String, dynamic>)
+        : null;
+
+    int? availableSpots = parseInt(json['availableSpots']);
 
     // If availableSpots is missing (detail view) and we have levels, calculate it
     if (availableSpots == null && levels != null) {
@@ -33,8 +54,8 @@ class Venue extends Equatable {
     if (json['location'] != null && json['location'] is Map) {
       final coords = json['location']['coordinates'] as List;
       if (coords.length >= 2) {
-        longitude = (coords[0] as num).toDouble();
-        latitude = (coords[1] as num).toDouble();
+        longitude = parseDouble(coords[0]);
+        latitude = parseDouble(coords[1]);
       }
     }
 
@@ -43,11 +64,12 @@ class Venue extends Equatable {
       name: json['name'] as String,
       address: json['address'] as String? ?? '',
       imageUrl: json['imageUrl'] as String?,
-      distance: (json['distance'] as num?)?.toDouble(),
+      distance: parseDouble(json['distance']),
       availableSpots: availableSpots ?? 0,
       levels: levels,
       latitude: latitude,
       longitude: longitude,
+      configuration: configuration,
     );
   }
 
@@ -60,6 +82,7 @@ class Venue extends Equatable {
   final List<Level>? levels;
   final double? latitude;
   final double? longitude;
+  final VenueConfiguration? configuration;
 
   @override
   List<Object?> get props => [
@@ -72,5 +95,6 @@ class Venue extends Equatable {
         levels,
         latitude,
         longitude,
+        configuration,
       ];
 }

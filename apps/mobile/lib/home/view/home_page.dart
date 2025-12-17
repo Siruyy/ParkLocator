@@ -62,16 +62,19 @@ class _HomePageState extends State<HomePage> {
 
       // Filter out active reservations that are actually expired by time
       final now = DateTime.now();
-      final trulyActive =
-          active.where((r) => r.expiresAt.isAfter(now)).toList();
-      final expiredActive =
-          active.where((r) => r.expiresAt.isBefore(now)).toList();
+      final trulyActive = active
+          .where((r) => r.expiresAt.isAfter(now))
+          .toList();
+      final expiredActive = active
+          .where((r) => r.expiresAt.isBefore(now))
+          .toList();
 
-      // Sort active reservations by start time (or creation time if start time is null)
+      // Sort active reservations by creation time descending (Newest first)
+      // This ensures the most recently booked spot is shown as the active one
       trulyActive.sort((a, b) {
-        final aTime = a.startAt ?? a.createdAt ?? DateTime.now();
-        final bTime = b.startAt ?? b.createdAt ?? DateTime.now();
-        return aTime.compareTo(bTime);
+        final aTime = a.createdAt ?? DateTime.now();
+        final bTime = b.createdAt ?? DateTime.now();
+        return bTime.compareTo(aTime); // Descending: Newest first
       });
 
       setState(() {
@@ -82,21 +85,26 @@ class _HomePageState extends State<HomePage> {
           _activeReservation = null;
           _upcomingReservations = [];
         }
-        
+
         // Include time-expired reservations in recent activity
         // even if their status is still 'confirmed'
         _recentActivity = [
           ...expiredActive,
-          ...all.where((r) =>
-              r.status == api.ReservationStatus.completed ||
-              r.status == api.ReservationStatus.cancelled ||
-              r.status == api.ReservationStatus.expired ||
-              r.status == api.ReservationStatus.noShow)
+          ...all.where(
+            (r) =>
+                r.status == api.ReservationStatus.completed ||
+                r.status == api.ReservationStatus.cancelled ||
+                r.status == api.ReservationStatus.expired ||
+                r.status == api.ReservationStatus.noShow,
+          ),
         ];
-        
+
         // Sort by date desc and take 5
-        _recentActivity.sort((a, b) => (b.createdAt ?? DateTime.now())
-            .compareTo(a.createdAt ?? DateTime.now()));
+        _recentActivity.sort(
+          (a, b) => (b.createdAt ?? DateTime.now()).compareTo(
+            a.createdAt ?? DateTime.now(),
+          ),
+        );
         _recentActivity = _recentActivity.take(5).toList();
 
         _isLoading = false;
@@ -111,8 +119,9 @@ class _HomePageState extends State<HomePage> {
   void _calculateTimeLeft() {
     if (_activeReservation == null) return;
     final now = DateTime.now();
-    final expiresAt = _activeReservation!.expiresAt;
-    final difference = expiresAt.difference(now);
+    // Use endAt (base duration end) for countdown, fallback to expiresAt
+    final endAt = _activeReservation!.endAt ?? _activeReservation!.expiresAt;
+    final difference = endAt.difference(now);
 
     if (difference.isNegative) {
       _timeLeft = Duration.zero;
@@ -174,7 +183,8 @@ class _HomePageState extends State<HomePage> {
                               Navigator.pop(context);
                               map.showMarker(
                                 coords: Coords(lat, lng),
-                                title: reservation.venue?.name ?? 'Parking Spot',
+                                title:
+                                    reservation.venue?.name ?? 'Parking Spot',
                               );
                             },
                             title: Text(map.mapName),
@@ -232,13 +242,13 @@ class _HomePageState extends State<HomePage> {
                   _buildActiveBookingCard()
                 else
                   _buildNoActiveBookingCard(),
-                
+
                 if (_upcomingReservations.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'Upcoming Bookings',
+                      'Your Bookings',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -290,7 +300,8 @@ class _HomePageState extends State<HomePage> {
                   border: Border.all(color: Colors.grey[300]!),
                   image: const DecorationImage(
                     image: NetworkImage(
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuDm5c2sSpmv-qGIGemqCCLfHFVGggRwGhFl-dEClUSROu_yMZu97wrzl6HpO-WfCbKn58d1zbwbPIsay4qMl2wHAQ3RMTTaN60QHXVb-JnqZ0E4pjanQQ3UGc3X8gqnXYaz_n2_-ZoKdnNscD7Z61sDcTl_8KVonDjnfXfq019lKHJg5RJmrt41qYwKbqIKnbZ3R6jCFJXkmfnojEIb0TC0ivzhvGVsgAkLeRlIpWK9qYQRHjW2V9V_Ln5bZ4QYqNOE9Iwi-HAElHNk'),
+                      'https://lh3.googleusercontent.com/aida-public/AB6AXuDm5c2sSpmv-qGIGemqCCLfHFVGggRwGhFl-dEClUSROu_yMZu97wrzl6HpO-WfCbKn58d1zbwbPIsay4qMl2wHAQ3RMTTaN60QHXVb-JnqZ0E4pjanQQ3UGc3X8gqnXYaz_n2_-ZoKdnNscD7Z61sDcTl_8KVonDjnfXfq019lKHJg5RJmrt41qYwKbqIKnbZ3R6jCFJXkmfnojEIb0TC0ivzhvGVsgAkLeRlIpWK9qYQRHjW2V9V_Ln5bZ4QYqNOE9Iwi-HAElHNk',
+                    ),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -333,19 +344,34 @@ class _HomePageState extends State<HomePage> {
     final isMultiDay = reservation.isMultiDay;
     final isFuture = reservation.isFutureReservation;
     final isArrivalWindowActive = reservation.isArrivalWindowActive;
-    
+
     // Only show countdown for non-multi-day reservations when arrival window is active
     final shouldShowCountdown = !isMultiDay && isArrivalWindowActive;
-    
+
     final hours = _timeLeft.inHours.toString().padLeft(2, '0');
-    final minutes = _timeLeft.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = _timeLeft.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final minutes = _timeLeft.inMinutes
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
+    final seconds = _timeLeft.inSeconds
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
 
     // Calculate progress
-    final totalDuration = reservation.expiresAt.difference(reservation.createdAt ?? DateTime.now().subtract(const Duration(hours: 1)));
-    final elapsed = DateTime.now().difference(reservation.createdAt ?? DateTime.now().subtract(const Duration(hours: 1)));
-    final progress = (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0);
-    
+    final totalDuration = reservation.expiresAt.difference(
+      reservation.createdAt ??
+          DateTime.now().subtract(const Duration(hours: 1)),
+    );
+    final elapsed = DateTime.now().difference(
+      reservation.createdAt ??
+          DateTime.now().subtract(const Duration(hours: 1)),
+    );
+    final progress = (elapsed.inSeconds / totalDuration.inSeconds).clamp(
+      0.0,
+      1.0,
+    );
+
     // Determine status label and color
     String statusLabel;
     Color statusColor;
@@ -388,7 +414,8 @@ class _HomePageState extends State<HomePage> {
                     color: Colors.grey,
                     image: DecorationImage(
                       image: NetworkImage(
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuAhDcxIexqCtdbqp2w9vaXLf-kRv43kMXLTyNOjxCKX7Xc5DghgE8pHR2GaJuVqLwE4ypiJvgK-KV5NRtnLRFYMvK2cOKvHjDbQajUBrKv1l5oCy4h_RPP0Sh510gjp19bll-xwAOu7HEd_0JlSg-EdaDN2CH8Xy9ejg8bVIavvoChCZcPIM0ZVL1w9QIXYqHuj4mTx5rNL5toCxnelnOb4XU8OPrHsahU-NUS8Nwq_5FNJM8uYdZtBhnJKfQoIm82tZr6ja2qoltEV'),
+                        'https://lh3.googleusercontent.com/aida-public/AB6AXuAhDcxIexqCtdbqp2w9vaXLf-kRv43kMXLTyNOjxCKX7Xc5DghgE8pHR2GaJuVqLwE4ypiJvgK-KV5NRtnLRFYMvK2cOKvHjDbQajUBrKv1l5oCy4h_RPP0Sh510gjp19bll-xwAOu7HEd_0JlSg-EdaDN2CH8Xy9ejg8bVIavvoChCZcPIM0ZVL1w9QIXYqHuj4mTx5rNL5toCxnelnOb4XU8OPrHsahU-NUS8Nwq_5FNJM8uYdZtBhnJKfQoIm82tZr6ja2qoltEV',
+                      ),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -397,8 +424,10 @@ class _HomePageState extends State<HomePage> {
                   top: 16,
                   left: 16,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(20),
@@ -454,8 +483,11 @@ class _HomePageState extends State<HomePage> {
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(Icons.location_on,
-                                    size: 18, color: Colors.grey),
+                                const Icon(
+                                  Icons.location_on,
+                                  size: 18,
+                                  color: Colors.grey,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '${reservation.level?.name ?? 'Level'}, Slot ${reservation.spot?.spotNumber ?? '--'}',
@@ -482,7 +514,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           const Text(
-                            'per hour',
+                            'reservation fee',
                             style: TextStyle(
                               fontSize: 12,
                               color: Color(0xFF94A3B8),
@@ -496,9 +528,19 @@ class _HomePageState extends State<HomePage> {
 
                   // Timer Widget or Reservation Info
                   if (shouldShowCountdown)
-                    _buildCountdownWidget(reservation, hours, minutes, seconds, progress)
+                    _buildCountdownWidget(
+                      reservation,
+                      hours,
+                      minutes,
+                      seconds,
+                      progress,
+                    )
                   else
-                    _buildReservationInfoWidget(reservation, isMultiDay, isFuture),
+                    _buildReservationInfoWidget(
+                      reservation,
+                      isMultiDay,
+                      isFuture,
+                    ),
                   const SizedBox(height: 24),
 
                   // Action Buttons
@@ -592,8 +634,11 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.grey[50],
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.local_parking,
-                  size: 48, color: Colors.grey),
+              child: const Icon(
+                Icons.local_parking,
+                size: 48,
+                color: Colors.grey,
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -641,8 +686,9 @@ class _HomePageState extends State<HomePage> {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final reservation = _upcomingReservations[index];
-        final startAt = reservation.startAt ?? reservation.createdAt ?? DateTime.now();
-        
+        final startAt =
+            reservation.startAt ?? reservation.createdAt ?? DateTime.now();
+
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -715,17 +761,24 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: startAt.isBefore(DateTime.now())
+                        ? const Color(0xFF137FEC).withValues(alpha: 0.1)
+                        : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    'Upcoming',
+                  child: Text(
+                    startAt.isBefore(DateTime.now()) ? 'Active' : 'Upcoming',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF475569),
+                      color: startAt.isBefore(DateTime.now())
+                          ? const Color(0xFF137FEC)
+                          : const Color(0xFF475569),
                     ),
                   ),
                 ),
@@ -758,8 +811,10 @@ class _HomePageState extends State<HomePage> {
             if (reservation.status == api.ReservationStatus.expired ||
                 reservation.status == api.ReservationStatus.cancelled ||
                 reservation.status == api.ReservationStatus.noShow) {
-              Navigator.push(context,
-                  BookingExpiredPage.route(reservation: reservation));
+              Navigator.push(
+                context,
+                BookingExpiredPage.route(reservation: reservation),
+              );
             }
           },
           child: Container(
@@ -793,8 +848,9 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Text(
-                        DateFormat('MMM d • h:mm a')
-                            .format(reservation.createdAt ?? DateTime.now()),
+                        DateFormat(
+                          'MMM d • h:mm a',
+                        ).format(reservation.createdAt ?? DateTime.now()),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -862,8 +918,10 @@ class _HomePageState extends State<HomePage> {
               ),
               if (_timeLeft.inMinutes < 15 && _timeLeft > Duration.zero)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -904,8 +962,9 @@ class _HomePageState extends State<HomePage> {
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: Colors.grey[200],
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF137FEC)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF137FEC),
+              ),
               minHeight: 8,
             ),
           ),
@@ -914,7 +973,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Start: ${DateFormat('h:mm a').format(reservation.createdAt ?? DateTime.now())}',
+                'Start: ${DateFormat('h:mm a').format(reservation.startAt ?? DateTime.now())}',
                 style: const TextStyle(
                   fontSize: 10,
                   color: Color(0xFF94A3B8),
@@ -922,7 +981,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Text(
-                'End: ${DateFormat('h:mm a').format(reservation.expiresAt)}',
+                'End: ${DateFormat('h:mm a').format(reservation.endAt ?? reservation.expiresAt)}',
                 style: const TextStyle(
                   fontSize: 10,
                   color: Color(0xFF94A3B8),
@@ -1024,8 +1083,8 @@ class _HomePageState extends State<HomePage> {
               isMultiDay
                   ? 'Valid for the entire reservation period'
                   : isFuture
-                      ? 'Arrival window opens 1 hour before start'
-                      : 'Your spot is ready',
+                  ? 'Arrival window opens 1 hour before start'
+                  : 'Your spot is ready',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -1040,8 +1099,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildTimeSegment(String value, String label,
-      {bool isPrimary = false}) {
+  Widget _buildTimeSegment(
+    String value,
+    String label, {
+    bool isPrimary = false,
+  }) {
     return Column(
       children: [
         Text(
@@ -1050,7 +1112,9 @@ class _HomePageState extends State<HomePage> {
             fontFamily: 'monospace',
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: isPrimary ? const Color(0xFF137FEC) : const Color(0xFF0F172A),
+            color: isPrimary
+                ? const Color(0xFF137FEC)
+                : const Color(0xFF0F172A),
             height: 1,
           ),
         ),

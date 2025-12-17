@@ -22,6 +22,7 @@ import {
   UpdateVenueDto,
   CreateLevelDto,
   UpdateLevelDto,
+  UpdateVenueConfigurationDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, ROLES_KEY } from '../auth/guards/roles.guard';
@@ -144,7 +145,7 @@ export class VenuesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   @UseInterceptors(FileInterceptor('image', {
     storage: diskStorage({
       destination: './uploads/venues',
@@ -172,7 +173,7 @@ export class VenuesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateVenueDto: UpdateVenueDto,
@@ -188,7 +189,7 @@ export class VenuesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.venuesService.remove(id);
 
@@ -200,7 +201,7 @@ export class VenuesController {
 
   @Post(':id/levels')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async createLevel(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createLevelDto: CreateLevelDto,
@@ -211,6 +212,39 @@ export class VenuesController {
       success: true,
       data: level,
       message: 'Level created successfully',
+    };
+  }
+
+  // ==================== CONFIGURATION ENDPOINTS ====================
+
+  @Get(':id/configuration')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async getConfiguration(@Param('id', ParseUUIDPipe) id: string) {
+    const config = await this.venuesService.getVenueConfiguration(id);
+
+    return {
+      success: true,
+      data: config,
+    };
+  }
+
+  @Patch(':id/configuration')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async updateConfiguration(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateVenueConfigurationDto: UpdateVenueConfigurationDto,
+  ) {
+    const config = await this.venuesService.updateVenueConfiguration(
+      id,
+      updateVenueConfigurationDto,
+    );
+
+    return {
+      success: true,
+      data: config,
+      message: 'Venue configuration updated successfully',
     };
   }
 }
@@ -231,7 +265,7 @@ export class LevelsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateLevelDto: UpdateLevelDto,
@@ -247,7 +281,7 @@ export class LevelsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.venuesService.removeLevel(id);
 

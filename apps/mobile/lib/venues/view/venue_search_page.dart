@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:mobile/venues/models/venue.dart';
 import 'package:mobile/venues/repository/venues_repository.dart';
 import 'package:mobile/venues/widgets/filter_chips.dart';
@@ -22,6 +24,12 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
   List<Venue>? _venues;
   bool _isLoading = true;
   String? _error;
+  bool _isMapView = false;
+  final MapController _mapController = MapController();
+
+  // Mock location for now (Manila approx)
+  static const _initialLat = 14.5995;
+  static const _initialLng = 120.9842;
 
   @override
   void initState() {
@@ -29,21 +37,20 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
     _fetchVenues();
   }
 
-  Future<void> _fetchVenues() async {
+  Future<void> _fetchVenues({bool isRefresh = false}) async {
     try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
+      if (!isRefresh) {
+        setState(() {
+          _isLoading = true;
+          _error = null;
+        });
+      }
       
-      // Mock location for now (Cebu IT Park approx)
-      const lat = 10.329;
-      const lng = 123.906;
       const radius = 5000.0; // 5km
 
       final venues = await context.read<VenuesRepository>().getNearbyVenues(
-        lat: lat,
-        lng: lng,
+        lat: _initialLat,
+        lng: _initialLng,
         radius: radius,
       );
 
@@ -159,43 +166,126 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                     Center(child: Text('Error: $_error'))
                   else if (_venues == null || _venues!.isEmpty)
                     const Center(child: Text('No venues found nearby.'))
-                  else
-                    ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _venues!.length + 2, // +1 for header, +1 for footer
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 8, left: 4),
-                            child: Text(
-                              'NEARBY RESULTS',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF94A3B8), // slate-400
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          );
-                        }
-                        if (index == _venues!.length + 1) {
-                          // Footer
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 32),
-                            child: Column(
-                              children: [
-                                Icon(Icons.travel_explore, size: 48, color: Color(0xFFCBD5E1)),
-                                SizedBox(height: 12),
-                                Text(
-                                  "That's all the nearby spots.",
-                                  style: TextStyle(color: Color(0xFF64748B)),
+                  else if (_isMapView)
+                    FlutterMap(
+                      mapController: _mapController,
+                      options: MapOptions(
+                        initialCenter: const LatLng(_initialLat, _initialLng),
+                        initialZoom: 14.0,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.parklocator.mobile',
+                        ),
+                        MarkerLayer(
+                          markers: _venues!.where((v) => v.latitude != null && v.longitude != null).map((venue) {
+                            return Marker(
+                              point: LatLng(venue.latitude!, venue.longitude!),
+                              width: 50,
+                              height: 50,
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Show venue details or navigate
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                                      ),
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 40,
+                                            height: 4,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[300],
+                                              borderRadius: BorderRadius.circular(2),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          VenueCard(venue: venue),
+                                          const SizedBox(height: 24),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: venue.availableSpots > 0 ? const Color(0xFF137FEC) : Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${venue.availableSpots}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
-                          );
-                        }
-                        return VenueCard(venue: _venues![index - 1]);
-                      },
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    )
+                  else
+                    RefreshIndicator(
+                      onRefresh: () => _fetchVenues(isRefresh: true),
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _venues!.length + 2, // +1 for header, +1 for footer
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return const Padding(
+                              padding: EdgeInsets.only(bottom: 8, left: 4),
+                              child: Text(
+                                'NEARBY RESULTS',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF94A3B8), // slate-400
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            );
+                          }
+                          if (index == _venues!.length + 1) {
+                            // Footer
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 32),
+                              child: Column(
+                                children: [
+                                  Icon(Icons.travel_explore, size: 48, color: Color(0xFFCBD5E1)),
+                                  SizedBox(height: 12),
+                                  Text(
+                                    "That's all the nearby spots.",
+                                    style: TextStyle(color: Color(0xFF64748B)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return VenueCard(venue: _venues![index - 1]);
+                        },
+                      ),
                     ),
                   // Map Toggle (Floating)
                   Positioned(
@@ -204,9 +294,13 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                     right: 0,
                     child: Center(
                       child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.map),
-                        label: const Text('Map View'),
+                        onPressed: () {
+                          setState(() {
+                            _isMapView = !_isMapView;
+                          });
+                        },
+                        icon: Icon(_isMapView ? Icons.list : Icons.map),
+                        label: Text(_isMapView ? 'List View' : 'Map View'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E293B), // slate-800
                           foregroundColor: Colors.white,
@@ -226,5 +320,6 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
     );
   }
 }
+
 
 

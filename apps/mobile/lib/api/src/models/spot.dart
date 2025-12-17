@@ -13,6 +13,8 @@ class Spot extends Equatable {
     required this.spotNumber,
     required this.status,
     this.isActive = true,
+    this.section,
+    this.vehicleType = 'Car',
   });
 
   factory Spot.fromJson(Map<String, dynamic> json) {
@@ -21,6 +23,8 @@ class Spot extends Equatable {
       spotNumber: json['spotNumber'] as String,
       status: _parseStatus(json['status'] as String?),
       isActive: json['isActive'] as bool? ?? true,
+      section: json['section'] as String?,
+      vehicleType: json['vehicleType'] as String? ?? 'Car',
     );
   }
 
@@ -28,6 +32,8 @@ class Spot extends Equatable {
   final String spotNumber;
   final SpotStatus status;
   final bool isActive;
+  final String? section;
+  final String vehicleType;
 
   static SpotStatus _parseStatus(String? status) {
     switch (status) {
@@ -45,5 +51,5 @@ class Spot extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, spotNumber, status, isActive];
+  List<Object?> get props => [id, spotNumber, status, isActive, section, vehicleType];
 }

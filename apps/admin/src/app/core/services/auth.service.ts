@@ -7,10 +7,16 @@ import { environment } from '../../../environments/environment';
 export interface User {
   id: string;
   email: string;
-  role: string;
+  role: 'super_admin' | 'manager' | 'attendant' | 'driver';
+  status?: 'active' | 'inactive' | 'locked';
   firstName?: string;
   lastName?: string;
   phone?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  employeeId?: string;
+  department?: string;
+  location?: string;
 }
 
 export interface AuthResponse {

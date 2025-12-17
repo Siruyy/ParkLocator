@@ -58,14 +58,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
     if (!mounted) return;
 
     try {
-      final reservation =
-          await context.read<ReservationsRepository>().createReservation(
-                venueId: widget.venue.id,
-                levelId: widget.level.id,
-                spotId: widget.spot.id,
-                startAt: widget.startDate,
-                endAt: widget.endDate,
-              );
+      final reservation = await context
+          .read<ReservationsRepository>()
+          .createReservation(
+            venueId: widget.venue.id,
+            levelId: widget.level.id,
+            spotId: widget.spot.id,
+            startAt: widget.startDate,
+            endAt: widget.endDate,
+          );
 
       if (mounted) {
         await Navigator.pushReplacement(
@@ -90,29 +91,38 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = DateFormat('MMM d, yyyy • h:mm a').format(widget.startDate ?? DateTime.now());
-    
+    final dateStr = DateFormat(
+      'MMM d, yyyy • h:mm a',
+    ).format(widget.startDate ?? DateTime.now());
+
     String durationStr = '1 hour';
-    double totalPrice = 40.00;
+    double totalPrice = 50.00; // Default reservation fee
 
     if (widget.startDate != null && widget.endDate != null) {
       final duration = widget.endDate!.difference(widget.startDate!);
       final hours = duration.inMinutes / 60.0;
-      
+
       // Format duration string
       final d = duration.inDays;
       final h = duration.inHours % 24;
       final m = duration.inMinutes % 60;
-      
+
       final parts = <String>[];
       if (d > 0) parts.add('$d days');
       if (h > 0) parts.add('$h hrs');
       if (m > 0) parts.add('$m mins');
       durationStr = parts.isEmpty ? '0 mins' : parts.join(' ');
 
-      // Calculate price (mock logic: 30 per hour base)
-      // In a real app, this should come from the previous screen or be recalculated
-      totalPrice = hours * 30.0; 
+      // Calculate price - For reservations, only the reservation fee is charged upfront.
+      // The actual parking fees (baseRate, succeedingHourRate) will be calculated
+      // by sensors when the user parks and checked out.
+      if (widget.venue.configuration != null) {
+        final config = widget.venue.configuration!;
+        totalPrice = config.reservationFee;
+      } else {
+        // Fallback if no config - default reservation fee
+        totalPrice = 50.0;
+      }
     }
 
     return Scaffold(
@@ -165,7 +175,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             borderRadius: BorderRadius.circular(8),
                             image: const DecorationImage(
                               image: NetworkImage(
-                                  'https://lh3.googleusercontent.com/aida-public/AB6AXuDn8jr7dXwW1RBs0TlfATvS0Cn7mic98XzDNNYoFdH31wvQS7F1F2uAQqKiUrpFZwRLTWfcEWZD-nnTi4OZEnc66lllpU1W1Jl3KthcAYq77L_ay5BqA9EFc0X1-PqcVk3Gw9BtVBcp6Cccx--XXE4esqZ9YmlhWppxafClviWEsFMQBhzE-Yc5vQPghEuUiVFZ-xD5UuaAf-SYESDSlcmnuDSieK5SiYSkQlKO0lq6VBd17BSKafNq-U_PO2rTlB5yxgSmishsf4EO'),
+                                'https://lh3.googleusercontent.com/aida-public/AB6AXuDn8jr7dXwW1RBs0TlfATvS0Cn7mic98XzDNNYoFdH31wvQS7F1F2uAQqKiUrpFZwRLTWfcEWZD-nnTi4OZEnc66lllpU1W1Jl3KthcAYq77L_ay5BqA9EFc0X1-PqcVk3Gw9BtVBcp6Cccx--XXE4esqZ9YmlhWppxafClviWEsFMQBhzE-Yc5vQPghEuUiVFZ-xD5UuaAf-SYESDSlcmnuDSieK5SiYSkQlKO0lq6VBd17BSKafNq-U_PO2rTlB5yxgSmishsf4EO',
+                              ),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -193,17 +204,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               const SizedBox(height: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xFF137FEC).withValues(alpha: 0.1),
+                                  color: const Color(
+                                    0xFF137FEC,
+                                  ).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.local_parking,
-                                        size: 14, color: Color(0xFF137FEC)),
+                                    Icon(
+                                      Icons.local_parking,
+                                      size: 14,
+                                      color: Color(0xFF137FEC),
+                                    ),
                                     SizedBox(width: 4),
                                     Text(
                                       'Reserved Spot',
@@ -229,10 +246,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       children: [
                         _buildSummaryRow('Date', dateStr),
                         const SizedBox(height: 12),
-                        _buildSummaryRow(
-                            'Duration', durationStr),
+                        _buildSummaryRow('Duration', durationStr),
                         const SizedBox(height: 12),
-                        _buildSummaryRow('Reservation Fee', '₱${totalPrice.toStringAsFixed(2)}'),
+                        _buildSummaryRow(
+                          'Reservation Fee',
+                          '₱${totalPrice.toStringAsFixed(2)}',
+                        ),
                         const SizedBox(height: 12),
                         const Divider(color: Colors.transparent), // Spacer
                         Row(

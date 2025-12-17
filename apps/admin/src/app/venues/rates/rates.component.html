@@ -2,14 +2,14 @@
     <app-sidebar></app-sidebar>
     <div class="flex-1 flex flex-col h-full overflow-hidden relative">
         <app-header 
-            [breadcrumbs]="[{ label: 'Admin', url: '#' }, { label: 'Venue Config', url: '/venues' }, { label: 'Rates & Limits' }]"
+            [breadcrumbs]="[{ label: 'Admin', url: '#' }, { label: 'Venue Config', url: '/venues', queryParams: { venueId: venueId } }, { label: 'Rates & Limits' }]"
             searchPlaceholder="Search settings...">
         </app-header>
         <main class="flex-1 overflow-y-auto p-6 sm:p-8 scroll-smooth">
-            <div class="max-w-6xl mx-auto flex flex-col gap-8 pb-24">
+            <form [formGroup]="configForm" class="max-w-6xl mx-auto flex flex-col gap-8 pb-24">
                 <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <div>
-                        <a routerLink="/venues" class="inline-flex items-center gap-2 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors mb-4">
+                        <a [routerLink]="['/venues']" [queryParams]="{ venueId: venueId }" class="inline-flex items-center gap-2 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors mb-4">
                             <span class="material-symbols-outlined text-[20px]">arrow_back</span>
                             Back to Venues
                         </a>
@@ -17,12 +17,13 @@
                         <p class="text-text-secondary-light dark:text-text-secondary-dark">Configure parking fees, penalties, and reservation duration limits.</p>
                     </div>
                     <div class="flex gap-3">
-                        <button class="px-5 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+                        <button type="button" class="px-5 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
                             Discard Changes
                         </button>
-                        <button class="px-5 py-2.5 rounded-full bg-primary text-black font-bold text-sm hover:brightness-105 transition-colors shadow-sm flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[18px]">save</span>
-                            Save Configuration
+                        <button type="button" (click)="save()" [disabled]="isSaving" class="px-5 py-2.5 rounded-full bg-primary text-black font-bold text-sm hover:brightness-105 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="material-symbols-outlined text-[18px]" *ngIf="!isSaving">save</span>
+                            <span class="material-symbols-outlined text-[18px] animate-spin" *ngIf="isSaving">refresh</span>
+                            {{ isSaving ? 'Saving...' : 'Save Configuration' }}
                         </button>
                     </div>
                 </div>
@@ -39,19 +40,33 @@
                                 </div>
                             </div>
                             <div class="space-y-6">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Base Rate (First 3 hrs)</label>
+                                        <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Reservation Fee</label>
                                         <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
                                             <span class="pl-4 text-text-secondary-light dark:text-text-secondary-dark font-semibold">₱</span>
-                                            <input class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number" value="40.00"/>
+                                            <input formControlName="reservationFee" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number"/>
                                         </div>
                                     </div>
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Succeeding Hour Rate</label>
+                                        <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Base Rate</label>
                                         <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
                                             <span class="pl-4 text-text-secondary-light dark:text-text-secondary-dark font-semibold">₱</span>
-                                            <input class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number" value="20.00"/>
+                                            <input formControlName="baseRate" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number"/>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Base Duration</label>
+                                        <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
+                                            <input formControlName="baseDuration" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="1" type="number"/>
+                                            <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark">hrs</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Succeeding Rate</label>
+                                        <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
+                                            <span class="pl-4 text-text-secondary-light dark:text-text-secondary-dark font-semibold">₱</span>
+                                            <input formControlName="succeedingHourRate" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number"/>
                                             <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark">/hr</span>
                                         </div>
                                     </div>
@@ -63,12 +78,12 @@
                                         <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Additional flat fee applied on Sat/Sun</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <div class="p-input-wrapper w-32 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
+                                        <div class="p-input-wrapper w-32 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden" [class.opacity-50]="!configForm.get('isWeekendSurchargeActive')?.value">
                                             <span class="pl-3 text-text-secondary-light dark:text-text-secondary-dark font-semibold text-xs">₱</span>
-                                            <input class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number" value="10.00"/>
+                                            <input formControlName="weekendSurcharge" class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number"/>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
-                                            <input checked="" class="sr-only peer" type="checkbox" value=""/>
+                                            <input formControlName="isWeekendSurchargeActive" class="sr-only peer" type="checkbox"/>
                                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                                         </label>
                                     </div>
@@ -79,12 +94,12 @@
                                         <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Flat rate per entry for motorcycles</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <div class="p-input-wrapper w-32 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden opacity-50 pointer-events-none">
+                                        <div class="p-input-wrapper w-32 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden" [class.opacity-50]="!configForm.get('isMotorcycleFlatRateActive')?.value">
                                             <span class="pl-3 text-text-secondary-light dark:text-text-secondary-dark font-semibold text-xs">₱</span>
-                                            <input class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" disabled="" type="number" value="30.00"/>
+                                            <input formControlName="motorcycleFlatRate" class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number"/>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
-                                            <input class="sr-only peer" type="checkbox" value=""/>
+                                            <input formControlName="isMotorcycleFlatRateActive" class="sr-only peer" type="checkbox"/>
                                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                                         </label>
                                     </div>
@@ -104,27 +119,27 @@
                                     </div>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input checked="" class="sr-only peer" type="checkbox" value=""/>
+                                    <input formControlName="isOvernightParkingActive" class="sr-only peer" type="checkbox"/>
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                                 </label>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10" [class.opacity-50]="!configForm.get('isOvernightParkingActive')?.value" [class.pointer-events-none]="!configForm.get('isOvernightParkingActive')?.value">
                                 <div class="flex flex-col gap-2">
                                     <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Overnight Flat Rate</label>
                                     <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
                                         <span class="pl-4 text-text-secondary-light dark:text-text-secondary-dark font-semibold">₱</span>
-                                        <input class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number" value="300.00"/>
+                                        <input formControlName="overnightFlatRate" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number"/>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Overnight Time Window</label>
                                     <div class="flex items-center gap-2">
                                         <div class="p-input-wrapper flex-1 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                            <input class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark text-sm" type="time" value="22:00"/>
+                                            <input formControlName="overnightStartHour" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark text-sm" type="time"/>
                                         </div>
                                         <span class="text-text-secondary-light text-xs">to</span>
                                         <div class="p-input-wrapper flex-1 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                            <input class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark text-sm" type="time" value="06:00"/>
+                                            <input formControlName="overnightEndHour" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark text-sm" type="time"/>
                                         </div>
                                     </div>
                                 </div>
@@ -149,7 +164,7 @@
                                         <span class="text-xs font-normal text-text-secondary-light">Before charging starts</span>
                                     </label>
                                     <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                        <input class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number" value="15"/>
+                                        <input formControlName="entryGracePeriod" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number"/>
                                         <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">MINUTES</span>
                                     </div>
                                 </div>
@@ -159,14 +174,14 @@
                                         <span class="text-xs font-normal text-text-secondary-light">After payment is made</span>
                                     </label>
                                     <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                        <input class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number" value="10"/>
+                                        <input formControlName="exitGracePeriod" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number"/>
                                         <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">MINUTES</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Max Reservation Hold</label>
                                     <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                        <input class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number" value="30"/>
+                                        <input formControlName="maxReservationHold" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number"/>
                                         <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">MINUTES</span>
                                     </div>
                                     <p class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">Time held for a user before reservation expires if they don't arrive.</p>
@@ -191,7 +206,7 @@
                                     </div>
                                     <div class="p-input-wrapper w-32 flex items-center bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-600 rounded-lg transition-all overflow-hidden">
                                         <span class="pl-3 text-text-secondary-light dark:text-text-secondary-dark font-semibold text-xs">₱</span>
-                                        <input class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number" value="500.00"/>
+                                        <input formControlName="lostTicketPenalty" class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number"/>
                                     </div>
                                 </div>
                                 <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-700">
@@ -201,14 +216,14 @@
                                     </div>
                                     <div class="p-input-wrapper w-32 flex items-center bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-600 rounded-lg transition-all overflow-hidden">
                                         <span class="pl-3 text-text-secondary-light dark:text-text-secondary-dark font-semibold text-xs">₱</span>
-                                        <input class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number" value="1000.00"/>
+                                        <input formControlName="illegalParkingPenalty" class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number"/>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </main>
     </div>
 </div>

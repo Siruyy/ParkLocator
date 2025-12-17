@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/api/api.dart';
 import 'package:mobile/app/view/main_navigation_page.dart';
+import 'package:mobile/attendant/view/attendant_home_page.dart';
 import 'package:mobile/auth/bloc/auth_bloc.dart';
 import 'package:mobile/auth/repository/src/auth_repository.dart';
 import 'package:mobile/common/common.dart';
@@ -19,6 +20,7 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   late final ApiClient _apiClient;
+  late final RealtimeService _realtimeService;
   late final AuthRepository _authRepository;
   late final VenuesRepository _venuesRepository;
   late final ReservationsRepository _reservationsRepository;
@@ -28,17 +30,21 @@ class _AppState extends State<App> {
   void initState() {
     super.initState();
     _apiClient = ApiClient();
+    _realtimeService = RealtimeService();
     _authRepository = AuthRepository(apiClient: _apiClient);
     _venuesRepository = VenuesRepository(apiClient: _apiClient);
     _reservationsRepository = ReservationsRepository(apiClient: _apiClient);
     _authBloc = AuthBloc(authRepository: _authRepository)
       ..add(const AuthCheckRequested());
+      
+    _realtimeService.connect();
   }
 
   @override
   void dispose() {
     _authBloc.close();
     _authRepository.dispose();
+    _realtimeService.dispose();
     super.dispose();
   }
 
@@ -49,6 +55,7 @@ class _AppState extends State<App> {
         RepositoryProvider.value(value: _authRepository),
         RepositoryProvider.value(value: _venuesRepository),
         RepositoryProvider.value(value: _reservationsRepository),
+        RepositoryProvider.value(value: _realtimeService),
       ],
       child: BlocProvider.value(
         value: _authBloc,
@@ -86,6 +93,10 @@ class AppView extends StatelessWidget {
               case AuthStatus.unknown:
                 return const _SplashScreen();
               case AuthStatus.authenticated:
+                final user = state.user;
+                if (user?.role == 'ATTENDANT') {
+                  return const AttendantHomePage();
+                }
                 return const MainNavigationPage();
               case AuthStatus.unauthenticated:
                 return const LoginPage();

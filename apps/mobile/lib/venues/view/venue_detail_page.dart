@@ -329,17 +329,17 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Text(
-                            '₱40',
-                            style: TextStyle(
+                            '₱${(venue.apiVenue.configuration != null ? (venue.apiVenue.configuration!.baseRate + venue.apiVenue.configuration!.reservationFee) : 40).toStringAsFixed(0)}',
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
-                          SizedBox(width: 4),
-                          Icon(Icons.arrow_forward, size: 16),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.arrow_forward, size: 16),
                         ],
                       ),
                     ),

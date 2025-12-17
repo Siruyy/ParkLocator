@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/api/api.dart' as api;
@@ -44,27 +47,50 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
   List<Section>? _sections;
   bool _isLoading = false;
   Section? _selectedSection;
+  StreamSubscription<dynamic>? _subscription;
 
   @override
   void initState() {
     super.initState();
     _selectedLevelId = widget.initialLevelId;
     _fetchSpots();
+    _subscribeToRealtimeUpdates();
   }
 
-  Future<void> _fetchSpots() async {
-    setState(() {
-      _isLoading = true;
-      _sections = null;
-      _selectedSection = null;
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    context.read<api.RealtimeService>().unsubscribeFromLevel(_selectedLevelId);
+    super.dispose();
+  }
+
+  void _subscribeToRealtimeUpdates() {
+    final realtimeService = context.read<api.RealtimeService>();
+    realtimeService.subscribeToLevel(_selectedLevelId);
+
+    _subscription = realtimeService.levelUpdates.listen((data) {
+      if (data['levelId'] == _selectedLevelId) {
+        // Refresh spots when an update is received
+        _fetchSpots(isRefresh: true);
+      }
     });
+  }
+
+  Future<void> _fetchSpots({bool isRefresh = false}) async {
+    if (!isRefresh) {
+      setState(() {
+        _isLoading = true;
+        _sections = null;
+        _selectedSection = null;
+      });
+    }
 
     try {
       final level = await context.read<VenuesRepository>().getLevelDetails(
-            _selectedLevelId,
-            startAt: widget.startDate,
-            endAt: widget.endDate,
-          );
+        _selectedLevelId,
+        startAt: widget.startDate,
+        endAt: widget.endDate,
+      );
 
       final spots = level.spots ?? [];
       final sectionA = <api.Spot>[];
@@ -78,21 +104,25 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
         }
       }
 
-      setState(() {
-        _sections = [
-          Section(name: 'Section A', spots: sectionA),
-          Section(name: 'Section B', spots: sectionB),
-        ];
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load spots: $e')),
-        );
+        setState(() {
+          _sections = [
+            Section(name: 'Section A', spots: sectionA),
+            Section(name: 'Section B', spots: sectionB),
+          ];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (!isRefresh) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to load spots: $e')),
+          );
+        }
       }
     }
   }
@@ -115,10 +145,19 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
   void _confirmReservation() {
     if (_selectedSection == null) return;
 
-    final spot = _selectedSection!.spots.firstWhere(
-      (s) => s.status == api.SpotStatus.available,
-      orElse: () => throw Exception('No available spots in section'),
-    );
+    final availableSpots = _selectedSection!.spots
+        .where((s) => s.status == api.SpotStatus.available)
+        .toList();
+
+    if (availableSpots.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No available spots in this section')),
+      );
+      return;
+    }
+
+    final random = Random();
+    final spot = availableSpots[random.nextInt(availableSpots.length)];
 
     final levels = widget.venue.levels ?? [];
     final currentLevel = levels.firstWhere(
@@ -195,11 +234,12 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFF137FEC)
-                                        .withValues(alpha: 0.3),
+                                    color: const Color(
+                                      0xFF137FEC,
+                                    ).withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
-                                  )
+                                  ),
                                 ]
                               : null,
                         ),
@@ -225,17 +265,17 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _sections == null || _sections!.isEmpty
-                    ? const Center(child: Text('No sections available'))
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(24),
-                        itemCount: _sections!.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 16),
-                        itemBuilder: (context, index) {
-                          final section = _sections![index];
-                          return _buildSectionCard(section);
-                        },
-                      ),
+                ? const Center(child: Text('No sections available'))
+                : ListView.separated(
+                    padding: const EdgeInsets.all(24),
+                    itemCount: _sections!.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final section = _sections![index];
+                      return _buildSectionCard(section);
+                    },
+                  ),
           ),
         ],
       ),
@@ -249,6 +289,12 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
     final isSelected = _selectedSection == section;
     final availableCount = section.availableCount;
     final isAvailable = availableCount > 0;
+
+    // Get unique vehicle types in this section
+    final vehicleTypes = section.spots
+        .map((s) => s.vehicleType)
+        .toSet()
+        .toList();
 
     return GestureDetector(
       onTap: () => _onSectionSelected(section),
@@ -298,51 +344,63 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    section.name,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        section.name,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const Spacer(),
+                      // Vehicle Type Icons
+                      ...vehicleTypes.map((type) {
+                        IconData iconData;
+                        if (type.toLowerCase() == 'motorcycle') {
+                          iconData = Icons.two_wheeler;
+                        } else {
+                          iconData = Icons.directions_car;
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Icon(
+                            iconData,
+                            size: 18,
+                            color: isSelected
+                                ? Colors.white.withValues(alpha: 0.8)
+                                : Colors.grey[400],
+                          ),
+                        );
+                      }),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isAvailable
-                        ? '$availableCount spots available'
-                        : 'Full',
+                    isAvailable ? '$availableCount spots available' : 'Full',
                     style: TextStyle(
                       color: isSelected
                           ? Colors.white.withValues(alpha: 0.8)
                           : isAvailable
-                              ? Colors.green
-                              : Colors.red,
-                      fontSize: 14,
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFFEF4444),
                       fontWeight: FontWeight.w500,
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check,
-                  color: Color(0xFF137FEC),
-                  size: 16,
-                ),
-              )
-            else
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.grey[300],
-                size: 16,
-              ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isSelected ? Colors.white : Colors.grey[400],
+            ),
           ],
         ),
       ),
@@ -351,210 +409,96 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
 
   Widget _buildBottomSheet(api.Level currentLevel) {
     return Container(
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 24,
-            offset: const Offset(0, -4),
+            color: Colors.black12,
+            blurRadius: 20,
+            offset: Offset(0, -5),
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag Handle
-          Container(
-            width: 48,
-            height: 6,
-            margin: const EdgeInsets.only(bottom: 24),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
-          
-          // Venue Info
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.venue.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on,
-                          color: Color(0xFF137FEC), size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        widget.venue.address,
-                        style: const TextStyle(
-                          color: Color(0xFF137FEC),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${currentLevel.name} - ${_selectedSection!.name}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // Arrival Window Info
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE3F2FD), // Blue 50
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFBBDEFB)), // Blue 100
-            ),
-            child: Row(
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF137FEC).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.timer, color: Color(0xFF137FEC)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_selectedSection!.name} Selected',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${currentLevel.name} • Standard',
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '1-Hour Arrival Window',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Text(
-                            'Hold expires in: ',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                          const Text(
-                            '59 : 30', // Static for now as requested
-                            style: TextStyle(
-                              color: Color(0xFF137FEC),
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '₱${widget.venue.pricePerHour.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: Color(0xFF16A34A),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // Confirm Button
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _confirmReservation,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF137FEC),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Confirm Reservation',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _confirmReservation,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF137FEC),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  right: BorderSide(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                  ),
-                                ),
-                              ),
-                              child: const Text(
-                                '1 hr',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              '₱40.00',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.arrow_forward, color: Colors.white),
-                          ],
-                        ),
-                      ],
-                    ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Select Best Spot',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
-
 
 class Section {
   Section({required this.name, required this.spots});

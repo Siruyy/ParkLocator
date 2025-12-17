@@ -15,7 +15,7 @@ export const routes: Routes = [
     { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
     { path: 'users', component: UsersComponent, canActivate: [authGuard] },
     { path: 'venues', component: VenuesComponent, canActivate: [authGuard] },
-    { path: 'venues/rates', component: RatesComponent, canActivate: [authGuard] },
+    { path: 'venues/:id/rates', component: RatesComponent, canActivate: [authGuard] },
     { path: 'reservations', component: ReservationsComponent, canActivate: [authGuard] },
     { path: 'logs', component: LogsComponent, canActivate: [authGuard] },
     { path: 'finance', component: FinanceComponent, canActivate: [authGuard] },

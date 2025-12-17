@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:mobile/api/src/api_exception.dart';
 import 'package:mobile/api/src/models/models.dart';
@@ -9,11 +10,14 @@ class ApiClient {
     http.Client? httpClient,
     String? baseUrl,
   })  : _httpClient = httpClient ?? http.Client(),
-        _baseUrl = baseUrl ?? 'http://10.0.2.2:3000'; // Android emulator localhost
+        _baseUrl = baseUrl ?? (Platform.isAndroid ? 'http://10.0.2.2:3000/api/v1' : 'http://localhost:3000/api/v1');
 
   final http.Client _httpClient;
   final String _baseUrl;
   String? _authToken;
+
+  String get baseUrl => _baseUrl;
+  String get assetBaseUrl => _baseUrl.replaceAll('/api/v1', '');
 
   /// Set the auth token for authenticated requests
   void setAuthToken(String? token) {
@@ -327,6 +331,25 @@ class ApiClient {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       throw ApiException(
         message: body['message'] as String? ?? 'Failed to cancel reservation',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Check in a reservation via QR code
+  Future<Reservation> checkIn(String qrCode) async {
+    final response = await _httpClient.post(
+      Uri.parse('$_baseUrl/reservations/check-in/$qrCode'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Reservation.fromJson(json['data'] as Map<String, dynamic>);
+    } else {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      throw ApiException(
+        message: body['message'] as String? ?? 'Failed to check in',
         statusCode: response.statusCode,
       );
     }

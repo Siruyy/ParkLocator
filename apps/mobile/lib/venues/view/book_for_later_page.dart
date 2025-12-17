@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+  import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/venues/models/venue.dart';
@@ -31,7 +31,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
     super.initState();
     _startDate = DateTime.now();
     _focusedMonth = DateTime(_startDate.year, _startDate.month);
-    
+
     // Default to next full hour
     final now = TimeOfDay.now();
     _startTime = TimeOfDay(hour: (now.hour + 1) % 24, minute: 0);
@@ -60,7 +60,10 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
 
   void _changeMonth(int offset) {
     setState(() {
-      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + offset);
+      _focusedMonth = DateTime(
+        _focusedMonth.year,
+        _focusedMonth.month + offset,
+      );
     });
   }
 
@@ -91,17 +94,18 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
       _endTime.minute,
     );
 
-    // If same day and end time is before start time, assume next day? 
+    // If same day and end time is before start time, assume next day?
     // Or just invalid? For now, let's assume if end < start on same day, it's +24h (overnight)
     // But with range selection, we should respect the dates.
     if (_endDate == null && endDateTime.isBefore(startDateTime)) {
       endDateTime = endDateTime.add(const Duration(days: 1));
     }
 
-    final durationInHours = endDateTime.difference(startDateTime).inMinutes / 60.0;
+    final durationInHours =
+        endDateTime.difference(startDateTime).inMinutes / 60.0;
     // Ensure non-negative
     final effectiveDuration = durationInHours > 0 ? durationInHours : 0.0;
-    
+
     return effectiveDuration * widget.venue.pricePerHour;
   }
 
@@ -133,12 +137,12 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
     final days = duration.inDays;
     final hours = duration.inHours % 24;
     final minutes = duration.inMinutes % 60;
-    
+
     final parts = <String>[];
     if (days > 0) parts.add('$days days');
     if (hours > 0) parts.add('$hours hrs');
     if (minutes > 0) parts.add('$minutes mins');
-    
+
     if (parts.isEmpty) return '0 mins';
     return parts.join(' ');
   }
@@ -146,10 +150,14 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return Scaffold(
@@ -207,7 +215,9 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                               color: Colors.grey[300],
                               image: widget.venue.imageUrl != null
                                   ? DecorationImage(
-                                      image: NetworkImage(widget.venue.imageUrl!),
+                                      image: NetworkImage(
+                                        widget.venue.imageUrl!,
+                                      ),
                                       fit: BoxFit.cover,
                                     )
                                   : null,
@@ -239,7 +249,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                                     const SizedBox(width: 2),
                                     Expanded(
                                       child: Text(
-                                        '${widget.venue.address} • ₱${widget.venue.pricePerHour.toStringAsFixed(0)}/hr',
+                                        '${widget.venue.address} • ₱${widget.venue.pricePerHour.toStringAsFixed(0)} reservation',
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           color: subTextColor,
@@ -273,7 +283,10 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                         Row(
                           children: [
                             IconButton(
-                              icon: Icon(Icons.chevron_left, color: subTextColor),
+                              icon: Icon(
+                                Icons.chevron_left,
+                                color: subTextColor,
+                              ),
                               onPressed: () => _changeMonth(-1),
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
@@ -310,7 +323,12 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                           color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
                         ),
                       ),
-                      child: _buildCalendarGrid(textColor, subTextColor, primaryColor, isDark),
+                      child: _buildCalendarGrid(
+                        textColor,
+                        subTextColor,
+                        primaryColor,
+                        isDark,
+                      ),
                     ),
                     const SizedBox(height: 12),
 
@@ -321,7 +339,9 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                         children: [
                           _QuickSelectChip(
                             label: 'Today',
-                            isSelected: isSameDay(_startDate, DateTime.now()) && _endDate == null,
+                            isSelected:
+                                isSameDay(_startDate, DateTime.now()) &&
+                                _endDate == null,
                             onTap: () => _onDateSelected(DateTime.now()),
                             primaryColor: primaryColor,
                             isDark: isDark,
@@ -329,15 +349,23 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                           const SizedBox(width: 8),
                           _QuickSelectChip(
                             label: 'Tomorrow',
-                            isSelected: isSameDay(_startDate, DateTime.now().add(const Duration(days: 1))) && _endDate == null,
-                            onTap: () => _onDateSelected(DateTime.now().add(const Duration(days: 1))),
+                            isSelected:
+                                isSameDay(
+                                  _startDate,
+                                  DateTime.now().add(const Duration(days: 1)),
+                                ) &&
+                                _endDate == null,
+                            onTap: () => _onDateSelected(
+                              DateTime.now().add(const Duration(days: 1)),
+                            ),
                             primaryColor: primaryColor,
                             isDark: isDark,
                           ),
                           const SizedBox(width: 8),
                           _QuickSelectChip(
                             label: 'This Weekend',
-                            isSelected: false, // Logic for weekend is a bit more complex, skipping visual state for now
+                            isSelected:
+                                false, // Logic for weekend is a bit more complex, skipping visual state for now
                             onTap: () {
                               // Find next Saturday
                               var date = DateTime.now();
@@ -384,7 +412,8 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                                 value: _startTime,
                                 items: _generateTimeSlots(),
                                 onChanged: (val) {
-                                  if (val != null) setState(() => _startTime = val);
+                                  if (val != null)
+                                    setState(() => _startTime = val);
                                 },
                                 isDark: isDark,
                                 textColor: textColor,
@@ -411,7 +440,8 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                                 value: _endTime,
                                 items: _generateTimeSlots(),
                                 onChanged: (val) {
-                                  if (val != null) setState(() => _endTime = val);
+                                  if (val != null)
+                                    setState(() => _endTime = val);
                                 },
                                 isDark: isDark,
                                 textColor: textColor,
@@ -425,10 +455,14 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.blue[900]!.withOpacity(0.2) : Colors.blue[50],
+                        color: isDark
+                            ? Colors.blue[900]!.withOpacity(0.2)
+                            : Colors.blue[50],
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isDark ? Colors.blue[900]!.withOpacity(0.3) : Colors.blue[100]!,
+                          color: isDark
+                              ? Colors.blue[900]!.withOpacity(0.3)
+                              : Colors.blue[100]!,
                         ),
                       ),
                       child: Row(
@@ -453,7 +487,9 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24), // Just some padding, footer is now separate
+                    const SizedBox(
+                      height: 24,
+                    ), // Just some padding, footer is now separate
                   ],
                 ),
               ),
@@ -517,7 +553,10 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: primaryColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(4),
@@ -544,7 +583,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                    SizedBox(
+                  SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
@@ -565,8 +604,11 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                           _endTime.minute,
                         );
 
-                        if (_endDate == null && endDateTime.isBefore(startDateTime)) {
-                          endDateTime = endDateTime.add(const Duration(days: 1));
+                        if (_endDate == null &&
+                            endDateTime.isBefore(startDateTime)) {
+                          endDateTime = endDateTime.add(
+                            const Duration(days: 1),
+                          );
                         }
 
                         Navigator.of(context).push(
@@ -612,9 +654,21 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
     );
   }
 
-  Widget _buildCalendarGrid(Color textColor, Color subTextColor, Color primaryColor, bool isDark) {
-    final daysInMonth = DateUtils.getDaysInMonth(_focusedMonth.year, _focusedMonth.month);
-    final firstDayOfMonth = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
+  Widget _buildCalendarGrid(
+    Color textColor,
+    Color subTextColor,
+    Color primaryColor,
+    bool isDark,
+  ) {
+    final daysInMonth = DateUtils.getDaysInMonth(
+      _focusedMonth.year,
+      _focusedMonth.month,
+    );
+    final firstDayOfMonth = DateTime(
+      _focusedMonth.year,
+      _focusedMonth.month,
+      1,
+    );
     final firstWeekday = firstDayOfMonth.weekday; // 1 = Mon, 7 = Sun
 
     final dayLabels = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
@@ -644,10 +698,13 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
     // Days
     for (var i = 1; i <= daysInMonth; i++) {
       final date = DateTime(_focusedMonth.year, _focusedMonth.month, i);
-      
+
       final isStart = isSameDay(date, _startDate);
       final isEnd = _endDate != null && isSameDay(date, _endDate!);
-      final isInRange = _endDate != null && date.isAfter(_startDate) && date.isBefore(_endDate!);
+      final isInRange =
+          _endDate != null &&
+          date.isAfter(_startDate) &&
+          date.isBefore(_endDate!);
       final isToday = isSameDay(date, DateTime.now());
 
       // Visual logic
@@ -657,15 +714,17 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
       if (isStart) {
         decoration = BoxDecoration(
           color: primaryColor,
-          borderRadius: _endDate != null 
-              ? const BorderRadius.horizontal(left: Radius.circular(8)) 
+          borderRadius: _endDate != null
+              ? const BorderRadius.horizontal(left: Radius.circular(8))
               : BorderRadius.circular(8),
         );
         itemTextColor = Colors.white;
       } else if (isEnd) {
         decoration = BoxDecoration(
           color: primaryColor,
-          borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+          borderRadius: const BorderRadius.horizontal(
+            right: Radius.circular(8),
+          ),
         );
         itemTextColor = Colors.white;
       } else if (isInRange) {
@@ -692,7 +751,9 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                 '$i',
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  fontWeight: isStart || isEnd || isToday ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: isStart || isEnd || isToday
+                      ? FontWeight.bold
+                      : FontWeight.normal,
                   color: itemTextColor,
                 ),
               ),
@@ -740,10 +801,14 @@ class _QuickSelectChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.1) : (isDark ? Colors.grey[800] : Colors.white),
+          color: isSelected
+              ? primaryColor.withOpacity(0.1)
+              : (isDark ? Colors.grey[800] : Colors.white),
           borderRadius: BorderRadius.circular(100),
           border: Border.all(
-            color: isSelected ? primaryColor.withOpacity(0.2) : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+            color: isSelected
+                ? primaryColor.withOpacity(0.2)
+                : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
           ),
         ),
         child: Text(
@@ -751,7 +816,9 @@ class _QuickSelectChip extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? primaryColor : (isDark ? Colors.grey[400] : Colors.grey[600]),
+            color: isSelected
+                ? primaryColor
+                : (isDark ? Colors.grey[400] : Colors.grey[600]),
           ),
         ),
       ),
@@ -789,7 +856,10 @@ class _TimeDropdown extends StatelessWidget {
         child: DropdownButton<TimeOfDay>(
           value: value,
           isExpanded: true,
-          icon: Icon(Icons.expand_more, color: isDark ? Colors.grey[400] : Colors.grey[500]),
+          icon: Icon(
+            Icons.expand_more,
+            color: isDark ? Colors.grey[400] : Colors.grey[500],
+          ),
           dropdownColor: isDark ? Colors.grey[800] : Colors.white,
           style: GoogleFonts.inter(
             fontSize: 16,

@@ -1,13 +1,16 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsersService, User, QueryUsersDto } from '../core/services/users.service';
+import { DashboardService } from '../core/services/dashboard.service';
+import { VenuesService, Venue } from '../core/services/venues.service';
+import { AuthService } from '../core/services/auth.service';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
 
 interface UserViewModel extends Omit<User, 'role'> {
-  role: 'driver' | 'manager' | 'attendant' | 'finance';
+  role: 'super_admin' | 'driver' | 'manager' | 'attendant' | 'finance';
   name: string;
   status: 'active' | 'inactive' | 'locked';
   avatarColor: string;
@@ -20,6 +23,7 @@ interface UserViewModel extends Omit<User, 'role'> {
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     SidebarComponent,
     HeaderComponent
   ],
@@ -28,17 +32,36 @@ interface UserViewModel extends Omit<User, 'role'> {
 })
 export class UsersComponent implements OnInit {
   private usersService = inject(UsersService);
+  private dashboardService = inject(DashboardService);
+  private venuesService = inject(VenuesService);
+  private authService = inject(AuthService);
+  private fb = inject(FormBuilder);
 
   users = signal<UserViewModel[]>([]);
   totalRecords = signal<number>(0);
   loading = signal<boolean>(false);
 
+  // Auth & Roles
+  isSuperAdmin = computed(() => this.authService.currentUser()?.role === 'super_admin');
+  isManager = computed(() => this.authService.currentUser()?.role === 'manager');
+
+  // Venues (for Super Admin)
+  venues: Venue[] = [];
+  selectedVenueId = '';
+
+  // Form & Modal
+  userForm: FormGroup;
+  showUserModal = false;
+  isEditing = false;
+  selectedUserId: string | null = null;
+  isSubmitting = false;
+
   // Stats
   stats = {
-    totalUsers: 24,
-    activeNow: 8,
-    managers: 3,
-    attendants: 15
+    totalUsers: 0,
+    activeNow: 0,
+    managers: 0,
+    attendants: 0
   };
 
   // Filters
@@ -53,8 +76,21 @@ export class UsersComponent implements OnInit {
   totalPages = 1;
   limit = 10;
 
+  constructor() {
+    this.userForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      role: ['manager', Validators.required],
+      venueId: ['']
+    });
+  }
+
   ngOnInit() {
+    if (this.isSuperAdmin()) {
+      this.loadVenues();
+    }
     this.loadUsers();
+    this.loadStats();
 
     this.searchSubject.pipe(
       debounceTime(500),
@@ -63,6 +99,24 @@ export class UsersComponent implements OnInit {
       this.searchQuery = query;
       this.currentPage = 1;
       this.loadUsers();
+    });
+  }
+
+  loadVenues() {
+    this.venuesService.getVenues().subscribe(venues => {
+      this.venues = venues;
+    });
+  }
+
+  onVenueFilterChange(event: Event) {
+    this.selectedVenueId = (event.target as HTMLSelectElement).value;
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  loadStats() {
+    this.dashboardService.getStats().subscribe(data => {
+      this.stats = data.userStats;
     });
   }
 
@@ -80,7 +134,7 @@ export class UsersComponent implements OnInit {
   onStatusChange(event: Event) {
     this.selectedStatus = (event.target as HTMLSelectElement).value;
     this.currentPage = 1;
-    // In a real app, we'd filter by status via API
+    this.loadUsers();
   }
 
   changePage(page: number) {
@@ -97,7 +151,9 @@ export class UsersComponent implements OnInit {
       page: this.currentPage,
       limit: this.limit,
       search: this.searchQuery,
-      role: this.selectedRole || undefined
+      role: this.selectedRole || undefined,
+      status: this.selectedStatus || undefined,
+      venueId: this.selectedVenueId || undefined
     };
 
     this.usersService.getUsers(query).subscribe({
@@ -105,7 +161,7 @@ export class UsersComponent implements OnInit {
         const mappedUsers: UserViewModel[] = response.data.map(user => ({
           ...user,
           name: user.email.split('@')[0].replace('.', ' '), // Mock name from email
-          status: Math.random() > 0.2 ? 'active' : (Math.random() > 0.5 ? 'inactive' : 'locked'), // Mock status
+          status: user.status || 'active',
           avatarColor: this.getRandomColor(),
           initials: user.email.substring(0, 2).toUpperCase()
         }));
@@ -124,6 +180,107 @@ export class UsersComponent implements OnInit {
         }
       }
     });
+  }
+
+  openAddUserModal() {
+    this.isEditing = false;
+    this.selectedUserId = null;
+    
+    // Default role based on user type
+    const defaultRole = this.isManager() ? 'attendant' : 'manager';
+    
+    this.userForm.reset({
+      role: defaultRole,
+      venueId: this.selectedVenueId || '' // Pre-select venue if filtered
+    });
+    this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.userForm.get('password')?.updateValueAndValidity();
+    this.showUserModal = true;
+  }
+
+  openEditUserModal(user: UserViewModel) {
+    this.isEditing = true;
+    this.selectedUserId = user.id;
+    this.userForm.patchValue({
+      email: user.email,
+      role: user.role
+    });
+    // Password not required for edit
+    this.userForm.get('password')?.clearValidators();
+    this.userForm.get('password')?.updateValueAndValidity();
+    this.showUserModal = true;
+  }
+
+  closeUserModal() {
+    this.showUserModal = false;
+  }
+
+  onSubmitUser() {
+    if (this.userForm.invalid) return;
+
+    this.isSubmitting = true;
+    const formData = this.userForm.value;
+
+    if (this.isEditing && this.selectedUserId) {
+      // Update (Role only for now)
+      this.usersService.updateRole(this.selectedUserId, formData.role).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.closeUserModal();
+          this.loadUsers();
+        },
+        error: (err) => {
+          console.error('Failed to update user', err);
+          this.isSubmitting = false;
+        }
+      });
+    } else {
+      // Create
+      this.usersService.createUser(formData).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.closeUserModal();
+          this.loadUsers();
+        },
+        error: (err) => {
+          console.error('Failed to create user', err);
+          this.isSubmitting = false;
+        }
+      });
+    }
+  }
+
+  deleteUser(user: UserViewModel) {
+    if (confirm(`Are you sure you want to delete ${user.email}?`)) {
+      this.usersService.deleteUser(user.id).subscribe({
+        next: () => {
+          this.loadUsers();
+        },
+        error: (err) => {
+          console.error('Failed to delete user', err);
+        }
+      });
+    }
+  }
+
+  toggleUserStatus(user: UserViewModel) {
+    const newStatus = user.status === 'active' ? 'inactive' : 'active';
+    const action = newStatus === 'active' ? 'activate' : 'deactivate';
+    
+    if (confirm(`Are you sure you want to ${action} ${user.email}?`)) {
+      this.usersService.updateStatus(user.id, newStatus).subscribe({
+        next: () => {
+          this.loadUsers();
+        },
+        error: (err) => {
+          console.error(`Failed to ${action} user`, err);
+        }
+      });
+    }
+  }
+
+  resetPassword(user: UserViewModel) {
+    alert(`Reset password link sent to ${user.email}`);
   }
 
   getRandomColor() {

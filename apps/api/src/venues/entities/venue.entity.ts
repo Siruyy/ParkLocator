@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
   Index,
 } from 'typeorm';
 import { Level } from './level.entity';
+import { VenueConfiguration } from './venue-configuration.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('venues')
@@ -39,6 +41,9 @@ export class Venue {
 
   @OneToMany(() => User, (user) => user.venue)
   users: User[];
+
+  @OneToOne(() => VenueConfiguration, (config) => config.venue, { cascade: true })
+  configuration: VenueConfiguration;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

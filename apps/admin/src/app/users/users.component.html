@@ -21,7 +21,7 @@
                             Manage access for ParkLocator administrators, mall managers, attendants, and finance personnel.
                         </p>
                     </div>
-                    <button class="flex items-center gap-2 bg-primary text-black px-6 py-3 rounded-full font-bold text-sm hover:brightness-105 transition-all shadow-soft group">
+                    <button (click)="openAddUserModal()" class="flex items-center gap-2 bg-primary text-black px-6 py-3 rounded-full font-bold text-sm hover:brightness-105 transition-all shadow-soft group">
                         <span class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-300">add</span>
                         Add New User
                     </button>
@@ -80,7 +80,18 @@
                                 placeholder="Search by name, email or role..." 
                                 type="text"/>
                         </div>
-                        <div class="flex gap-3 w-full md:w-auto">
+                        <div class="flex gap-3 w-full md:w-auto flex-wrap justify-end">
+                            <!-- Venue Filter (Super Admin Only) -->
+                            <div *ngIf="isSuperAdmin()" class="relative">
+                                <select 
+                                    (change)="onVenueFilterChange($event)"
+                                    class="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm cursor-pointer">
+                                    <option value="">All Properties</option>
+                                    <option *ngFor="let venue of venues" [value]="venue.id">{{ venue.name }}</option>
+                                </select>
+                                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light text-[20px] pointer-events-none">expand_more</span>
+                            </div>
+
                             <div class="relative">
                                 <select 
                                     (change)="onRoleChange($event)"
@@ -118,6 +129,7 @@
                                 <tr>
                                     <th class="px-6 py-4">User</th>
                                     <th class="px-6 py-4">Role</th>
+                                    <th class="px-6 py-4">Property</th>
                                     <th class="px-6 py-4">Status</th>
                                     <th class="px-6 py-4">Date Added</th>
                                     <th class="px-6 py-4 text-right">Actions</th>
@@ -138,17 +150,22 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <span [ngClass]="{
+                                            'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-800/50': user.role === 'super_admin',
                                             'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800/50': user.role === 'manager',
                                             'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800/50': user.role === 'attendant',
                                             'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600': user.role === 'driver' || user.role === 'finance'
                                         }" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border">
                                             <span [ngClass]="{
+                                                'bg-rose-500': user.role === 'super_admin',
                                                 'bg-purple-500': user.role === 'manager',
                                                 'bg-orange-500': user.role === 'attendant',
                                                 'bg-gray-500': user.role === 'driver' || user.role === 'finance'
                                             }" class="size-1.5 rounded-full"></span>
                                             {{ user.role | titlecase }}
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                        {{ user.venue?.name || '-' }}
                                     </td>
                                     <td class="px-6 py-4">
                                         <span [ngClass]="{
@@ -164,14 +181,23 @@
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-text-secondary-light dark:text-text-secondary-dark transition-colors" title="Edit User">
+                                            <button (click)="openEditUserModal(user)" class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-text-secondary-light dark:text-text-secondary-dark transition-colors" title="Edit User">
                                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                                             </button>
-                                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-text-secondary-light dark:text-text-secondary-dark transition-colors" title="Reset Password">
+                                            <button (click)="resetPassword(user)" class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-text-secondary-light dark:text-text-secondary-dark transition-colors" title="Reset Password">
                                                 <span class="material-symbols-outlined text-[18px]">lock_reset</span>
                                             </button>
-                                            <button class="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 rounded-full text-text-secondary-light dark:text-text-secondary-dark transition-colors" title="Deactivate">
-                                                <span class="material-symbols-outlined text-[18px]">block</span>
+                                            <button 
+                                                (click)="toggleUserStatus(user)" 
+                                                class="p-2 rounded-full transition-colors"
+                                                [ngClass]="{
+                                                    'hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-text-secondary-light dark:text-text-secondary-dark': user.status === 'active',
+                                                    'hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 text-text-secondary-light dark:text-text-secondary-dark': user.status !== 'active'
+                                                }"
+                                                [title]="user.status === 'active' ? 'Deactivate' : 'Activate'">
+                                                <span class="material-symbols-outlined text-[18px]">
+                                                    {{ user.status === 'active' ? 'block' : 'check_circle' }}
+                                                </span>
                                             </button>
                                         </div>
                                     </td>
@@ -212,5 +238,89 @@
                 </div>
             </div>
         </main>
+    </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div *ngIf="showUserModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-surface-dark rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-gray-800">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-white/5">
+            <h3 class="font-bold text-lg text-text-primary-light dark:text-text-primary-dark">{{ isEditing ? 'Edit User' : 'Add New User' }}</h3>
+            <button (click)="closeUserModal()" class="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <form [formGroup]="userForm" (ngSubmit)="onSubmitUser()" class="p-6 flex flex-col gap-4">
+            <!-- Email -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Email Address</label>
+                <input 
+                    formControlName="email"
+                    [readonly]="isEditing"
+                    [class.opacity-50]="isEditing"
+                    type="email" 
+                    class="w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm"
+                    placeholder="user@parklocator.com">
+            </div>
+
+            <!-- Password (Create Only) -->
+            <div *ngIf="!isEditing" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Password</label>
+                <input 
+                    formControlName="password"
+                    type="password" 
+                    class="w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm"
+                    placeholder="••••••••">
+            </div>
+
+            <!-- Role -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Role</label>
+                <div class="relative">
+                    <select 
+                        formControlName="role"
+                        class="appearance-none w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm cursor-pointer">
+                        <ng-container *ngIf="isSuperAdmin()">
+                            <option value="manager">Mall Manager</option>
+                            <option value="attendant">Attendant</option>
+                            <option value="finance">Finance</option>
+                            <option value="driver">Driver</option>
+                        </ng-container>
+                        <ng-container *ngIf="isManager()">
+                            <option value="attendant">Attendant</option>
+                        </ng-container>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light text-[20px] pointer-events-none">expand_more</span>
+                </div>
+            </div>
+
+            <!-- Venue (Super Admin Only) -->
+            <div *ngIf="isSuperAdmin()" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Property</label>
+                <div class="relative">
+                    <select 
+                        formControlName="venueId"
+                        class="appearance-none w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm cursor-pointer">
+                        <option value="">Select Property</option>
+                        <option *ngFor="let venue of venues" [value]="venue.id">{{ venue.name }}</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light text-[20px] pointer-events-none">expand_more</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4">
+                <button type="button" (click)="closeUserModal()" class="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                    Cancel
+                </button>
+                <button 
+                    type="submit" 
+                    [disabled]="userForm.invalid || isSubmitting"
+                    class="px-6 py-2.5 bg-primary text-black rounded-xl text-sm font-bold hover:brightness-105 transition-all shadow-soft disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    <span *ngIf="isSubmitting" class="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></span>
+                    {{ isEditing ? 'Save Changes' : 'Create User' }}
+                </button>
+            </div>
+        </form>
     </div>
 </div>

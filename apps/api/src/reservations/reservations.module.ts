@@ -6,9 +6,18 @@ import { Reservation } from './entities/reservation.entity';
 import { Spot } from '../venues/entities/spot.entity';
 import { Level } from '../venues/entities/level.entity';
 import { Venue } from '../venues/entities/venue.entity';
+import { VenueConfiguration } from '../venues/entities/venue-configuration.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Reservation, Spot, Level, Venue])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Reservation,
+      Spot,
+      Level,
+      Venue,
+      VenueConfiguration,
+    ]),
+  ],
   controllers: [ReservationsController],
   providers: [ReservationsService],
   exports: [ReservationsService],

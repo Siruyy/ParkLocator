@@ -107,7 +107,7 @@ class LevelCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Covered', // Mock description
+                        level.isCovered ? 'Covered' : 'Open Air',
                         style: TextStyle(
                           color: Colors.grey[500],
                           fontSize: 14,

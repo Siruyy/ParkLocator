@@ -16,7 +16,7 @@ class VenuesRepository {
       lng: lng,
       radius: radius,
     );
-    return apiVenues.map((v) => Venue.fromApi(v)).toList();
+    return apiVenues.map((v) => Venue.fromApi(v, baseUrl: _apiClient.assetBaseUrl)).toList();
   }
 
   Future<Venue> getVenueDetails(
@@ -25,7 +25,7 @@ class VenuesRepository {
     DateTime? endAt,
   }) async {
     final apiVenue = await _apiClient.getVenue(id, startAt: startAt, endAt: endAt);
-    return Venue.fromApi(apiVenue);
+    return Venue.fromApi(apiVenue, baseUrl: _apiClient.assetBaseUrl);
   }
 
   /// Get venue availability for a specific date range.

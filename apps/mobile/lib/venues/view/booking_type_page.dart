@@ -18,10 +18,14 @@ class BookingTypePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     final isFull = venue.status == VenueStatus.full;
@@ -137,13 +141,6 @@ class BookingTypePage extends StatelessWidget {
                             color: textColor,
                           ),
                         ),
-                        Text(
-                          '/hr',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: subTextColor,
-                          ),
-                        ),
                       ],
                     ),
                   ],
@@ -180,7 +177,9 @@ class BookingTypePage extends StatelessWidget {
                 iconColor: isFull ? Colors.grey : primaryColor,
                 iconBgColor: isFull
                     ? (isDark ? Colors.grey[800]! : Colors.grey[200]!)
-                    : (isDark ? Colors.blue[900]!.withOpacity(0.3) : Colors.blue[50]!),
+                    : (isDark
+                          ? Colors.blue[900]!.withOpacity(0.3)
+                          : Colors.blue[50]!),
                 isRecommended: !isFull,
                 enabled: !isFull,
                 onTap: () {
@@ -203,7 +202,9 @@ class BookingTypePage extends StatelessWidget {
                     'Reserve a specific date and time slot in advance. Secure your spot for future appointments or events.',
                 icon: Icons.calendar_month,
                 iconColor: Colors.purple,
-                iconBgColor: isDark ? Colors.purple[900]!.withOpacity(0.3) : Colors.purple[50]!,
+                iconBgColor: isDark
+                    ? Colors.purple[900]!.withOpacity(0.3)
+                    : Colors.purple[50]!,
                 isRecommended: false,
                 enabled: true,
                 onTap: () {
@@ -224,7 +225,9 @@ class BookingTypePage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[800]!.withOpacity(0.5) : Colors.grey[100]!.withOpacity(0.5),
+                  color: isDark
+                      ? Colors.grey[800]!.withOpacity(0.5)
+                      : Colors.grey[100]!.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
@@ -304,7 +307,9 @@ class _BookingOptionCard extends StatelessWidget {
             color: surfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isRecommended ? primaryColor.withOpacity(0.3) : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+              color: isRecommended
+                  ? primaryColor.withOpacity(0.3)
+                  : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
               width: isRecommended ? 2 : 1,
             ),
             boxShadow: [
@@ -374,7 +379,10 @@ class _BookingOptionCard extends StatelessWidget {
               if (isRecommended) ...[
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),

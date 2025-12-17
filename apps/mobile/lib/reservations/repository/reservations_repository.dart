@@ -39,4 +39,8 @@ class ReservationsRepository {
   Future<api.Reservation> cancelReservation(String id) async {
     return _apiClient.cancelReservation(id);
   }
+
+  Future<api.Reservation> checkIn(String qrCode) async {
+    return _apiClient.checkIn(qrCode);
+  }
 }

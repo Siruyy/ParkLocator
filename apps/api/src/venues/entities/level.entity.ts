@@ -31,6 +31,12 @@ export class Level {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ name: 'is_covered', default: true })
+  isCovered: boolean;
+
+  @Column('simple-array', { name: 'vehicle_types', default: 'Car' })
+  vehicleTypes: string[];
+
   @Column({ name: 'venue_id' })
   venueId: string;
 

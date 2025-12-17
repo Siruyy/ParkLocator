@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '../users/entities/user.entity';
-import { Venue, Level, Spot } from '../venues/entities';
+import { Venue, Level, Spot, VenueConfiguration } from '../venues/entities';
 import { Reservation } from '../reservations/entities/reservation.entity';
 
 @Module({
@@ -17,7 +17,7 @@ import { Reservation } from '../reservations/entities/reservation.entity';
         username: configService.get('DB_USER'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Venue, Level, Spot, Reservation],
+        entities: [User, Venue, Level, Spot, VenueConfiguration, Reservation],
         synchronize: true, // Enabled for dev to update schema
       }),
     }),

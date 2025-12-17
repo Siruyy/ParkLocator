@@ -6,9 +6,20 @@ import { environment } from '../../../environments/environment';
 export interface User {
   id: string;
   email: string;
-  role: 'driver' | 'manager' | 'attendant';
+  role: 'super_admin' | 'driver' | 'manager' | 'attendant';
+  status: 'active' | 'inactive' | 'locked';
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
   createdAt: string;
   updatedAt: string;
+  venue?: {
+    id: string;
+    name: string;
+  };
+  employeeId?: string;
+  department?: string;
+  location?: string;
 }
 
 export interface PaginatedUsers {
@@ -24,6 +35,8 @@ export interface PaginatedUsers {
 export interface QueryUsersDto {
   search?: string;
   role?: string;
+  status?: string;
+  venueId?: string;
   page?: number;
   limit?: number;
 }
@@ -40,6 +53,8 @@ export class UsersService {
     let params = new HttpParams();
     if (query.search) params = params.set('search', query.search);
     if (query.role) params = params.set('role', query.role);
+    if (query.status) params = params.set('status', query.status);
+    if (query.venueId) params = params.set('venueId', query.venueId);
     if (query.page) params = params.set('page', query.page);
     if (query.limit) params = params.set('limit', query.limit);
 
@@ -48,6 +63,22 @@ export class UsersService {
 
   updateRole(id: string, role: string): Observable<User> {
     return this.http.patch<User>(`${this.apiUrl}/${id}/role`, { role });
+  }
+
+  updateStatus(id: string, status: string): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/${id}/status`, { status });
+  }
+
+  createUser(user: Partial<User>): Observable<User> {
+    return this.http.post<User>(this.apiUrl, user);
+  }
+
+  updateUser(id: string, user: Partial<User>): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/${id}`, user);
+  }
+
+  updateProfile(user: Partial<User>): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/profile`, user);
   }
 
   deleteUser(id: string): Observable<void> {

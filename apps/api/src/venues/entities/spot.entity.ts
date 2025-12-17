@@ -34,6 +34,12 @@ export class Spot {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ nullable: true })
+  section: string;
+
+  @Column({ name: 'vehicle_type', default: 'Car' })
+  vehicleType: string;
+
   @Column({ name: 'level_id' })
   levelId: string;
 
