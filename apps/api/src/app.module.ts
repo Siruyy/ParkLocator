@@ -10,6 +10,7 @@ import { VenuesModule } from './venues/venues.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { EventsModule } from './events/events.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { EventsModule } from './events/events.module';
     ReservationsModule,
     DashboardModule,
     EventsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
