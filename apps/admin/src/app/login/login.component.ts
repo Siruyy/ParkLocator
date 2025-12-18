@@ -40,7 +40,7 @@ export class LoginComponent {
       return;
     }
 
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
+    this.authService.login({ email: this.email, password: this.password }, this.rememberMe).subscribe({
       next: () => {
         this.router.navigate([this.returnUrl]);
       },

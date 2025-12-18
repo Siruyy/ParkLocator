@@ -63,7 +63,7 @@ export class AuthService {
   }
 
   private loadUserFromStorage(): User | null {
-    const userJson = localStorage.getItem(USER_KEY);
+    const userJson = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
     if (userJson) {
       try {
         return JSON.parse(userJson);
@@ -82,16 +82,16 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
   }
 
-  login(credentials: LoginRequest): Observable<AuthResponse> {
+  login(credentials: LoginRequest, rememberMe: boolean = true): Observable<AuthResponse> {
     this.isLoadingSignal.set(true);
     this.errorSignal.set(null);
 
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        this.handleAuthSuccess(response);
+        this.handleAuthSuccess(response, rememberMe);
         this.isLoadingSignal.set(false);
       }),
       catchError(error => {
@@ -109,7 +109,7 @@ export class AuthService {
 
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
       tap(response => {
-        this.handleAuthSuccess(response);
+        this.handleAuthSuccess(response, true); // Default to remember me for registration
         this.isLoadingSignal.set(false);
       }),
       catchError(error => {
@@ -121,9 +121,10 @@ export class AuthService {
     );
   }
 
-  private handleAuthSuccess(response: AuthResponse): void {
-    localStorage.setItem(TOKEN_KEY, response.access_token);
-    localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+  private handleAuthSuccess(response: AuthResponse, rememberMe: boolean): void {
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem(TOKEN_KEY, response.access_token);
+    storage.setItem(USER_KEY, JSON.stringify(response.user));
     this.currentUserSignal.set(response.user);
   }
 
@@ -135,6 +136,8 @@ export class AuthService {
   private clearAuth(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
     this.currentUserSignal.set(null);
   }
 

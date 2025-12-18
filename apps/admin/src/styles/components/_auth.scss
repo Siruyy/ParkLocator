@@ -72,11 +72,11 @@
   @apply shadow-sm transition-all;
   @apply focus:outline-none focus:ring-2 focus:ring-primary/50;
   @apply placeholder:text-text-muted;
-  padding-left: 3rem;
-  padding-right: 1rem;
+  padding-left: 3rem !important;
+  padding-right: 1rem !important;
   
   &.has-toggle {
-    padding-right: 3rem;
+    padding-right: 3rem !important;
   }
 }
 

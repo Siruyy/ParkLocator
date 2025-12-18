@@ -6,10 +6,8 @@
             <!-- Header / Logo Area -->
             <div class="login-header">
                 <div class="login-logo">
-                    <div class="login-logo-icon">
-                        <span class="material-symbols-outlined">local_parking</span>
-                    </div>
-                    <span class="login-logo-text">ParkLocator</span>
+                    <img src="assets/images/logo2.png" alt="Parking Boy" class="size-10 rounded-xl object-contain" />
+                    <span class="login-logo-text">Parking Boy</span>
                 </div>
                 <div>
                     <h1 class="login-title">Admin Portal</h1>
@@ -27,6 +25,7 @@
                         <span class="login-input-icon material-symbols-outlined">person</span>
                         <input pInputText 
                                [(ngModel)]="email"
+                               (keydown.enter)="onLogin()"
                                class="login-input" 
                                id="email" 
                                placeholder="admin@parklocator.com" 
@@ -40,6 +39,7 @@
                         <span class="login-input-icon material-symbols-outlined">lock</span>
                         <input pInputText
                                [(ngModel)]="password"
+                               (keydown.enter)="onLogin()"
                                [type]="passwordVisible ? 'text' : 'password'"
                                class="login-input has-toggle" 
                                id="password" 
