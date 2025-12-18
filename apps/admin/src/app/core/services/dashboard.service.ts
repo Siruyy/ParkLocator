@@ -11,6 +11,8 @@ export interface DashboardStats {
     attendants: number;
   };
   occupancyRate: number;
+  totalOccupied: number;
+  totalCapacity: number;
   occupancyData: {
     label: string;
     value: number;
@@ -21,7 +23,7 @@ export interface DashboardStats {
   todaysRevenue: number;
   recentActivities: {
     title: string;
-    time: string;
+    time: string | Date;
     icon: string;
     iconBg: string;
     iconColor: string;

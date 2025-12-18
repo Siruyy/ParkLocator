@@ -1,0 +1,77 @@
+/* ============================================
+   BADGE & TAG STYLES
+   ============================================ */
+
+/* Base Badge */
+.badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full;
+  @apply text-xs font-semibold;
+}
+
+/* Status Badges */
+.badge-success {
+  @apply badge bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400;
+}
+
+.badge-warning {
+  @apply badge bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400;
+}
+
+.badge-danger {
+  @apply badge bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400;
+}
+
+.badge-info {
+  @apply badge bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400;
+}
+
+.badge-neutral {
+  @apply badge bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300;
+}
+
+.badge-primary {
+  @apply badge bg-primary/20 text-yellow-800 dark:text-yellow-300;
+}
+
+/* Dot Indicator */
+.badge-dot {
+  @apply size-2 rounded-full;
+}
+
+.badge-dot--success {
+  @apply badge-dot bg-green-500;
+}
+
+.badge-dot--warning {
+  @apply badge-dot bg-amber-500;
+}
+
+.badge-dot--danger {
+  @apply badge-dot bg-red-500;
+}
+
+.badge-dot--info {
+  @apply badge-dot bg-blue-500;
+}
+
+/* Tag (larger, with icon support) */
+.tag {
+  @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-xl;
+  @apply text-sm font-medium;
+}
+
+.tag-blue {
+  @apply tag bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400;
+}
+
+.tag-green {
+  @apply tag bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400;
+}
+
+.tag-purple {
+  @apply tag bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400;
+}
+
+.tag-orange {
+  @apply tag bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400;
+}

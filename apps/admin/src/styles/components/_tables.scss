@@ -1,0 +1,147 @@
+/* ============================================
+   TABLE STYLES
+   ============================================ */
+
+/* Table Container */
+.table-container {
+  @apply overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-800;
+  @apply bg-surface-light dark:bg-surface-dark;
+}
+
+/* Table Wrapper - with filters and padding */
+.table-wrapper {
+  @apply flex flex-col gap-4 bg-white dark:bg-[#23221a] p-4 rounded-3xl;
+  @apply border border-border-light dark:border-border-dark shadow-sm;
+}
+
+/* Table Filters Row */
+.table-filters {
+  @apply flex flex-col lg:flex-row gap-4 items-center;
+}
+
+.table-search {
+  @apply flex-1 min-w-[240px];
+}
+
+.table-filter-group {
+  @apply flex gap-3 w-full lg:w-auto flex-wrap;
+}
+
+.table-filter-item {
+  @apply w-full sm:w-[180px];
+}
+
+.table-filter-item--wide {
+  @apply w-full sm:w-[200px];
+}
+
+/* Table Header */
+.table-header {
+  @apply text-xs font-bold uppercase tracking-wider;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+  @apply bg-gray-50 dark:bg-white/5;
+}
+
+.table-header-cell {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+  @apply px-3 text-xs font-bold uppercase tracking-wider text-text-secondary;
+}
+
+.table-header-cell--first {
+  @apply table-header-cell pl-6;
+}
+
+.table-header-cell--last {
+  @apply table-header-cell pr-6 text-center;
+}
+
+/* Table Row */
+.table-row {
+  @apply border-b border-gray-100 dark:border-gray-800;
+  @apply hover:bg-gray-50/50 dark:hover:bg-white/5;
+  @apply transition-colors;
+}
+
+.table-row-interactive {
+  @apply hover:bg-gray-50 dark:hover:bg-[#2a2a20] transition-colors;
+  @apply border-b border-border-light dark:border-border-dark;
+}
+
+/* Table Cell */
+.table-cell {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+  @apply px-3;
+  @apply text-sm text-text-primary-light dark:text-text-primary-dark;
+}
+
+.table-cell--first {
+  @apply table-cell pl-6;
+}
+
+.table-cell--last {
+  @apply table-cell pr-6 text-center;
+}
+
+/* Table Cell - Mono */
+.table-cell-mono {
+  @apply table-cell font-mono text-xs;
+}
+
+/* Empty State */
+.table-empty {
+  @apply text-center py-12;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Table Actions */
+.table-actions {
+  @apply flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity;
+}
+
+/* Avatar in Table */
+.table-avatar {
+  @apply size-10 rounded-full flex items-center justify-center;
+  @apply font-bold text-sm border-2 border-white dark:border-[#23221a] shadow-sm;
+}
+
+/* User Cell with Avatar */
+.table-user {
+  @apply flex items-center gap-3;
+}
+
+.table-user-name {
+  @apply font-bold text-sm text-text-main dark:text-white;
+}
+
+.table-user-email {
+  @apply text-xs text-text-secondary;
+}
+
+/* Status Indicator */
+.table-status {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full;
+  @apply text-xs font-semibold;
+}
+
+/* Status Badges */
+.status-badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold;
+}
+
+.status-active {
+  @apply bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400;
+}
+
+.status-pending {
+  @apply bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400;
+}
+
+.status-inactive {
+  @apply bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400;
+}
+
+.status-error {
+  @apply bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400;
+}

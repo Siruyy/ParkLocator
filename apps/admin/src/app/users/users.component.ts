@@ -8,6 +8,16 @@ import { AuthService } from '../core/services/auth.service';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { DialogModule } from 'primeng/dialog';
+import { CardModule } from 'primeng/card';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface UserViewModel extends Omit<User, 'role'> {
   role: 'super_admin' | 'driver' | 'manager' | 'attendant' | 'finance';
@@ -25,7 +35,17 @@ interface UserViewModel extends Omit<User, 'role'> {
     FormsModule,
     ReactiveFormsModule,
     SidebarComponent,
-    HeaderComponent
+    HeaderComponent,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    IconFieldModule,
+    InputIconModule,
+    SelectModule,
+    TagModule,
+    DialogModule,
+    CardModule,
+    TooltipModule
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
@@ -68,6 +88,21 @@ export class UsersComponent implements OnInit {
   searchQuery = '';
   selectedRole: string = '';
   selectedStatus: string = '';
+
+  roleOptions = [
+    { label: 'All Roles', value: '' },
+    { label: 'Mall Manager', value: 'manager' },
+    { label: 'Attendant', value: 'attendant' },
+    { label: 'Finance', value: 'finance' },
+    { label: 'Driver', value: 'driver' }
+  ];
+
+  statusOptions = [
+    { label: 'Status: All', value: '' },
+    { label: 'Active', value: 'active' },
+    { label: 'Inactive', value: 'inactive' },
+    { label: 'Locked', value: 'locked' }
+  ];
 
   private searchSubject = new Subject<string>();
   

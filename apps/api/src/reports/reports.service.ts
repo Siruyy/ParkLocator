@@ -28,14 +28,13 @@ export class ReportsService {
         .andWhere('r.created_at >= :start AND r.created_at <= :end', { start, end })
         .getRawOne();
 
-      const count = await this.reservationsRepository.count({
-        where: (qb) => {
-          qb.where('status IN (:...statuses)', {
-            statuses: [ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN, ReservationStatus.COMPLETED]
-          })
-          .andWhere('created_at >= :start AND created_at <= :end', { start, end });
-        }
-      });
+      const count = await this.reservationsRepository
+        .createQueryBuilder('r')
+        .where('r.status IN (:...statuses)', {
+          statuses: [ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN, ReservationStatus.COMPLETED]
+        })
+        .andWhere('r.created_at >= :start AND r.created_at <= :end', { start, end })
+        .getCount();
 
       return { revenue: parseFloat(sum || '0'), transactions: count };
     };

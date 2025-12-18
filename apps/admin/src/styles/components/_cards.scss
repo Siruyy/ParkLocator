@@ -1,0 +1,81 @@
+/* ============================================
+   CARD STYLES
+   ============================================ */
+
+/* Base Card */
+.card {
+  @apply bg-surface-light dark:bg-surface-dark;
+  @apply rounded-3xl border border-gray-100 dark:border-gray-800;
+  @apply shadow-sm;
+}
+
+/* Card with Padding */
+.card-padded {
+  @apply card p-5;
+}
+
+/* Stat Card - For dashboard statistics */
+.stat-card {
+  @apply card p-5;
+  @apply flex flex-col gap-3;
+}
+
+.stat-card-horizontal {
+  @apply card p-4;
+}
+
+.stat-card-icon {
+  @apply size-12 rounded-xl flex items-center justify-center;
+}
+
+.stat-card-icon--blue {
+  @apply bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400;
+}
+
+.stat-card-icon--green {
+  @apply bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400;
+}
+
+.stat-card-icon--orange {
+  @apply bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400;
+}
+
+.stat-card-icon--purple {
+  @apply bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400;
+}
+
+.stat-card-icon--red {
+  @apply bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400;
+}
+
+.stat-card-label {
+  @apply text-xs text-text-secondary font-medium uppercase tracking-wider;
+}
+
+.stat-card-value {
+  @apply text-xl font-bold text-text-main dark:text-white;
+}
+
+/* Interactive Card Row */
+.card-row {
+  @apply flex items-center justify-between p-4 rounded-2xl;
+  @apply bg-gray-50 dark:bg-white/5;
+  @apply border border-gray-100 dark:border-gray-700;
+}
+
+/* Info Card - with header and content sections */
+.info-card {
+  @apply card;
+  
+  &__header {
+    @apply flex items-center gap-3 p-5 border-b border-gray-100 dark:border-gray-800;
+  }
+  
+  &__content {
+    @apply p-5;
+  }
+  
+  &__footer {
+    @apply p-4 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800;
+  }
+}

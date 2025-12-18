@@ -5,11 +5,12 @@ import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
 import { AuthService } from '../core/services/auth.service';
 import { UsersService } from '../core/services/users.service';
+import { ToggleSwitch } from 'primeng/toggleswitch';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent, HeaderComponent, ToggleSwitch],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })

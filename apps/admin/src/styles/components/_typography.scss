@@ -1,0 +1,86 @@
+/* ============================================
+   TYPOGRAPHY STYLES
+   ============================================ */
+
+/* Headings */
+.heading-1 {
+  @apply text-4xl font-black leading-tight tracking-[-0.033em];
+  @apply text-text-main dark:text-white;
+}
+
+.heading-2 {
+  @apply text-2xl font-bold tracking-tight;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+}
+
+.heading-3 {
+  @apply text-xl font-bold;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+}
+
+.heading-4 {
+  @apply text-lg font-bold;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+}
+
+/* Body Text */
+.text-body {
+  @apply text-sm text-text-primary-light dark:text-text-primary-dark;
+}
+
+.text-secondary {
+  @apply text-base text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+.text-muted {
+  @apply text-xs text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Labels */
+.label {
+  @apply text-sm font-medium text-text-primary-light dark:text-text-primary-dark;
+}
+
+.label-bold {
+  @apply text-sm font-bold text-text-primary-light dark:text-text-primary-dark;
+}
+
+.label-uppercase {
+  @apply text-xs font-bold uppercase tracking-wider;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Mono/Code Text */
+.text-mono {
+  @apply font-mono text-sm;
+}
+
+.text-mono-sm {
+  @apply font-mono text-xs;
+}
+
+/* Links */
+.link {
+  @apply text-primary hover:underline transition-colors cursor-pointer;
+}
+
+.link-subtle {
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+  @apply hover:text-primary transition-colors cursor-pointer;
+}
+
+/* Back Link */
+.back-link {
+  @apply inline-flex items-center gap-2 text-sm font-medium;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+  @apply hover:text-primary transition-colors;
+}
+
+/* Truncate */
+.truncate-1 {
+  @apply truncate;
+}
+
+.truncate-2 {
+  @apply line-clamp-2;
+}

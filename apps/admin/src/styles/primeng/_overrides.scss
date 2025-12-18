@@ -1,0 +1,381 @@
+/* ============================================
+   PRIMENG COMPONENT OVERRIDES
+   ============================================ */
+@import "primeicons/primeicons.css";
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes dialogSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   DIALOG STYLES - Unified Modal Design
+   ============================================ */
+
+/* Base Dialog Styles - applies to all p-dialog */
+.p-dialog {
+  background: #ffffff !important;
+  border-radius: 1.5rem !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25) !important;
+  overflow: hidden;
+  
+  /* Dialog animation */
+  animation: dialogSlideIn 0.25s ease-out;
+
+  .p-dialog-header {
+    background: #ffffff !important;
+    padding: 1.25rem 1.5rem !important;
+    border-bottom: 1px solid #f3f4f6;
+
+    .p-dialog-title {
+      font-size: 1.25rem !important;
+      font-weight: 700 !important;
+      color: #1c1c0d !important;
+    }
+
+    .p-dialog-header-close {
+      color: #6b7280 !important;
+
+      &:hover {
+        background: #f3f4f6 !important;
+        color: #1c1c0d !important;
+      }
+    }
+  }
+
+  .p-dialog-content {
+    background: #ffffff !important;
+    padding: 1.5rem !important;
+  }
+
+  .p-dialog-footer {
+    background: #f9fafb !important;
+    padding: 1rem 1.5rem !important;
+    border-top: 1px solid #f3f4f6;
+  }
+}
+
+/* Dark mode dialog */
+.dark .p-dialog {
+  background: #1f1e14 !important;
+  border-color: #3f3f46 !important;
+
+  .p-dialog-header {
+    background: #1f1e14 !important;
+    border-color: #3f3f46;
+
+    .p-dialog-title {
+      color: #e8e6d9 !important;
+    }
+
+    .p-dialog-header-close {
+      color: #a09f8d !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #e8e6d9 !important;
+      }
+    }
+  }
+
+  .p-dialog-content {
+    background: #1f1e14 !important;
+  }
+
+  .p-dialog-footer {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-color: #3f3f46;
+  }
+}
+
+/* Dialogs with showHeader=false (custom content dialogs) */
+.p-dialog:has(.p-dialog-content > div:first-child) {
+  &:not(:has(.p-dialog-header .p-dialog-title)) {
+    .p-dialog-content {
+      padding: 0 !important;
+    }
+  }
+}
+
+/* Confirm Dialog */
+.p-confirmdialog {
+  .p-confirmdialog-message {
+    margin-left: 0.75rem;
+  }
+}
+
+/* ============================================
+   SELECT BUTTON / TOGGLE BUTTON
+   ============================================ */
+.p-selectbutton {
+  @apply rounded-full overflow-hidden border border-border-light dark:border-border-dark p-1 bg-transparent;
+  display: inline-flex;
+  border-radius: 9999px !important;
+
+  .p-togglebutton {
+    @apply rounded-full border-none bg-transparent text-text-main dark:text-white text-sm font-medium px-4 py-2 transition-all;
+    border-radius: 9999px !important;
+
+    &.p-togglebutton-checked {
+      @apply bg-primary text-[#1c1c0d] font-bold shadow-sm;
+      background-color: theme("colors.primary") !important;
+      color: #1c1c0d !important;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    &:not(.p-togglebutton-checked):hover {
+      @apply bg-gray-100 dark:bg-[#333328];
+    }
+  }
+}
+
+/* ============================================
+   DATE PICKER
+   ============================================ */
+.p-datepicker-input-icon-container {
+  @apply text-text-secondary;
+  top: 50% !important;
+  margin-top: 0 !important;
+  transform: translateY(-50%);
+  right: 1rem !important;
+}
+
+/* ============================================
+   CARD
+   ============================================ */
+.p-card {
+  @apply transition-all duration-200 ease-out;
+  
+  .p-card-body {
+    padding: 1.25rem !important;
+  }
+
+  &.h-full {
+    display: flex;
+    flex-direction: column;
+    .p-card-body {
+      flex: 1;
+    }
+  }
+  
+  /* Interactive card variant */
+  &.card-interactive {
+    cursor: pointer;
+    
+    &:hover {
+      @apply shadow-md;
+      transform: translateY(-2px);
+    }
+    
+    &:active {
+      @apply shadow-sm;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+.p-progressbar {
+  border: none !important;
+
+  .p-progressbar-value {
+    background: theme("colors.primary") !important;
+  }
+}
+
+/* ============================================
+   TABLE
+   ============================================ */
+.p-datatable {
+  .p-datatable-thead > tr > th {
+    @apply text-xs font-bold uppercase tracking-wider;
+    @apply text-text-secondary-light dark:text-text-secondary-dark;
+    @apply bg-gray-50 dark:bg-white/5;
+    @apply border-b border-gray-100 dark:border-gray-800;
+  }
+
+  .p-datatable-tbody > tr {
+    @apply border-b border-gray-100 dark:border-gray-800;
+    @apply transition-all duration-150 ease-out;
+    cursor: pointer;
+
+    &:hover {
+      @apply bg-gray-50/80 dark:bg-white/[0.07];
+      transform: translateX(2px);
+    }
+    
+    &:active {
+      @apply bg-gray-100/80 dark:bg-white/10;
+    }
+
+    > td {
+      @apply text-sm text-text-primary-light dark:text-text-primary-dark;
+    }
+  }
+  
+  /* Selectable rows */
+  &.p-datatable-selectable-cell .p-datatable-tbody > tr > td,
+  &.p-datatable-selectable-row .p-datatable-tbody > tr {
+    cursor: pointer;
+  }
+}
+
+/* ============================================
+   INPUT TEXT
+   ============================================ */
+.p-inputtext {
+  @apply bg-gray-50 dark:bg-white/5;
+  @apply border-gray-200 dark:border-gray-700;
+  @apply rounded-xl;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+  @apply transition-all duration-200;
+
+  &:hover:not(:focus):not(:disabled) {
+    @apply border-gray-300 dark:border-gray-600;
+  }
+
+  &:focus {
+    @apply border-primary ring-2 ring-primary/20;
+  }
+}
+
+/* ============================================
+   BUTTON
+   ============================================ */
+.p-button {
+  @apply transition-all duration-200 ease-out;
+  
+  &:not(:disabled):active {
+    transform: scale(0.97);
+  }
+  
+  &.p-button-primary {
+    @apply bg-primary text-black border-none;
+    
+    &:not(:disabled):hover {
+      filter: brightness(1.05);
+      box-shadow: 0 4px 12px rgba(249, 245, 6, 0.3);
+    }
+  }
+
+  &.p-button-text {
+    @apply bg-transparent;
+    
+    &:not(:disabled):hover {
+      @apply bg-gray-100 dark:bg-white/10;
+    }
+  }
+  
+  &.p-button-outlined {
+    &:not(:disabled):hover {
+      @apply bg-gray-50 dark:bg-white/5;
+    }
+  }
+  
+  &.p-button-danger {
+    &:not(:disabled):hover {
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+  }
+}
+
+/* ============================================
+   TAG
+   ============================================ */
+.p-tag {
+  @apply rounded-full font-semibold;
+}
+
+/* ============================================
+   TOGGLE SWITCH
+   ============================================ */
+.p-toggleswitch {
+  @apply transition-all duration-200 cursor-pointer;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &.p-toggleswitch-checked {
+    .p-toggleswitch-slider {
+      @apply bg-primary;
+    }
+  }
+}
+
+/* ============================================
+   SELECT / DROPDOWN
+   ============================================ */
+.p-select {
+  @apply bg-gray-50 dark:bg-white/5;
+  @apply border-gray-200 dark:border-gray-700;
+  @apply rounded-xl;
+
+  &:focus,
+  &.p-focus {
+    @apply border-primary ring-1 ring-primary;
+  }
+}
+
+/* Rounded/Pill style for select dropdowns */
+.p-select.input-rounded,
+p-select.input-rounded .p-select {
+  border-radius: 9999px !important;
+  @apply bg-background-light dark:bg-[#2a2a20];
+  @apply border-border-light dark:border-border-dark;
+}
+
+.p-select-overlay {
+  @apply bg-white dark:bg-surface-dark;
+  @apply border border-gray-200 dark:border-gray-700;
+  @apply rounded-xl shadow-lg;
+}
+
+/* ============================================
+   INPUT TEXT - ROUNDED VARIANT
+   ============================================ */
+.p-inputtext.input-rounded,
+.input-rounded .p-inputtext {
+  border-radius: 9999px !important;
+  @apply bg-background-light dark:bg-[#2a2a20];
+  @apply border-border-light dark:border-border-dark;
+}
+
+/* IconField with rounded input */
+p-iconfield:has(.input-rounded) {
+  .p-inputtext {
+    border-radius: 9999px !important;
+    @apply bg-background-light dark:bg-[#2a2a20];
+    @apply border-border-light dark:border-border-dark;
+  }
+}

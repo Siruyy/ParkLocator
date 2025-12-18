@@ -12,18 +12,18 @@
         <nav class="flex-1 flex flex-col gap-2">
             <a *ngFor="let item of filteredMenuItems()" 
                [routerLink]="item.route"
-               routerLinkActive="bg-primary/20 text-black dark:text-white dark:bg-primary/20"
+               routerLinkActive="bg-primary/20 text-black dark:text-white dark:bg-primary/20 font-semibold"
                [routerLinkActiveOptions]="{exact: false}"
-               class="group flex items-center gap-3 px-4 py-3 rounded-full text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer">
-                <span class="material-symbols-outlined" [class.filled-icon]="false">{{ item.icon }}</span>
+               class="group flex items-center gap-3 px-4 py-3 rounded-full text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 hover:translate-x-1 active:scale-[0.98] transition-all duration-200 cursor-pointer">
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform duration-200" [class.filled-icon]="false">{{ item.icon }}</span>
                 <span class="text-sm font-medium group-hover:text-text-primary-light dark:group-hover:text-text-primary-dark">{{ item.label }}</span>
-                <span *ngIf="item.badge" class="ml-auto bg-accent-error/10 text-accent-error text-[10px] font-bold px-2 py-0.5 rounded-full">{{ item.badge }}</span>
+                <span *ngIf="item.badge" class="ml-auto bg-accent-error/10 text-accent-error text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">{{ item.badge }}</span>
             </a>
         </nav>
         <div class="mt-auto flex flex-col gap-4">
             <button (click)="logout()" 
-               class="group flex items-center gap-3 px-4 py-3 rounded-full text-text-secondary-light dark:text-text-secondary-dark hover:bg-accent-error/10 hover:text-accent-error transition-all cursor-pointer w-full">
-                <span class="material-symbols-outlined">logout</span>
+               class="group flex items-center gap-3 px-4 py-3 rounded-full text-text-secondary-light dark:text-text-secondary-dark hover:bg-accent-error/10 hover:text-accent-error hover:translate-x-1 active:scale-[0.98] transition-all duration-200 cursor-pointer w-full">
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform duration-200">logout</span>
                 <span class="text-sm font-medium">Logout</span>
             </button>
 

@@ -1,9 +1,9 @@
-<div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark selection:bg-primary selection:text-black">
+<div class="app-container">
     <!-- Sidebar -->
     <app-sidebar></app-sidebar>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <div class="main-content">
         <!-- Toast Notification (Simulated) -->
         <div class="absolute top-6 right-6 z-50 animate-bounce-in hidden">
             <div class="bg-white border-l-4 border-primary shadow-lg rounded-lg p-4 flex items-center gap-3 max-w-sm">
@@ -25,86 +25,84 @@
         </app-header>
 
         <!-- Scrollable Page Content -->
-        <div class="flex-1 overflow-y-auto p-8">
-            <div class="max-w-[1200px] mx-auto flex flex-col gap-8">
+        <div class="main-scroll">
+            <div class="content-container flex-gap">
                 
                 <!-- LIST VIEW -->
                 <div *ngIf="viewMode === 'list'" class="flex flex-col gap-8">
                     <!-- Page Heading & Actions -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex-between">
                         <div>
-                            <h2 class="text-3xl font-bold tracking-tight mb-2 text-text-primary-light dark:text-text-primary-dark">Venue Management</h2>
-                            <p class="text-text-secondary-light dark:text-text-secondary-dark max-w-2xl">
+                            <h2 class="heading-1 mb-2">Venue Management</h2>
+                            <p class="text-secondary max-w-2xl">
                                 Manage all parking properties, their locations, and configurations.
                             </p>
                         </div>
-                        <button *ngIf="isSuperAdmin()" (click)="openAddPropertyModal()" class="flex items-center gap-2 bg-primary text-black px-6 py-3 rounded-full font-bold text-sm hover:brightness-105 transition-all shadow-soft group">
-                            <span class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-300">add</span>
-                            Add New Venue
-                        </button>
+                        <p-button *ngIf="isSuperAdmin()" label="Add New Venue" icon="pi pi-plus" (click)="openAddPropertyModal()" styleClass="btn-primary"></p-button>
                     </div>
 
                     <!-- Venues Table -->
-                    <div class="bg-surface-light dark:bg-surface-dark rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-gray-800">
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Venue</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Address</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Levels</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                                    <tr *ngFor="let venue of venues" class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-4">
-                                                <div class="size-12 rounded-xl bg-gray-100 dark:bg-white/10 overflow-hidden flex-shrink-0">
-                                                    <img *ngIf="venue.imageUrl" [src]="venue.imageUrl" alt="" class="w-full h-full object-cover">
-                                                    <div *ngIf="!venue.imageUrl" class="w-full h-full flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
-                                                        <span class="material-symbols-outlined">business</span>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <p class="font-bold text-text-primary-light dark:text-text-primary-dark">{{ venue.name }}</p>
-                                                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate max-w-[200px]">{{ venue.description }}</p>
+                    <div class="card overflow-hidden">
+                        <p-table [value]="venues" [tableStyle]="{ 'min-width': '50rem' }">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Venue</th>
+                                    <th>Address</th>
+                                    <th>Levels</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-venue>
+                                <tr class="group table-row-interactive">
+                                    <td>
+                                        <div class="table-user">
+                                            <div class="size-12 rounded-xl bg-gray-100 dark:bg-white/10 overflow-hidden flex-shrink-0">
+                                                <img *ngIf="venue.imageUrl" [src]="venue.imageUrl" alt="" class="w-full h-full object-cover">
+                                                <div *ngIf="!venue.imageUrl" class="w-full h-full flex-center text-text-secondary">
+                                                    <span class="material-symbols-outlined">business</span>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-text-primary-light dark:text-text-primary-dark">
-                                            {{ venue.address }}
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                                {{ venue.levels.length || 0 }} Levels
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <div class="flex items-center justify-end gap-2">
-                                                <button (click)="switchToDetails(venue)" class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary transition-colors" title="Manage Levels">
-                                                    <span class="material-symbols-outlined">layers</span>
-                                                </button>
-                                                <button *ngIf="isSuperAdmin()" (click)="openEditPropertyModal(venue)" class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 hover:text-blue-500 transition-colors" title="Edit Venue">
-                                                    <span class="material-symbols-outlined">edit</span>
-                                                </button>
-                                                <button *ngIf="isSuperAdmin()" (click)="deleteVenue(venue)" class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 hover:text-red-500 transition-colors" title="Delete Venue">
-                                                    <span class="material-symbols-outlined">delete</span>
-                                                </button>
+                                            <div>
+                                                <p class="table-user-name">{{ venue.name }}</p>
+                                                <p class="table-user-email truncate max-w-[200px]">{{ venue.description }}</p>
                                             </div>
-                                        </td>
-                                    </tr>
-                                    <tr *ngIf="venues.length === 0">
-                                        <td colspan="4" class="px-6 py-12 text-center text-text-secondary-light dark:text-text-secondary-dark">
-                                            <div class="flex flex-col items-center gap-2">
-                                                <span class="material-symbols-outlined text-4xl opacity-50">business_off</span>
-                                                <p>No venues found. Add your first property to get started.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-body">
+                                        {{ venue.address }}
+                                    </td>
+                                    <td>
+                                        <div class="inline-flex flex-col items-center justify-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-2xl min-w-[80px]">
+                                            <span class="text-lg font-bold leading-none">{{ venue.levels.length || 0 }}</span>
+                                            <span class="text-xs font-medium">Levels</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">
+                                        <div class="table-actions !opacity-100">
+                                            <button (click)="switchToDetails(venue)" class="btn-icon" pTooltip="Manage Levels" tooltipPosition="top">
+                                                <span class="material-symbols-outlined">layers</span>
+                                            </button>
+                                            <button *ngIf="isSuperAdmin()" (click)="openEditPropertyModal(venue)" class="btn-icon hover:!text-blue-500" pTooltip="Edit Venue" tooltipPosition="top">
+                                                <span class="material-symbols-outlined">edit</span>
+                                            </button>
+                                            <button *ngIf="isSuperAdmin()" (click)="deleteVenue(venue)" class="btn-icon hover:!text-red-500" pTooltip="Delete Venue" tooltipPosition="top">
+                                                <span class="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="4" class="table-empty">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <span class="material-symbols-outlined text-4xl opacity-50">business_off</span>
+                                            <p>No venues found. Add your first property to get started.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
                     </div>
                 </div>
 
@@ -114,144 +112,146 @@
                     <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                         <div class="flex flex-col gap-2">
                             <div class="flex items-center gap-3 mb-1">
-                                <button (click)="switchToList()" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
-                                    <span class="material-symbols-outlined">arrow_back</span>
-                                </button>
-                                <h2 class="text-4xl font-black tracking-tight text-text-primary-light dark:text-text-primary-dark">Venue Configuration</h2>
+                                <p-button icon="pi pi-arrow-left" (click)="switchToList()" styleClass="p-button-rounded p-button-text !text-text-primary-light dark:!text-text-primary-dark !w-8 !h-8"></p-button>
+                                <h2 class="heading-1">Venue Configuration</h2>
                             </div>
-                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-lg ml-10">Manage parking levels, capacity, and operational status for <span class="font-bold text-primary">{{ selectedVenue?.name }}</span>.</p>
-                        </div>
-                        <div class="flex flex-wrap items-end gap-4">
-                            <!-- Venue Selector (Hidden in Details Mode as we are focused on one) -->
-                            <!-- Or we can keep it to switch quickly? Let's keep it but maybe style differently or remove if redundant -->
-                            <!-- Removing for cleaner UI as per "Back to List" pattern -->
+                            <p class="text-secondary text-lg ml-10">Manage parking levels, capacity, and operational status for <span class="font-bold text-primary">{{ selectedVenue?.name }}</span>.</p>
                         </div>
                     </div>
 
                     <!-- Stats Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
-                            <div class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-text-primary-light dark:text-text-primary-dark">
-                                <span class="material-symbols-outlined">directions_car</span>
-                            </div>
-                            <div>
-                                <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium">Total Capacity</p>
-                                <p class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ totalCapacity | number }} <span class="text-xs font-normal text-text-secondary-light dark:text-text-secondary-dark">slots</span></p>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
-                            <div class="size-12 rounded-full bg-[#e0f2fe] dark:bg-blue-900/20 flex items-center justify-center text-[#0ea5e9] dark:text-blue-400">
-                                <span class="material-symbols-outlined">donut_large</span>
-                            </div>
-                            <div>
-                                <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium">Current Occupancy</p>
-                                <p class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ occupancyPercentage }}% <span class="text-xs font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ currentOccupancy | number }})</span></p>
+                    <div class="grid-3">
+                        <div class="stat-card-horizontal">
+                            <div class="flex items-center gap-4">
+                                <div class="stat-card-icon bg-primary/20 text-text-primary-light dark:text-text-primary-dark">
+                                    <span class="material-symbols-outlined">directions_car</span>
+                                </div>
+                                <div>
+                                    <p class="stat-card-label">Total Capacity</p>
+                                    <p class="stat-card-value">{{ totalCapacity | number }} <span class="text-xs font-normal text-text-secondary">slots</span></p>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
-                            <div class="size-12 rounded-full bg-[#f0fdf4] dark:bg-green-900/20 flex items-center justify-center text-[#22c55e] dark:text-green-400">
-                                <span class="material-symbols-outlined">check_circle</span>
+                        <div class="stat-card-horizontal">
+                            <div class="flex items-center gap-4">
+                                <div class="stat-card-icon stat-card-icon--blue">
+                                    <span class="material-symbols-outlined">donut_large</span>
+                                </div>
+                                <div>
+                                    <p class="stat-card-label">Current Occupancy</p>
+                                    <p class="stat-card-value">{{ occupancyPercentage }}% <span class="text-xs font-normal text-text-secondary">({{ currentOccupancy | number }})</span></p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium">Active Levels</p>
-                                <p class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ activeLevelsCount }} <span class="text-xs font-normal text-text-secondary-light dark:text-text-secondary-dark">/ {{ totalLevelsCount }} open</span></p>
+                        </div>
+                        <div class="stat-card-horizontal">
+                            <div class="flex items-center gap-4">
+                                <div class="stat-card-icon stat-card-icon--green">
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                </div>
+                                <div>
+                                    <p class="stat-card-label">Active Levels</p>
+                                    <p class="stat-card-value">{{ activeLevelsCount }} <span class="text-xs font-normal text-text-secondary">/ {{ totalLevelsCount }} open</span></p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Data Table Section -->
-                    <div class="bg-white dark:bg-surface-dark rounded-[24px] shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col">
-                        <!-- Table Toolbar -->
-                        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-white/5">
-                            <h3 class="font-bold text-text-primary-light dark:text-text-primary-dark text-lg">Parking Levels</h3>
-                            <div class="flex items-center gap-3">
-                                <a [routerLink]="['/venues', selectedVenue?.id, 'rates']" class="flex items-center gap-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-text-primary-light dark:text-text-primary-dark px-4 py-2 rounded-full text-sm font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shadow-sm">
-                                    <span class="material-symbols-outlined text-[20px]">payments</span>
-                                    Rates & Limits
-                                </a>
-                                <button (click)="openAddLevelModal()" class="bg-primary hover:bg-[#ece805] text-black px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-colors shadow-sm">
-                                    <span class="material-symbols-outlined text-[20px]">add</span>
-                                    Add New Level
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Table -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-gray-800">
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Level ID</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Zone Name</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Type</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Vehicle Type</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider w-40">Capacity (Edit)</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Occupancy</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                                    <tr *ngFor="let level of parkingLevels" 
-                                        class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                                        [class.opacity-60]="!level.isActive"
-                                        [class.bg-gray-50]="!level.isActive"
-                                        [class.dark:bg-white/5]="!level.isActive">
-                                        <td class="px-6 py-4 text-sm font-medium text-text-primary-light dark:text-text-primary-dark">{{ level.id }}</td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex flex-col">
-                                                <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">{{ level.name }}</span>
-                                                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">{{ level.zone }}</span>
+                    <div class="card overflow-hidden">
+                        <p-table [value]="parkingLevels" [tableStyle]="{ 'min-width': '50rem' }">
+                            <ng-template pTemplate="caption">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="heading-4">Parking Levels</h3>
+                                    <div class="flex items-center gap-3">
+                                        <a [routerLink]="['/venues', selectedVenue?.id, 'rates']" class="btn-secondary flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[20px]">payments</span>
+                                            Rates & Limits
+                                        </a>
+                                        <button (click)="openAddLevelModal()" class="btn-primary flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[20px]">add</span>
+                                            Add New Level
+                                        </button>
+                                    </div>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Level ID</th>
+                                    <th>Zone Name</th>
+                                    <th>Type</th>
+                                    <th>Vehicle Type</th>
+                                    <th class="w-40">Capacity (Edit)</th>
+                                    <th>Occupancy</th>
+                                    <th>Status</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-level>
+                                <tr class="group table-row-interactive"
+                                    [class.opacity-60]="!level.isActive"
+                                    [class.bg-gray-50]="!level.isActive"
+                                    [class.dark:bg-white/5]="!level.isActive">
+                                    <td class="text-body font-medium">{{ level.id }}</td>
+                                    <td>
+                                        <div class="flex flex-col">
+                                            <span class="text-body font-medium">{{ level.name }}</span>
+                                            <span class="text-muted">{{ level.zone }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p-tag severity="secondary" styleClass="!bg-gray-100 dark:!bg-white/10 !text-gray-800 dark:!text-gray-200 !rounded-full !px-3">
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-base">{{ level.typeIcon }}</span>
+                                                <span>{{ level.type }}</span>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200">
-                                                <span class="material-symbols-outlined text-[16px]">{{ level.typeIcon }}</span> {{ level.type }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex flex-wrap gap-1">
-                                                <span *ngFor="let type of level.vehicleTypes" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
-                                                    <span class="material-symbols-outlined text-[14px]">{{ type === 'Motorcycle' ? 'two_wheeler' : (type === 'Truck' ? 'local_shipping' : 'directions_car') }}</span>
-                                                    {{ type }}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="relative group/edit" [class.pointer-events-none]="!level.isActive">
-                                                <input class="w-24 px-3 py-1.5 text-sm font-bold text-text-primary-light dark:text-text-primary-dark bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-lg focus:border-primary focus:bg-white dark:focus:bg-surface-dark focus:ring-2 focus:ring-primary/50 transition-all text-right hover:border-text-secondary-light dark:hover:border-text-secondary-dark" 
-                                                       type="number" 
-                                                       [(ngModel)]="level.capacity"
-                                                       (change)="updateLevelCapacity(level)"
-                                                       [disabled]="!level.isActive"/>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-text-primary-light dark:text-text-primary-dark font-medium">
-                                            {{ level.occupancy }} <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark font-normal">({{ level.occupancyPercent }}%)</span>
-                                            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 mt-1.5">
-                                                <div [class]="'h-1.5 rounded-full ' + (level.occupancyPercent > 85 ? 'bg-red-500' : (level.occupancyPercent === 0 ? 'bg-gray-300 dark:bg-gray-600' : 'bg-primary'))" 
-                                                     [style.width.%]="level.occupancyPercent"></div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" [(ngModel)]="level.isActive" (change)="toggleLevelStatus(level)" class="sr-only peer">
-                                                <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                                <span class="ms-3 text-sm font-medium" [class.text-text-primary-light]="level.isActive" [class.dark:text-text-primary-dark]="level.isActive" [class.text-text-secondary-light]="!level.isActive" [class.dark:text-text-secondary-dark]="!level.isActive">{{ level.isActive ? 'Open' : 'Closed' }}</span>
-                                            </label>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <button (click)="deleteLevel(level)" class="text-text-secondary-light dark:text-text-secondary-dark hover:text-red-500 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
-                                                <span class="material-symbols-outlined">delete</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Paginator -->
-                        <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-surface-dark">
-                            <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Showing {{ parkingLevels.length }} levels</span>
-                        </div>
+                                        </p-tag>
+                                    </td>
+                                    <td>
+                                        <div class="flex flex-wrap gap-1">
+                                            <p-tag *ngFor="let type of level.vehicleTypes" severity="info" styleClass="!bg-blue-50 dark:!bg-blue-900/20 !text-blue-700 dark:!text-blue-300 !rounded-full !px-3">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="material-symbols-outlined text-base">{{ type === 'Motorcycle' ? 'two_wheeler' : (type === 'Truck' ? 'local_shipping' : 'directions_car') }}</span>
+                                                    <span>{{ type }}</span>
+                                                </div>
+                                            </p-tag>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="relative group/edit" [class.pointer-events-none]="!level.isActive">
+                                            <input pInputText class="w-24 !px-3 !py-1.5 !text-sm !font-bold text-right" 
+                                                   type="number" 
+                                                   [(ngModel)]="level.capacity"
+                                                   (change)="updateLevelCapacity(level)"
+                                                   [disabled]="!level.isActive"/>
+                                        </div>
+                                    </td>
+                                    <td class="text-body font-medium">
+                                        {{ level.occupancy }} <span class="text-muted font-normal">({{ level.occupancyPercent }}%)</span>
+                                        <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 mt-1.5">
+                                            <div [class]="'h-1.5 rounded-full ' + (level.occupancyPercent > 85 ? 'bg-red-500' : (level.occupancyPercent === 0 ? 'bg-gray-300 dark:bg-gray-600' : 'bg-primary'))" 
+                                                 [style.width.%]="level.occupancyPercent"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" [(ngModel)]="level.isActive" (change)="toggleLevelStatus(level)" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                            <span class="ms-3 text-sm font-medium" [class.text-text-main]="level.isActive" [class.dark:text-white]="level.isActive" [class.text-text-secondary]="!level.isActive">{{ level.isActive ? 'Open' : 'Closed' }}</span>
+                                        </label>
+                                    </td>
+                                    <td class="text-right">
+                                        <button (click)="deleteLevel(level)" class="btn-icon hover:!text-red-500" pTooltip="Delete Level" tooltipPosition="top">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="footer">
+                                 <tr>
+                                    <td colspan="8" class="text-muted">Showing {{ parkingLevels.length }} levels</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
                     </div>
                 </div>
             </div>
@@ -260,195 +260,149 @@
 </div>
 
 <!-- Add/Edit Property Modal -->
-<div *ngIf="showAddPropertyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-white dark:bg-surface-dark rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up">
-        <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-            <h3 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ isEditingProperty ? 'Edit Property' : 'Add New Property' }}</h3>
-            <button (click)="closeAddPropertyModal()" class="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+<p-dialog [(visible)]="showAddPropertyModal" [modal]="true" [header]="isEditingProperty ? 'Edit Property' : 'Add New Property'" [style]="{ width: '50rem' }" [draggable]="false" [resizable]="false" (onHide)="closeAddPropertyModal()">
+    <form [formGroup]="propertyForm" (ngSubmit)="onSubmitProperty()" class="flex flex-col gap-4">
+        <!-- Name -->
+        <div class="input-group">
+            <label class="input-label">Property Name</label>
+            <input pInputText formControlName="name" type="text" placeholder="e.g. Downtown Mall Parking" class="w-full">
         </div>
-        
-        <form [formGroup]="propertyForm" (ngSubmit)="onSubmitProperty()" class="p-6 flex flex-col gap-4">
-            <!-- Name -->
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">Property Name</label>
-                <input formControlName="name" type="text" placeholder="e.g. Downtown Mall Parking" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark">
-            </div>
 
-            <!-- Address -->
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">Address</label>
-                <input formControlName="address" type="text" placeholder="Full address" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark">
-            </div>
+        <!-- Address -->
+        <div class="input-group">
+            <label class="input-label">Address</label>
+            <input pInputText formControlName="address" type="text" placeholder="Full address" class="w-full">
+        </div>
 
-            <!-- Coordinates -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col gap-1">
-                    <label class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">Latitude</label>
-                    <input formControlName="latitude" type="number" step="any" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark">
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">Longitude</label>
-                    <input formControlName="longitude" type="number" step="any" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark">
-                </div>
+        <!-- Coordinates -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="input-group">
+                <label class="input-label">Latitude</label>
+                <input pInputText formControlName="latitude" type="number" step="any" class="w-full">
             </div>
+            <div class="input-group">
+                <label class="input-label">Longitude</label>
+                <input pInputText formControlName="longitude" type="number" step="any" class="w-full">
+            </div>
+        </div>
 
-            <!-- Description -->
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">Description</label>
-                <textarea formControlName="description" rows="3" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark"></textarea>
-            </div>
+        <!-- Description -->
+        <div class="input-group">
+            <label class="input-label">Description</label>
+            <textarea pInputTextarea formControlName="description" rows="3" class="w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl"></textarea>
+        </div>
 
-            <!-- Image Upload -->
-            <div class="flex flex-col gap-1" *ngIf="!isEditingProperty">
-                <label class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">Venue Image</label>
-                <input type="file" (change)="onFileSelected($event)" accept="image/*" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-black hover:file:bg-primary-dark transition-all">
-            </div>
-            <div class="flex flex-col gap-1" *ngIf="isEditingProperty">
-                 <label class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">Venue Image</label>
-                 <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark italic">Image update not supported yet.</p>
-            </div>
+        <!-- Image Upload -->
+        <div class="input-group" *ngIf="!isEditingProperty">
+            <label class="input-label">Venue Image</label>
+            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-black hover:file:bg-primary-dark transition-all">
+        </div>
+        <div class="input-group" *ngIf="isEditingProperty">
+             <label class="input-label">Venue Image</label>
+             <p class="text-muted italic">Image update not supported yet.</p>
+        </div>
 
-            <div class="flex justify-end gap-3 mt-4">
-                <button type="button" (click)="closeAddPropertyModal()" class="px-5 py-2.5 rounded-xl font-semibold text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">Cancel</button>
-                <button type="submit" [disabled]="propertyForm.invalid || isSubmitting" class="px-5 py-2.5 rounded-xl font-bold bg-primary text-black hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                    {{ isSubmitting ? (isEditingProperty ? 'Updating...' : 'Creating...') : (isEditingProperty ? 'Update Property' : 'Create Property') }}
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+        <div class="form-actions">
+            <button pButton type="button" label="Cancel" (click)="closeAddPropertyModal()" class="btn-ghost"></button>
+            <button pButton type="submit" [label]="isSubmitting ? (isEditingProperty ? 'Updating...' : 'Creating...') : (isEditingProperty ? 'Update Property' : 'Create Property')" [disabled]="propertyForm.invalid || isSubmitting" class="btn-primary"></button>
+        </div>
+    </form>
+</p-dialog>
 
 <!-- Add Level Modal -->
-<div *ngIf="showAddLevelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-white dark:bg-surface-dark rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-gray-700">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-            <h3 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">Add New Level</h3>
-            <button (click)="closeAddLevelModal()" class="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-        
-        <form [formGroup]="levelForm" (ngSubmit)="onSubmitLevel()">
-            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                <!-- Level Name -->
-                <div>
-                    <label class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1.5">Level Name</label>
-                    <input type="text" formControlName="name" placeholder="e.g. B1, P1, Roof Deck"
-                           class="w-full px-4 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all text-text-primary-light dark:text-text-primary-dark placeholder-gray-400 dark:placeholder-gray-500">
-                    <div *ngIf="levelForm.get('name')?.touched && levelForm.get('name')?.invalid" class="mt-1 text-xs text-red-500">
-                        Level name is required
-                    </div>
-                </div>
+<p-dialog [(visible)]="showAddLevelModal" [modal]="true" header="Add New Level" [style]="{ width: '40rem' }" [draggable]="false" [resizable]="false" (onHide)="closeAddLevelModal()">
+    <form [formGroup]="levelForm" (ngSubmit)="onSubmitLevel()">
+        <div class="flex flex-col gap-4">
+            <!-- Level Name -->
+            <div class="input-group">
+                <label class="input-label">Level Name</label>
+                <input pInputText type="text" formControlName="name" placeholder="e.g. B1, P1, Roof Deck" class="w-full">
+                <small *ngIf="levelForm.get('name')?.touched && levelForm.get('name')?.invalid" class="input-error">Level name is required</small>
+            </div>
 
-                <!-- Vehicle Type -->
-                <div>
-                    <label class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">Vehicle Types</label>
-                    <div class="flex flex-wrap gap-3">
-                        <label class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all"
-                               [class.bg-primary-light]="isVehicleTypeSelected('Car')"
-                               [class.border-primary]="isVehicleTypeSelected('Car')"
-                               [class.border-gray-200]="!isVehicleTypeSelected('Car')">
-                            <input type="checkbox" [checked]="isVehicleTypeSelected('Car')" (change)="toggleVehicleType('Car')" class="hidden">
-                            <span class="material-symbols-outlined text-lg">directions_car</span>
-                            <span class="text-sm font-medium">Car</span>
-                        </label>
-                        
-                        <label class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all"
-                               [class.bg-primary-light]="isVehicleTypeSelected('Motorcycle')"
-                               [class.border-primary]="isVehicleTypeSelected('Motorcycle')"
-                               [class.border-gray-200]="!isVehicleTypeSelected('Motorcycle')">
-                            <input type="checkbox" [checked]="isVehicleTypeSelected('Motorcycle')" (change)="toggleVehicleType('Motorcycle')" class="hidden">
-                            <span class="material-symbols-outlined text-lg">two_wheeler</span>
-                            <span class="text-sm font-medium">Motorcycle</span>
-                        </label>
-
-                        <label class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all"
-                               [class.bg-primary-light]="isVehicleTypeSelected('Truck')"
-                               [class.border-primary]="isVehicleTypeSelected('Truck')"
-                               [class.border-gray-200]="!isVehicleTypeSelected('Truck')">
-                            <input type="checkbox" [checked]="isVehicleTypeSelected('Truck')" (change)="toggleVehicleType('Truck')" class="hidden">
-                            <span class="material-symbols-outlined text-lg">local_shipping</span>
-                            <span class="text-sm font-medium">Truck</span>
-                        </label>
-                    </div>
-                    <div *ngIf="vehicleTypesControl?.touched && vehicleTypesControl?.invalid" class="mt-1 text-xs text-red-500">
-                        At least one vehicle type is required
-                    </div>
-                </div>
-
-                <!-- Is Covered -->
-                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-700">
-                    <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Covered Parking</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" formControlName="isCovered" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                        <span class="ms-3 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">{{ levelForm.get('isCovered')?.value ? 'Yes' : 'No' }}</span>
-                    </label>
-                </div>
-
-                <!-- Sections -->
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Sections</label>
-                        <button type="button" (click)="addSection()" class="text-xs text-primary hover:text-primary-dark font-medium flex items-center gap-1">
-                            <span class="material-symbols-outlined text-sm">add</span>
-                            Add Section
-                        </button>
+            <!-- Vehicle Type -->
+            <div class="input-group">
+                <label class="input-label">Vehicle Types</label>
+                <div class="flex flex-wrap gap-3">
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all"
+                           [class.bg-primary-light]="isVehicleTypeSelected('Car')"
+                           [class.border-primary]="isVehicleTypeSelected('Car')"
+                           [class.border-gray-200]="!isVehicleTypeSelected('Car')"
+                           (click)="toggleVehicleType('Car')">
+                        <span class="material-symbols-outlined text-lg">directions_car</span>
+                        <span class="text-sm font-medium">Car</span>
                     </div>
                     
-                    <div formArrayName="sections" class="space-y-3">
-                        <div *ngFor="let section of sections.controls; let i=index" [formGroupName]="i" class="flex gap-3 items-start">
-                            <div class="flex-1">
-                                <input type="text" formControlName="name" placeholder="Section Name (e.g. A)"
-                                       class="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all text-text-primary-light dark:text-text-primary-dark">
-                            </div>
-                            <div class="w-32">
-                                <select formControlName="vehicleType"
-                                        class="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all text-text-primary-light dark:text-text-primary-dark">
-                                    <option value="Car">Car</option>
-                                    <option value="Motorcycle">Motorcycle</option>
-                                    <option value="Truck">Truck</option>
-                                </select>
-                            </div>
-                            <div class="w-24">
-                                <input type="number" formControlName="totalCapacity" placeholder="Cap"
-                                       class="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all text-text-primary-light dark:text-text-primary-dark">
-                            </div>
-                            <button type="button" (click)="removeSection(i)" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                                <span class="material-symbols-outlined text-lg">delete</span>
-                            </button>
-                        </div>
-                        <div *ngIf="sections.length === 0" class="text-center py-4 text-sm text-text-muted border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-                            No sections defined. Spots will be numbered sequentially.
-                        </div>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all"
+                           [class.bg-primary-light]="isVehicleTypeSelected('Motorcycle')"
+                           [class.border-primary]="isVehicleTypeSelected('Motorcycle')"
+                           [class.border-gray-200]="!isVehicleTypeSelected('Motorcycle')"
+                           (click)="toggleVehicleType('Motorcycle')">
+                        <span class="material-symbols-outlined text-lg">two_wheeler</span>
+                        <span class="text-sm font-medium">Motorcycle</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all"
+                           [class.bg-primary-light]="isVehicleTypeSelected('Truck')"
+                           [class.border-primary]="isVehicleTypeSelected('Truck')"
+                           [class.border-gray-200]="!isVehicleTypeSelected('Truck')"
+                           (click)="toggleVehicleType('Truck')">
+                        <span class="material-symbols-outlined text-lg">local_shipping</span>
+                        <span class="text-sm font-medium">Truck</span>
                     </div>
                 </div>
+                <small *ngIf="vehicleTypesControl?.touched && vehicleTypesControl?.invalid" class="input-error">At least one vehicle type is required</small>
+            </div>
 
-                <!-- Total Capacity (Read Only if sections exist) -->
-                <div>
-                    <label class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1.5">Total Capacity</label>
-                    <input type="number" formControlName="totalCapacity" [readonly]="sections.length > 0"
-                           [class.opacity-50]="sections.length > 0"
-                           class="w-full px-4 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all text-text-primary-light dark:text-text-primary-dark placeholder-gray-400 dark:placeholder-gray-500">
-                    <div *ngIf="levelForm.get('totalCapacity')?.touched && levelForm.get('totalCapacity')?.invalid" class="mt-1 text-xs text-red-500">
-                        Valid capacity is required
+            <!-- Is Covered -->
+            <div class="card-row">
+                <span class="text-body font-medium">Covered Parking</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" formControlName="isCovered" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    <span class="ms-3 text-secondary">{{ levelForm.get('isCovered')?.value ? 'Yes' : 'No' }}</span>
+                </label>
+            </div>
+
+            <!-- Sections -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <label class="input-label">Sections</label>
+                    <button pButton type="button" label="Add Section" icon="pi pi-plus" (click)="addSection()" class="p-button-text p-button-sm !text-primary"></button>
+                </div>
+                
+                <div formArrayName="sections" class="space-y-3">
+                    <div *ngFor="let section of sections.controls; let i=index" [formGroupName]="i" class="flex gap-3 items-start">
+                        <div class="flex-1">
+                            <input pInputText type="text" formControlName="name" placeholder="Section Name (e.g. A)" class="w-full !text-sm">
+                        </div>
+                        <div class="w-32">
+                            <p-select formControlName="vehicleType" [options]="['Car', 'Motorcycle', 'Truck']" placeholder="Type" styleClass="w-full !text-sm"></p-select>
+                        </div>
+                        <div class="w-24">
+                            <input pInputText type="number" formControlName="totalCapacity" placeholder="Cap" class="w-full !text-sm">
+                        </div>
+                        <button pButton type="button" icon="pi pi-trash" (click)="removeSection(i)" class="p-button-danger p-button-text p-button-rounded"></button>
+                    </div>
+                    <div *ngIf="sections.length === 0" class="text-center py-4 text-muted border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+                        No sections defined. Spots will be numbered sequentially.
                     </div>
                 </div>
             </div>
 
-            <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-white/5 flex justify-end gap-3">
-                <button type="button" (click)="closeAddLevelModal()" 
-                        class="px-4 py-2 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors">
-                    Cancel
-                </button>
-                <button type="submit" [disabled]="levelForm.invalid || isSubmittingLevel"
-                        class="px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-medium rounded-lg shadow-lg shadow-primary/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                    <span *ngIf="isSubmittingLevel" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    {{ isSubmittingLevel ? 'Adding...' : 'Add Level' }}
-                </button>
+            <!-- Total Capacity (Read Only if sections exist) -->
+            <div class="input-group">
+                <label class="input-label">Total Capacity</label>
+                <input pInputText type="number" formControlName="totalCapacity" [readonly]="sections.length > 0"
+                       [class.opacity-50]="sections.length > 0"
+                       class="w-full">
+                <small *ngIf="levelForm.get('totalCapacity')?.touched && levelForm.get('totalCapacity')?.invalid" class="input-error">Valid capacity is required</small>
             </div>
-        </form>
-    </div>
-</div>
+        </div>
+
+        <div class="form-actions mt-6">
+            <button pButton type="button" label="Cancel" (click)="closeAddLevelModal()" class="btn-ghost"></button>
+            <button pButton type="submit" [label]="isSubmittingLevel ? 'Adding...' : 'Add Level'" [disabled]="levelForm.invalid || isSubmittingLevel" [icon]="isSubmittingLevel ? 'pi pi-spin pi-spinner' : ''" class="btn-primary"></button>
+        </div>
+    </form>
+</p-dialog>

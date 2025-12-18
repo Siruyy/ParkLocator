@@ -1,326 +1,211 @@
-<div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark selection:bg-primary selection:text-black">
+<div class="app-container">
     <!-- Sidebar -->
     <app-sidebar></app-sidebar>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <div class="main-content">
         <!-- Header -->
         <app-header 
             [breadcrumbs]="[{ label: 'Admin', url: '#' }, { label: 'User Management' }]"
             searchPlaceholder="Search users...">
         </app-header>
 
-        <!-- User Management Content -->
-        <main class="flex-1 overflow-y-auto p-6 sm:p-8 scroll-smooth">
-            <div class="max-w-7xl mx-auto flex flex-col gap-6 pb-10">
-                <!-- Title Section -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-3xl font-bold tracking-tight mb-2 text-text-primary-light dark:text-text-primary-dark">User Management Console</h2>
-                        <p class="text-text-secondary-light dark:text-text-secondary-dark max-w-2xl">
-                            Manage access for ParkLocator administrators, mall managers, attendants, and finance personnel.
-                        </p>
+        <main class="main-scroll">
+            <div class="content-wide flex-gap">
+                <!-- Title -->
+                <div class="flex-between">
+                    <div class="flex flex-col gap-2">
+                        <h1 class="heading-1">User Management Console</h1>
+                        <p class="text-secondary">Manage access for ParkLocator administrators, mall managers, attendants, and finance personnel.</p>
                     </div>
-                    <button (click)="openAddUserModal()" class="flex items-center gap-2 bg-primary text-black px-6 py-3 rounded-full font-bold text-sm hover:brightness-105 transition-all shadow-soft group">
-                        <span class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-300">add</span>
-                        Add New User
-                    </button>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="p-4 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 flex items-center gap-4">
-                        <div class="size-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                            <span class="material-symbols-outlined">group</span>
-                        </div>
-                        <div>
-                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">Total Users</p>
-                            <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ stats.totalUsers }}</p>
-                        </div>
-                    </div>
-                    <div class="p-4 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 flex items-center gap-4">
-                        <div class="size-12 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center">
-                            <span class="material-symbols-outlined">check_circle</span>
-                        </div>
-                        <div>
-                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">Active Now</p>
-                            <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ stats.activeNow }}</p>
-                        </div>
-                    </div>
-                    <div class="p-4 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 flex items-center gap-4">
-                        <div class="size-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                            <span class="material-symbols-outlined">badge</span>
-                        </div>
-                        <div>
-                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">Managers</p>
-                            <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ stats.managers }}</p>
-                        </div>
-                    </div>
-                    <div class="p-4 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-gray-800 flex items-center gap-4">
-                        <div class="size-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center">
-                            <span class="material-symbols-outlined">local_police</span>
-                        </div>
-                        <div>
-                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">Attendants</p>
-                            <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">{{ stats.attendants }}</p>
-                        </div>
+                    <div class="flex gap-3">
+                        <button pButton label="Add New User" icon="pi pi-plus" (click)="openAddUserModal()" class="btn-primary"></button>
                     </div>
                 </div>
 
-                <!-- Table Section -->
-                <div class="bg-surface-light dark:bg-surface-dark rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                <!-- Stats -->
+                <div class="grid-4">
+                    <div class="stat-card-horizontal">
+                        <div class="flex items-center gap-4">
+                            <div class="stat-card-icon stat-card-icon--blue">
+                                <span class="material-symbols-outlined">group</span>
+                            </div>
+                            <div>
+                                <p class="stat-card-label">Total Users</p>
+                                <p class="stat-card-value">{{ stats.totalUsers }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card-horizontal">
+                        <div class="flex items-center gap-4">
+                            <div class="stat-card-icon stat-card-icon--green">
+                                <span class="material-symbols-outlined">check_circle</span>
+                            </div>
+                            <div>
+                                <p class="stat-card-label">Active Now</p>
+                                <p class="stat-card-value">{{ stats.activeNow }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card-horizontal">
+                        <div class="flex items-center gap-4">
+                            <div class="stat-card-icon stat-card-icon--purple">
+                                <span class="material-symbols-outlined">badge</span>
+                            </div>
+                            <div>
+                                <p class="stat-card-label">Managers</p>
+                                <p class="stat-card-value">{{ stats.managers }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card-horizontal">
+                        <div class="flex items-center gap-4">
+                            <div class="stat-card-icon stat-card-icon--orange">
+                                <span class="material-symbols-outlined">local_police</span>
+                            </div>
+                            <div>
+                                <p class="stat-card-label">Attendants</p>
+                                <p class="stat-card-value">{{ stats.attendants }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-wrapper">
                     <!-- Filters -->
-                    <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                        <div class="relative w-full md:w-96 group">
-                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark group-focus-within:text-primary transition-colors">search</span>
-                            <input 
-                                (input)="onSearch($event)"
-                                [value]="searchQuery"
-                                class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm" 
-                                placeholder="Search by name, email or role..." 
-                                type="text"/>
+                    <div class="table-filters">
+                         <div class="table-search">
+                            <p-iconfield iconPosition="left">
+                                <p-inputicon styleClass="pi pi-search" />
+                                <input 
+                                    type="text" 
+                                    pInputText 
+                                    [value]="searchQuery"
+                                    (input)="onSearch($event)"
+                                    placeholder="Search by name, email or role..." 
+                                    class="input-rounded" />
+                            </p-iconfield>
                         </div>
-                        <div class="flex gap-3 w-full md:w-auto flex-wrap justify-end">
-                            <!-- Venue Filter (Super Admin Only) -->
-                            <div *ngIf="isSuperAdmin()" class="relative">
-                                <select 
-                                    (change)="onVenueFilterChange($event)"
-                                    class="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm cursor-pointer">
-                                    <option value="">All Properties</option>
-                                    <option *ngFor="let venue of venues" [value]="venue.id">{{ venue.name }}</option>
-                                </select>
-                                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light text-[20px] pointer-events-none">expand_more</span>
+                        
+                        <div class="table-filter-group">
+                             <div *ngIf="isSuperAdmin()" class="table-filter-item--wide">
+                                <p-select 
+                                    [options]="venues" 
+                                    [(ngModel)]="selectedVenueId" 
+                                    optionLabel="name"
+                                    optionValue="id"
+                                    (onChange)="loadUsers()"
+                                    placeholder="All Properties"
+                                    styleClass="input-rounded" />
                             </div>
 
-                            <div class="relative">
-                                <select 
-                                    (change)="onRoleChange($event)"
-                                    class="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm cursor-pointer">
-                                    <option value="">All Roles</option>
-                                    <option value="manager">Mall Manager</option>
-                                    <option value="attendant">Attendant</option>
-                                    <option value="finance">Finance</option>
-                                    <option value="driver">Driver</option>
-                                </select>
-                                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light text-[20px] pointer-events-none">expand_more</span>
+                            <div class="table-filter-item">
+                                <p-select 
+                                    [options]="roleOptions" 
+                                    [(ngModel)]="selectedRole" 
+                                    (onChange)="loadUsers()"
+                                    placeholder="All Roles"
+                                    styleClass="input-rounded" />
                             </div>
-                            <div class="relative">
-                                <select 
-                                    (change)="onStatusChange($event)"
-                                    class="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm cursor-pointer">
-                                    <option value="">Status: All</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="locked">Locked</option>
-                                </select>
-                                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light text-[20px] pointer-events-none">expand_more</span>
+
+                            <div class="table-filter-item">
+                                <p-select 
+                                    [options]="statusOptions" 
+                                    [(ngModel)]="selectedStatus" 
+                                    (onChange)="loadUsers()"
+                                    placeholder="Status: All"
+                                    styleClass="input-rounded" />
                             </div>
-                            <button class="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-text-secondary-light dark:text-text-secondary-dark shadow-sm">
-                                <span class="material-symbols-outlined text-[18px]">file_download</span>
-                                Export
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Table -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-50 dark:bg-white/5 text-text-secondary-light dark:text-text-secondary-dark text-xs uppercase tracking-wider font-semibold border-b border-gray-100 dark:border-gray-800">
-                                <tr>
-                                    <th class="px-6 py-4">User</th>
-                                    <th class="px-6 py-4">Role</th>
-                                    <th class="px-6 py-4">Property</th>
-                                    <th class="px-6 py-4">Status</th>
-                                    <th class="px-6 py-4">Date Added</th>
-                                    <th class="px-6 py-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-transparent">
-                                <tr *ngFor="let user of users()" class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div [class]="'size-10 rounded-full flex items-center justify-center font-bold text-sm border-2 border-white dark:border-surface-dark shadow-sm ' + user.avatarColor">
-                                                {{ user.initials }}
-                                            </div>
-                                            <div>
-                                                <div class="font-bold text-sm text-text-primary-light dark:text-text-primary-dark">{{ user.name }}</div>
-                                                <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark">{{ user.email }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span [ngClass]="{
-                                            'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-800/50': user.role === 'super_admin',
-                                            'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800/50': user.role === 'manager',
-                                            'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800/50': user.role === 'attendant',
-                                            'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600': user.role === 'driver' || user.role === 'finance'
-                                        }" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border">
-                                            <span [ngClass]="{
-                                                'bg-rose-500': user.role === 'super_admin',
-                                                'bg-purple-500': user.role === 'manager',
-                                                'bg-orange-500': user.role === 'attendant',
-                                                'bg-gray-500': user.role === 'driver' || user.role === 'finance'
-                                            }" class="size-1.5 rounded-full"></span>
-                                            {{ user.role | titlecase }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                                        {{ user.venue?.name || '-' }}
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span [ngClass]="{
-                                            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800/50': user.status === 'active',
-                                            'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-600': user.status === 'inactive',
-                                            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800/50': user.status === 'locked'
-                                        }" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border">
-                                            {{ user.status | titlecase }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                                        {{ user.createdAt | date:'mediumDate' }}
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button (click)="openEditUserModal(user)" class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-text-secondary-light dark:text-text-secondary-dark transition-colors" title="Edit User">
-                                                <span class="material-symbols-outlined text-[18px]">edit</span>
-                                            </button>
-                                            <button (click)="resetPassword(user)" class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-text-secondary-light dark:text-text-secondary-dark transition-colors" title="Reset Password">
-                                                <span class="material-symbols-outlined text-[18px]">lock_reset</span>
-                                            </button>
-                                            <button 
-                                                (click)="toggleUserStatus(user)" 
-                                                class="p-2 rounded-full transition-colors"
-                                                [ngClass]="{
-                                                    'hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-text-secondary-light dark:text-text-secondary-dark': user.status === 'active',
-                                                    'hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 text-text-secondary-light dark:text-text-secondary-dark': user.status !== 'active'
-                                                }"
-                                                [title]="user.status === 'active' ? 'Deactivate' : 'Activate'">
-                                                <span class="material-symbols-outlined text-[18px]">
-                                                    {{ user.status === 'active' ? 'block' : 'check_circle' }}
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-text-secondary-light dark:text-text-secondary-dark bg-gray-50/30 dark:bg-white/5">
-                        <div class="text-xs">
-                            Showing <span class="font-bold text-text-primary-light dark:text-text-primary-dark">{{ (currentPage - 1) * limit + 1 }}-{{ currentPage * limit > totalRecords() ? totalRecords() : currentPage * limit }}</span> of <span class="font-bold text-text-primary-light dark:text-text-primary-dark">{{ totalRecords() }}</span> users
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <button 
-                                (click)="changePage(currentPage - 1)"
-                                [disabled]="currentPage === 1"
-                                class="size-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                            </button>
                             
-                            <button 
-                                *ngFor="let page of [].constructor(totalPages); let i = index"
-                                (click)="changePage(i + 1)"
-                                [class]="currentPage === i + 1 ? 'bg-primary text-black font-bold shadow-sm' : 'border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-white/10 font-medium'"
-                                class="size-8 flex items-center justify-center rounded-lg text-xs transition-colors">
-                                {{ i + 1 }}
-                            </button>
-
-                            <button 
-                                (click)="changePage(currentPage + 1)"
-                                [disabled]="currentPage === totalPages"
-                                class="size-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                            </button>
+                            <button pButton label="Export" icon="pi pi-download" class="btn-primary"></button>
                         </div>
                     </div>
+
+                    <p-table [value]="users()" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [tableStyle]="{'min-width': '60rem'}">
+                        <ng-template pTemplate="header">
+                            <tr class="border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-[#2a2a20]">
+                                <th class="table-header-cell--first">User</th>
+                                <th class="table-header-cell">Role</th>
+                                <th class="table-header-cell">Property</th>
+                                <th class="table-header-cell">Status</th>
+                                <th class="table-header-cell">Date Added</th>
+                                <th class="table-header-cell--last">Actions</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-user>
+                            <tr class="group table-row-interactive">
+                                <td class="table-cell--first">
+                                    <div class="table-user">
+                                        <div [class]="'table-avatar ' + user.avatarColor">
+                                            {{ user.initials }}
+                                        </div>
+                                        <div>
+                                            <div class="table-user-name">{{ user.name }}</div>
+                                            <div class="table-user-email">{{ user.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="table-cell">
+                                    <p-tag [value]="user.role | titlecase" [severity]="user.role === 'super_admin' ? 'danger' : user.role === 'manager' ? 'info' : user.role === 'attendant' ? 'warn' : 'secondary'" [rounded]="true"></p-tag>
+                                </td>
+                                <td class="table-cell">
+                                    <span class="text-body">{{ user.venue?.name || '-' }}</span>
+                                </td>
+                                <td class="table-cell">
+                                    <p-tag [value]="user.status | titlecase" [severity]="user.status === 'active' ? 'success' : user.status === 'locked' ? 'danger' : 'secondary'" [rounded]="true"></p-tag>
+                                </td>
+                                <td class="table-cell">
+                                    <span class="text-secondary">{{ user.createdAt | date:'mediumDate' }}</span>
+                                </td>
+                                <td class="table-cell--last">
+                                    <div class="table-actions">
+                                        <button pButton icon="pi pi-pencil" (click)="openEditUserModal(user)" class="btn-icon" pTooltip="Edit User" tooltipPosition="top"></button>
+                                        <button pButton icon="pi pi-lock" (click)="resetPassword(user)" class="btn-icon" pTooltip="Reset Password" tooltipPosition="top"></button>
+                                        <button pButton [icon]="user.status === 'active' ? 'pi pi-ban' : 'pi pi-check-circle'" (click)="toggleUserStatus(user)" [class]="user.status === 'active' ? 'btn-icon hover:!text-red-500' : 'btn-icon hover:!text-green-500'" [pTooltip]="user.status === 'active' ? 'Deactivate' : 'Activate'" tooltipPosition="top"></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
                 </div>
             </div>
         </main>
     </div>
 </div>
 
-<!-- Add/Edit User Modal -->
-<div *ngIf="showUserModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-white dark:bg-surface-dark rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-gray-800">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-white/5">
-            <h3 class="font-bold text-lg text-text-primary-light dark:text-text-primary-dark">{{ isEditing ? 'Edit User' : 'Add New User' }}</h3>
-            <button (click)="closeUserModal()" class="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+<p-dialog 
+    [(visible)]="showUserModal" 
+    [modal]="true" 
+    [style]="{width: '500px'}" 
+    [header]="isEditing ? 'Edit User' : 'Add New User'" 
+    styleClass="p-fluid"
+    [draggable]="false"
+    [resizable]="false">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmitUser()" class="flex flex-col gap-4 mt-2">
+        <div class="input-group">
+            <label class="input-label">Email Address</label>
+            <input pInputText formControlName="email" placeholder="name@example.com" [readonly]="isEditing" />
         </div>
         
-        <form [formGroup]="userForm" (ngSubmit)="onSubmitUser()" class="p-6 flex flex-col gap-4">
-            <!-- Email -->
-            <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Email Address</label>
-                <input 
-                    formControlName="email"
-                    [readonly]="isEditing"
-                    [class.opacity-50]="isEditing"
-                    type="email" 
-                    class="w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm"
-                    placeholder="user@parklocator.com">
-            </div>
+        <div class="input-group" *ngIf="!isEditing">
+            <label class="input-label">Password</label>
+            <input pInputText type="password" formControlName="password" placeholder="••••••••" />
+        </div>
 
-            <!-- Password (Create Only) -->
-            <div *ngIf="!isEditing" class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Password</label>
-                <input 
-                    formControlName="password"
-                    type="password" 
-                    class="w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm"
-                    placeholder="••••••••">
-            </div>
+        <div class="input-group">
+            <label class="input-label">Role</label>
+            <p-select formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" placeholder="Select Role"></p-select>
+        </div>
 
-            <!-- Role -->
-            <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Role</label>
-                <div class="relative">
-                    <select 
-                        formControlName="role"
-                        class="appearance-none w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm cursor-pointer">
-                        <ng-container *ngIf="isSuperAdmin()">
-                            <option value="manager">Mall Manager</option>
-                            <option value="attendant">Attendant</option>
-                            <option value="finance">Finance</option>
-                            <option value="driver">Driver</option>
-                        </ng-container>
-                        <ng-container *ngIf="isManager()">
-                            <option value="attendant">Attendant</option>
-                        </ng-container>
-                    </select>
-                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light text-[20px] pointer-events-none">expand_more</span>
-                </div>
-            </div>
+        <div class="input-group" *ngIf="isSuperAdmin()">
+            <label class="input-label">Property Assignment</label>
+            <p-select formControlName="venueId" [options]="venues" optionLabel="name" optionValue="id" placeholder="Select Property"></p-select>
+        </div>
 
-            <!-- Venue (Super Admin Only) -->
-            <div *ngIf="isSuperAdmin()" class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Property</label>
-                <div class="relative">
-                    <select 
-                        formControlName="venueId"
-                        class="appearance-none w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-primary-light dark:text-text-primary-dark shadow-sm cursor-pointer">
-                        <option value="">Select Property</option>
-                        <option *ngFor="let venue of venues" [value]="venue.id">{{ venue.name }}</option>
-                    </select>
-                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light text-[20px] pointer-events-none">expand_more</span>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-4">
-                <button type="button" (click)="closeUserModal()" class="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                    Cancel
-                </button>
-                <button 
-                    type="submit" 
-                    [disabled]="userForm.invalid || isSubmitting"
-                    class="px-6 py-2.5 bg-primary text-black rounded-xl text-sm font-bold hover:brightness-105 transition-all shadow-soft disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                    <span *ngIf="isSubmitting" class="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></span>
-                    {{ isEditing ? 'Save Changes' : 'Create User' }}
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+        <div class="form-actions">
+            <button pButton label="Cancel" type="button" (click)="closeUserModal()" class="btn-ghost"></button>
+            <button pButton [label]="isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create User')" type="submit" [disabled]="userForm.invalid || isSubmitting" class="btn-primary"></button>
+        </div>
+    </form>
+</p-dialog>

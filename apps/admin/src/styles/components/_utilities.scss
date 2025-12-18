@@ -1,0 +1,287 @@
+/* ============================================
+   UTILITY STYLES
+   ============================================ */
+
+/* Scrollbar Styles */
+.custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 dark:bg-gray-700;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-300 dark:bg-gray-600;
+  }
+}
+
+/* Hide Scrollbar */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Focus Ring */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+}
+
+/* Transition Helpers */
+.transition-fast {
+  @apply transition-all duration-150;
+}
+
+.transition-normal {
+  @apply transition-all duration-200;
+}
+
+.transition-slow {
+  @apply transition-all duration-300;
+}
+
+/* Shadow Utilities */
+.shadow-card {
+  @apply shadow-sm;
+}
+
+.shadow-dropdown {
+  @apply shadow-lg;
+}
+
+.shadow-modal {
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+/* Glassmorphism */
+.glass {
+  @apply bg-white/80 dark:bg-black/50 backdrop-blur-sm;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  @apply bg-gray-200 dark:bg-gray-700 animate-pulse rounded;
+}
+
+/* Empty State */
+.empty-state {
+  @apply text-center py-12;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+.empty-state-icon {
+  @apply text-5xl opacity-50 mb-4;
+}
+
+/* Disabled State */
+.disabled {
+  @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+/* ============================================
+   ANIMATIONS & INTERACTIONS
+   ============================================ */
+
+/* Hover Effects */
+.hover-lift {
+  @apply transition-all duration-200 ease-out;
+  &:hover {
+    @apply -translate-y-0.5 shadow-md;
+  }
+  &:active {
+    @apply translate-y-0 shadow-sm;
+  }
+}
+
+.hover-scale {
+  @apply transition-transform duration-200 ease-out;
+  &:hover {
+    @apply scale-[1.02];
+  }
+  &:active {
+    @apply scale-[0.98];
+  }
+}
+
+.hover-glow {
+  @apply transition-all duration-200;
+  &:hover {
+    box-shadow: 0 0 20px rgba(249, 245, 6, 0.3);
+  }
+}
+
+/* Click/Press Feedback */
+.press-effect {
+  @apply transition-transform duration-100 ease-out;
+  &:active {
+    @apply scale-[0.97];
+  }
+}
+
+.press-effect-subtle {
+  @apply transition-transform duration-100 ease-out;
+  &:active {
+    @apply scale-[0.99];
+  }
+}
+
+/* Ripple Effect Base */
+.ripple {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out;
+    opacity: 0;
+  }
+  
+  &:active::after {
+    width: 200%;
+    height: 200%;
+    opacity: 1;
+    transition: 0s;
+  }
+}
+
+/* Pulse Animation */
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Subtle Bounce */
+.bounce-subtle {
+  animation: bounce-subtle 1s ease-in-out infinite;
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Fade In Animation */
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide Up Animation */
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scale In Animation */
+.scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Spin Animation */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Material Icons Fix */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+.material-symbols-filled {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Aspect Ratios */
+.aspect-card {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+/* Z-Index Layers */
+.z-dropdown { z-index: 1000; }
+.z-sticky { z-index: 1020; }
+.z-fixed { z-index: 1030; }
+.z-modal-backdrop { z-index: 1040; }
+.z-modal { z-index: 1050; }
+.z-popover { z-index: 1060; }
+.z-tooltip { z-index: 1070; }

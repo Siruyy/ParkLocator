@@ -24,6 +24,7 @@ export interface Transaction {
   amount: number;
   status: string;
   createdAt: string;
+  paymentMethod?: string;
   user?: { email: string };
   venue?: { name: string };
   level?: { name: string };

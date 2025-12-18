@@ -7,10 +7,39 @@ import { HeaderComponent } from '../layout/header/header.component';
 import { VenuesService, Venue } from '../core/services/venues.service';
 import { AuthService } from '../core/services/auth.service';
 
+// PrimeNG Imports
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { CardModule } from 'primeng/card';
+import { SelectModule } from 'primeng/select';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+
 @Component({
   selector: 'app-venues',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, SidebarComponent, HeaderComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ReactiveFormsModule, 
+    RouterModule, 
+    SidebarComponent, 
+    HeaderComponent,
+    TableModule,
+    ButtonModule,
+    DialogModule,
+    InputTextModule,
+    TagModule,
+    TooltipModule,
+    CardModule,
+    SelectModule,
+    IconFieldModule,
+    InputIconModule
+  ],
   templateUrl: './venues.component.html',
   styleUrl: './venues.component.scss'
 })

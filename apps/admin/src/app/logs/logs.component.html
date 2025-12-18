@@ -1,44 +1,363 @@
-<div class="flex h-screen bg-gray-50">
-  <app-sidebar></app-sidebar>
+<div class="app-container">
+    <app-sidebar></app-sidebar>
 
-  <div class="flex-1 flex flex-col overflow-hidden">
-    <app-header title="System Logs"></app-header>
+    <div class="main-content">
+        <app-header 
+            [breadcrumbs]="[{ label: 'Admin', url: '#' }, { label: 'Logs' }]"
+            searchPlaceholder="Search system logs...">
+        </app-header>
 
-    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
-      <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-700 mb-4">Activity Log</h3>
-        
-        <p-table 
-          [value]="logs" 
-          [lazy]="true" 
-          (onLazyLoad)="loadLogs($event)"
-          [paginator]="true" 
-          [rows]="pageSize" 
-          [totalRecords]="totalRecords" 
-          [loading]="loading"
-          [tableStyle]="{ 'min-width': '50rem' }">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Timestamp</th>
-              <th>Action</th>
-              <th>Details</th>
-              <th>User</th>
-              <th>Status</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-log>
-            <tr>
-              <td>{{ log.timestamp | date:'medium' }}</td>
-              <td class="font-semibold">{{ log.action }}</td>
-              <td>{{ log.details }}</td>
-              <td>{{ log.user }}</td>
-              <td>
-                <p-tag [value]="log.status | uppercase" [severity]="getSeverity(log.status)"></p-tag>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </div>
-    </main>
-  </div>
+        <main class="main-scroll">
+            <div class="content-wide">
+                
+                <!-- Header Section -->
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="heading-1">System Logs</h2>
+                        <p class="text-muted">Audit trails for QR scans and administrative actions.</p>
+                    </div>
+                    <div class="flex items-center gap-1 p-1 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-full shadow-sm">
+                        <button 
+                            (click)="activeTab = 'qr'"
+                            [class]="activeTab === 'qr' ? 'bg-primary text-black font-bold' : 'text-muted font-medium hover:text-body'"
+                            class="px-5 py-2 rounded-full text-sm transition-all">
+                            QR Logs
+                        </button>
+                        <button 
+                            (click)="activeTab = 'admin'"
+                            [class]="activeTab === 'admin' ? 'bg-primary text-black font-bold' : 'text-muted font-medium hover:text-body'"
+                            class="px-5 py-2 rounded-full text-sm transition-all">
+                            Admin Logs
+                        </button>
+                    </div>
+                </div>
+
+                <!-- QR Logs Section -->
+                <div *ngIf="activeTab === 'qr'" class="flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="heading-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">qr_code_scanner</span>
+                            QR Access Logs
+                        </h3>
+                        <div class="flex items-center gap-3">
+                            <!-- Venue Filter -->
+                            <p-select 
+                                [(ngModel)]="selectedVenue"
+                                [options]="venues"
+                                placeholder="All Venues"
+                                styleClass="input-rounded w-[160px]">
+                                <ng-template pTemplate="selectedItem" let-selected>
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[18px]">domain</span>
+                                        {{ selected || 'All Venues' }}
+                                    </div>
+                                </ng-template>
+                            </p-select>
+
+                            <p-select 
+                                [options]="['All Gates', 'North Gate 1', 'South Gate 2']"
+                                placeholder="All Gates"
+                                styleClass="input-rounded w-[140px]">
+                                <ng-template pTemplate="selectedItem" let-selected>
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                                        {{ selected || 'All Gates' }}
+                                    </div>
+                                </ng-template>
+                            </p-select>
+                            
+                            <button class="btn-primary flex items-center gap-2 whitespace-nowrap">
+                                <span class="material-symbols-outlined text-[16px]">download</span>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                            <div class="relative w-full sm:w-72">
+                                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
+                                <input class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary transition-all placeholder:text-gray-400 outline-none" placeholder="Search by Res ID or Gate..." type="text"/>
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+                                <div class="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-xs font-medium text-muted cursor-pointer hover:border-primary/50 transition-colors whitespace-nowrap">
+                                    Last 24 Hours
+                                </div>
+                                <div class="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-xs font-medium text-muted cursor-pointer hover:border-primary/50 transition-colors whitespace-nowrap">
+                                    Status: All
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="table-header-row">
+                                        <th class="table-header-cell cursor-pointer hover:text-body transition-colors">
+                                            <div class="flex items-center gap-1">Timestamp <span class="material-symbols-outlined text-[14px]">arrow_downward</span></div>
+                                        </th>
+                                        <th class="table-header-cell">Venue</th>
+                                        <th class="table-header-cell">Gate ID</th>
+                                        <th class="table-header-cell">Reservation ID</th>
+                                        <th class="table-header-cell">Result</th>
+                                        <th class="table-header-cell">Reason / Details</th>
+                                        <th class="table-header-cell text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <tr *ngFor="let log of qrLogs" class="table-row-interactive">
+                                        <td class="table-cell text-body">
+                                            {{ log.timestamp }}
+                                        </td>
+                                        <td class="table-cell text-muted font-medium">
+                                            {{ log.venue }}
+                                        </td>
+                                        <td class="table-cell text-muted">
+                                            {{ log.gateId }}
+                                        </td>
+                                        <td class="table-cell font-mono text-body">
+                                            {{ log.reservationId }}
+                                        </td>
+                                        <td class="table-cell">
+                                            <span [class]="'status-badge ' + 
+                                                (log.result === 'PASS' ? 'status-active' : 
+                                                 log.reason === 'QR Code Unreadable' ? 'status-pending' : 
+                                                 'status-error')">
+                                                <span class="material-symbols-outlined text-[14px]">
+                                                    {{ log.result === 'PASS' ? 'check_circle' : (log.reason === 'QR Code Unreadable' ? 'warning' : 'cancel') }}
+                                                </span>
+                                                {{ log.result }}
+                                            </span>
+                                        </td>
+                                        <td class="table-cell text-muted">
+                                            {{ log.reason }}
+                                        </td>
+                                        <td class="table-cell text-right">
+                                            <button class="btn-icon">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                            <span class="text-xs text-muted">Showing 1-5 of 128 logs</span>
+                            <div class="flex items-center gap-2">
+                                <button class="btn-icon !border !border-gray-200 dark:!border-gray-700 disabled:opacity-50" disabled>
+                                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                                </button>
+                                <div class="flex items-center gap-1">
+                                    <button class="size-8 rounded-lg bg-primary text-black text-xs font-bold flex items-center justify-center">1</button>
+                                    <button class="size-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 text-muted text-xs font-medium flex items-center justify-center transition-colors">2</button>
+                                    <button class="size-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 text-muted text-xs font-medium flex items-center justify-center transition-colors">3</button>
+                                </div>
+                                <button class="btn-icon !border !border-gray-200 dark:!border-gray-700">
+                                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Logs Section -->
+                <div *ngIf="activeTab === 'admin'" class="flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="heading-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple-500">admin_panel_settings</span>
+                            Admin Logs
+                        </h3>
+                        <div class="flex items-center gap-3">
+                            <p-select 
+                                [(ngModel)]="selectedVenue"
+                                [options]="venues"
+                                placeholder="All Venues"
+                                styleClass="input-rounded w-[160px]">
+                                <ng-template pTemplate="selectedItem" let-selected>
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[18px]">domain</span>
+                                        {{ selected || 'All Venues' }}
+                                    </div>
+                                </ng-template>
+                            </p-select>
+                            
+                            <button class="btn-primary flex items-center gap-2 whitespace-nowrap">
+                                <span class="material-symbols-outlined text-[16px]">download</span>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                            <div class="relative w-full sm:w-72">
+                                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
+                                <input class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary transition-all placeholder:text-gray-400 outline-none" placeholder="Search by User or Action..." type="text"/>
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <div class="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-xs font-medium text-muted cursor-pointer hover:border-primary/50 transition-colors whitespace-nowrap">
+                                    Action: All
+                                </div>
+                                <div class="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-xs font-medium text-muted cursor-pointer hover:border-primary/50 transition-colors whitespace-nowrap">
+                                    Role: All
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="table-header-row">
+                                        <th class="table-header-cell">User</th>
+                                        <th class="table-header-cell">Venue</th>
+                                        <th class="table-header-cell">Action Description</th>
+                                        <th class="table-header-cell">Timestamp</th>
+                                        <th class="table-header-cell">Affected Entity</th>
+                                        <th class="table-header-cell text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <tr *ngFor="let log of adminLogs" class="table-row-interactive">
+                                        <td class="table-cell">
+                                            <div class="table-user">
+                                                <div 
+                                                    [class.bg-blue-100]="log.user.color === 'blue'"
+                                                    [class.text-blue-600]="log.user.color === 'blue'"
+                                                    [class.bg-green-100]="log.user.color === 'green'"
+                                                    [class.text-green-600]="log.user.color === 'green'"
+                                                    [class.bg-orange-100]="log.user.color === 'orange'"
+                                                    [class.text-orange-600]="log.user.color === 'orange'"
+                                                    class="size-8 rounded-full flex items-center justify-center text-xs font-bold">
+                                                    {{ log.user.initials }}
+                                                </div>
+                                                <div class="flex flex-col">
+                                                    <span class="table-user-name">{{ log.user.name }}</span>
+                                                    <span class="table-user-email">{{ log.user.role }}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="table-cell text-muted font-medium">
+                                            {{ log.venue }}
+                                        </td>
+                                        <td class="table-cell">
+                                            <div class="flex items-start gap-2">
+                                                <div 
+                                                    [class.bg-accent-info]="log.severity === 'info'"
+                                                    [class.bg-accent-warning]="log.severity === 'warning'"
+                                                    [class.bg-accent-success]="log.severity === 'success'"
+                                                    class="mt-1.5 size-1.5 rounded-full shrink-0"></div>
+                                                <div>
+                                                    <span class="text-body block">{{ log.action }}</span>
+                                                    <p class="text-[11px] text-muted mt-0.5">{{ log.details }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="table-cell text-muted">
+                                            {{ log.timestamp }}
+                                        </td>
+                                        <td class="table-cell">
+                                            <span class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded-md text-xs font-mono text-body">{{ log.entity }}</span>
+                                        </td>
+                                        <td class="table-cell text-right">
+                                            <button 
+                                                (click)="showDetails(log)"
+                                                class="btn-icon" 
+                                                title="View Details">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                            <span class="text-xs text-muted">Showing 1-3 of 45 logs</span>
+                            <div class="flex items-center gap-2">
+                                <button class="btn-icon !border !border-gray-200 dark:!border-gray-700 disabled:opacity-50" disabled>
+                                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                                </button>
+                                <div class="flex items-center gap-1">
+                                    <button class="size-8 rounded-lg bg-primary text-black text-xs font-bold flex items-center justify-center">1</button>
+                                </div>
+                                <button class="btn-icon !border !border-gray-200 dark:!border-gray-700">
+                                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
 </div>
+
+<p-dialog 
+    header="Log Details" 
+    [(visible)]="detailsVisible" 
+    [modal]="true" 
+    [style]="{ width: '50vw' }" 
+    [draggable]="false" 
+    [resizable]="false">
+    
+    <div *ngIf="selectedLog" class="flex flex-col gap-6">
+        <!-- Header Info -->
+        <div class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-700">
+            <div 
+                [class.bg-blue-100]="selectedLog.user.color === 'blue'"
+                [class.text-blue-600]="selectedLog.user.color === 'blue'"
+                [class.bg-green-100]="selectedLog.user.color === 'green'"
+                [class.text-green-600]="selectedLog.user.color === 'green'"
+                [class.bg-orange-100]="selectedLog.user.color === 'orange'"
+                [class.text-orange-600]="selectedLog.user.color === 'orange'"
+                class="size-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0">
+                {{ selectedLog.user.initials }}
+            </div>
+            <div class="flex flex-col gap-1">
+                <h4 class="heading-4">{{ selectedLog.action }}</h4>
+                <div class="flex items-center gap-2 text-sm text-muted">
+                    <span>by {{ selectedLog.user.name }}</span>
+                    <span>•</span>
+                    <span>{{ selectedLog.timestamp }}</span>
+                </div>
+                <div class="mt-1">
+                    <span class="px-2 py-0.5 bg-gray-200 dark:bg-white/10 rounded text-xs font-mono text-body">
+                        {{ selectedLog.entity }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Changes Diff -->
+        <div *ngIf="selectedLog.changes && selectedLog.changes.length > 0">
+            <h5 class="text-sm font-bold text-muted uppercase tracking-wider mb-3">Changes</h5>
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50 dark:bg-white/5">
+                        <tr class="table-header-row">
+                            <th class="table-header-cell">Field</th>
+                            <th class="table-header-cell text-red-600">Before</th>
+                            <th class="table-header-cell text-green-700">After</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        <tr *ngFor="let change of selectedLog.changes" class="bg-white dark:bg-surface-dark">
+                            <td class="table-cell font-medium text-body">{{ change.field }}</td>
+                            <td class="table-cell text-red-600 bg-red-100 dark:bg-red-900/20 font-mono">{{ change.before }}</td>
+                            <td class="table-cell text-green-700 bg-green-100 dark:bg-green-900/20 font-mono">{{ change.after }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- No Changes Message -->
+        <div *ngIf="!selectedLog.changes || selectedLog.changes.length === 0" class="text-center py-8 text-muted bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+            <span class="material-symbols-outlined text-4xl mb-2 opacity-50">history_edu</span>
+            <p>No specific field changes recorded for this action.</p>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button class="btn-secondary" (click)="detailsVisible = false">
+            Close
+        </button>
+    </ng-template>
+</p-dialog>

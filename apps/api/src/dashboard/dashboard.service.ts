@@ -117,6 +117,8 @@ export class DashboardService {
         attendants
       },
       occupancyRate,
+      totalOccupied,
+      totalCapacity,
       occupancyData: [
         { label: 'Occupied', value: occupancyRate, color: '#34d399', icon: 'pi pi-car' },
         { label: 'Available', value: 100 - occupancyRate, color: '#e5e7eb', icon: 'pi pi-check-circle' }

@@ -19,6 +19,34 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #c5c5b5; 
 }
+
+/* Override global p-dialog styles for the confirm dialog */
+:host ::ng-deep .custom-confirm-dialog {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+    
+    .p-dialog-header {
+        background: transparent !important;
+        padding: 0 !important;
+    }
+
+    .p-dialog-content {
+        background: transparent !important;
+        padding: 0 !important;
+    }
+
+    .p-dialog-footer {
+        background: transparent !important;
+        padding: 0 !important;
+    }
+}
+
+:host-context(.dark) ::ng-deep .custom-confirm-dialog {
+    background: #111827 !important; /* gray-900 */
+    border-color: #1f2937 !important; /* gray-800 */
+}
+
 .p-input-wrapper:focus-within {
     border-color: #f9f506;
     box-shadow: 0 0 0 2px rgba(249, 245, 6, 0.2);

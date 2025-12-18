@@ -3,3 +3,51 @@ html, body {
     margin: 0;
     font-family: 'Spline Sans', sans-serif;
 }
+
+/* ============================================
+   GLOBAL INTERACTIVE STYLES
+   ============================================ */
+
+/* All buttons get press feedback */
+button, 
+[role="button"],
+.clickable {
+    transition: transform 0.1s ease-out, box-shadow 0.2s ease-out;
+    
+    &:not(:disabled):active {
+        transform: scale(0.98);
+    }
+}
+
+/* Links with smooth transitions */
+a {
+    transition: color 0.15s ease-out, opacity 0.15s ease-out;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+    outline: 2px solid #f9f506;
+    outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+    background-color: #f9f506;
+    color: #1c1c0d;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -29,3 +29,27 @@
 .dark .p-datatable-header {
     border-bottom: 1px solid #374151;
 }
+
+/* Dialog Overrides */
+::ng-deep .p-dialog {
+    .p-dialog-header, 
+    .p-dialog-content, 
+    .p-dialog-footer {
+        background: transparent !important;
+        color: inherit;
+    }
+    
+    .p-dialog-header-icon {
+        color: inherit;
+        opacity: 0.7;
+        
+        &:hover {
+            opacity: 1;
+            background: rgba(0,0,0,0.05);
+        }
+    }
+}
+
+::ng-deep .dark .p-dialog .p-dialog-header-icon:hover {
+    background: rgba(255,255,255,0.1);
+}

@@ -1,4 +1,15 @@
-/* Main Entry Point for Styles */
+/* ============================================
+   MAIN STYLES ENTRY POINT
+   ============================================ */
+
+/* Tailwind Base */
 @use "styles/tailwind";
-@use "styles/overrides";
+
+/* Base Styles */
 @use "styles/base";
+
+/* Component Styles (Tailwind-based utilities) */
+@use "styles/components";
+
+/* PrimeNG Overrides */
+@use "styles/primeng";

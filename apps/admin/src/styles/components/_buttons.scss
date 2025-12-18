@@ -1,0 +1,136 @@
+/* ============================================
+   BUTTON STYLES
+   ============================================ */
+
+/* Primary Button */
+.btn-primary {
+  background-color: #f9f506 !important;
+  color: #1c1c0d !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  padding: 0.625rem 1.25rem;
+  font-weight: 700 !important;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    filter: brightness(1.05);
+    box-shadow: 0 4px 12px rgba(249, 245, 6, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* Secondary/Outlined Button */
+.btn-secondary {
+  background-color: transparent !important;
+  color: #6b7280 !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 9999px !important;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: #f3f4f6 !important;
+  }
+}
+
+.dark .btn-secondary {
+  color: #a09f8d !important;
+  border-color: #4b5563 !important;
+  
+  &:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+}
+
+/* Ghost/Text Button */
+.btn-ghost {
+  background-color: transparent !important;
+  color: #6b7280 !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: #f3f4f6 !important;
+  }
+}
+
+.dark .btn-ghost {
+  color: #a09f8d !important;
+  
+  &:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+}
+
+/* Danger Button */
+.btn-danger {
+  background-color: #ef4444 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: #dc2626 !important;
+  }
+}
+
+/* Danger Outlined Button */
+.btn-danger-outline {
+  background-color: rgba(254, 226, 226, 0.5) !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 9999px !important;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: #fee2e2 !important;
+    border-color: #fca5a5 !important;
+  }
+}
+
+/* Icon Button */
+.btn-icon {
+  padding: 0.5rem !important;
+  border-radius: 9999px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #6b7280 !important;
+  transition: all 0.15s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: #f3f4f6 !important;
+    color: #f9f506 !important;
+  }
+}
+
+.dark .btn-icon {
+  color: #a09f8d !important;
+  
+  &:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f9f506 !important;
+  }
+}
+
+/* Button with Icon */
+.btn-with-icon {
+  @apply inline-flex items-center gap-2;
+}

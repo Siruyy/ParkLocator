@@ -96,7 +96,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     ).format(widget.startDate ?? DateTime.now());
 
     var durationStr = '1 hour';
-    var totalPrice = 50; // Default reservation fee
+    double totalPrice = 50.0; // Default reservation fee
 
     if (widget.startDate != null && widget.endDate != null) {
       final duration = widget.endDate!.difference(widget.startDate!);
@@ -118,7 +118,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       // by sensors when the user parks and checked out.
       if (widget.venue.configuration != null) {
         final config = widget.venue.configuration!;
-        totalPrice = config.reservationFee;
+        totalPrice = config.reservationFee.toDouble();
       } else {
         // Fallback if no config - default reservation fee
         totalPrice = 50.0;

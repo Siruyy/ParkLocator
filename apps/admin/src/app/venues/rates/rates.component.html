@@ -1,38 +1,37 @@
-<div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark selection:bg-primary selection:text-black">
+<div class="app-container">
     <app-sidebar></app-sidebar>
-    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <div class="main-content">
         <app-header 
             [breadcrumbs]="[{ label: 'Admin', url: '#' }, { label: 'Venue Config', url: '/venues', queryParams: { venueId: venueId } }, { label: 'Rates & Limits' }]"
             searchPlaceholder="Search settings...">
         </app-header>
-        <main class="flex-1 overflow-y-auto p-6 sm:p-8 scroll-smooth">
+        <main class="main-scroll">
             <form [formGroup]="configForm" class="max-w-6xl mx-auto flex flex-col gap-8 pb-24">
-                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div class="flex-between">
                     <div>
-                        <a [routerLink]="['/venues']" [queryParams]="{ venueId: venueId }" class="inline-flex items-center gap-2 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors mb-4">
+                        <a [routerLink]="['/venues']" [queryParams]="{ venueId: venueId }" class="back-link mb-4">
                             <span class="material-symbols-outlined text-[20px]">arrow_back</span>
                             Back to Venues
                         </a>
-                        <h2 class="text-3xl font-bold tracking-tight mb-2">Rate & Limit Management</h2>
-                        <p class="text-text-secondary-light dark:text-text-secondary-dark">Configure parking fees, penalties, and reservation duration limits.</p>
+                        <h2 class="heading-1 mb-2">Rate & Limit Management</h2>
+                        <p class="text-secondary">Configure parking fees, penalties, and reservation duration limits.</p>
                     </div>
                     <div class="flex gap-3">
-                        <button type="button" class="px-5 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
-                            Discard Changes
-                        </button>
-                        <button type="button" (click)="save()" [disabled]="isSaving" class="px-5 py-2.5 rounded-full bg-primary text-black font-bold text-sm hover:brightness-105 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span class="material-symbols-outlined text-[18px]" *ngIf="!isSaving">save</span>
-                            <span class="material-symbols-outlined text-[18px] animate-spin" *ngIf="isSaving">refresh</span>
-                            {{ isSaving ? 'Saving...' : 'Save Configuration' }}
-                        </button>
+                        <p-button 
+                            (click)="discardChanges()" 
+                            label="Discard Changes" 
+                            [disabled]="!configForm.dirty"
+                            [styleClass]="configForm.dirty ? 'btn-danger-outline' : 'btn-secondary opacity-50 cursor-not-allowed'">
+                        </p-button>
+                        <p-button (click)="save()" [disabled]="isSaving" [label]="isSaving ? 'Saving...' : 'Save Configuration'" [icon]="isSaving ? 'pi pi-spin pi-spinner' : 'pi pi-save'" styleClass="btn-primary"></p-button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <div class="lg:col-span-7 flex flex-col gap-6">
-                        <div class="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <p-card styleClass="!bg-surface-light dark:!bg-surface-dark !rounded-3xl !border !border-gray-100 dark:!border-gray-800 !shadow-sm">
                             <div class="flex items-center gap-3 mb-6">
-                                <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-                                    <span class="material-symbols-outlined">payments</span>
+                                <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                    <span class="material-symbols-outlined !text-[20px] !leading-none">payments</span>
                                 </div>
                                 <div>
                                     <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Standard Rates</h3>
@@ -43,32 +42,19 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                     <div class="flex flex-col gap-2">
                                         <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Reservation Fee</label>
-                                        <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                            <span class="pl-4 text-text-secondary-light dark:text-text-secondary-dark font-semibold">₱</span>
-                                            <input formControlName="reservationFee" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number"/>
-                                        </div>
+                                        <p-inputNumber formControlName="reservationFee" mode="currency" currency="PHP" locale="en-PH" styleClass="w-full" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium"></p-inputNumber>
                                     </div>
                                     <div class="flex flex-col gap-2">
                                         <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Base Rate</label>
-                                        <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                            <span class="pl-4 text-text-secondary-light dark:text-text-secondary-dark font-semibold">₱</span>
-                                            <input formControlName="baseRate" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number"/>
-                                        </div>
+                                        <p-inputNumber formControlName="baseRate" mode="currency" currency="PHP" locale="en-PH" styleClass="w-full" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium"></p-inputNumber>
                                     </div>
                                     <div class="flex flex-col gap-2">
                                         <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Base Duration</label>
-                                        <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                            <input formControlName="baseDuration" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="1" type="number"/>
-                                            <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark">hrs</span>
-                                        </div>
+                                        <p-inputNumber formControlName="baseDuration" suffix=" hrs" styleClass="w-full" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium"></p-inputNumber>
                                     </div>
                                     <div class="flex flex-col gap-2">
                                         <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Succeeding Rate</label>
-                                        <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                            <span class="pl-4 text-text-secondary-light dark:text-text-secondary-dark font-semibold">₱</span>
-                                            <input formControlName="succeedingHourRate" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number"/>
-                                            <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark">/hr</span>
-                                        </div>
+                                        <p-inputNumber formControlName="succeedingHourRate" mode="currency" currency="PHP" locale="en-PH" suffix=" /hr" styleClass="w-full" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium"></p-inputNumber>
                                     </div>
                                 </div>
                                 <hr class="border-gray-100 dark:border-gray-700/50"/>
@@ -78,14 +64,8 @@
                                         <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Additional flat fee applied on Sat/Sun</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <div class="p-input-wrapper w-32 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden" [class.opacity-50]="!configForm.get('isWeekendSurchargeActive')?.value">
-                                            <span class="pl-3 text-text-secondary-light dark:text-text-secondary-dark font-semibold text-xs">₱</span>
-                                            <input formControlName="weekendSurcharge" class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number"/>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input formControlName="isWeekendSurchargeActive" class="sr-only peer" type="checkbox"/>
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                                        </label>
+                                        <p-inputNumber formControlName="weekendSurcharge" mode="currency" currency="PHP" locale="en-PH" styleClass="w-32" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !py-2 !px-3 !text-sm !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium !text-right" [class.opacity-50]="!configForm.get('isWeekendSurchargeActive')?.value"></p-inputNumber>
+                                        <p-toggleswitch formControlName="isWeekendSurchargeActive"></p-toggleswitch>
                                     </div>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">
@@ -94,63 +74,47 @@
                                         <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Flat rate per entry for motorcycles</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <div class="p-input-wrapper w-32 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden" [class.opacity-50]="!configForm.get('isMotorcycleFlatRateActive')?.value">
-                                            <span class="pl-3 text-text-secondary-light dark:text-text-secondary-dark font-semibold text-xs">₱</span>
-                                            <input formControlName="motorcycleFlatRate" class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number"/>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input formControlName="isMotorcycleFlatRateActive" class="sr-only peer" type="checkbox"/>
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                                        </label>
+                                        <p-inputNumber formControlName="motorcycleFlatRate" mode="currency" currency="PHP" locale="en-PH" styleClass="w-32" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !py-2 !px-3 !text-sm !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium !text-right" [class.opacity-50]="!configForm.get('isMotorcycleFlatRateActive')?.value"></p-inputNumber>
+                                        <p-toggleswitch formControlName="isMotorcycleFlatRateActive"></p-toggleswitch>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm relative overflow-hidden">
+                        </p-card>
+                        <p-card styleClass="!bg-surface-light dark:!bg-surface-dark !rounded-3xl !border !border-gray-100 dark:!border-gray-800 !shadow-sm relative overflow-hidden">
                             <div class="absolute -right-10 -top-10 size-40 bg-purple-500/5 rounded-full blur-3xl"></div>
                             <div class="flex items-center justify-between mb-6 relative z-10">
                                 <div class="flex items-center gap-3">
-                                    <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
-                                        <span class="material-symbols-outlined">bedtime</span>
+                                    <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                        <span class="material-symbols-outlined !text-[20px] !leading-none">bedtime</span>
                                     </div>
                                     <div>
                                         <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Overnight Parking</h3>
                                         <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Special rates for overnight stays</p>
                                     </div>
                                 </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input formControlName="isOvernightParkingActive" class="sr-only peer" type="checkbox"/>
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                                </label>
+                                <p-toggleswitch formControlName="isOvernightParkingActive"></p-toggleswitch>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10" [class.opacity-50]="!configForm.get('isOvernightParkingActive')?.value" [class.pointer-events-none]="!configForm.get('isOvernightParkingActive')?.value">
                                 <div class="flex flex-col gap-2">
                                     <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Overnight Flat Rate</label>
-                                    <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                        <span class="pl-4 text-text-secondary-light dark:text-text-secondary-dark font-semibold">₱</span>
-                                        <input formControlName="overnightFlatRate" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0.00" type="number"/>
-                                    </div>
+                                    <p-inputNumber formControlName="overnightFlatRate" mode="currency" currency="PHP" locale="en-PH" styleClass="w-full" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium"></p-inputNumber>
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Overnight Time Window</label>
                                     <div class="flex items-center gap-2">
-                                        <div class="p-input-wrapper flex-1 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                            <input formControlName="overnightStartHour" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark text-sm" type="time"/>
-                                        </div>
+                                        <input pInputText formControlName="overnightStartHour" class="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !text-sm" type="time"/>
                                         <span class="text-text-secondary-light text-xs">to</span>
-                                        <div class="p-input-wrapper flex-1 flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                            <input formControlName="overnightEndHour" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark text-sm" type="time"/>
-                                        </div>
+                                        <input pInputText formControlName="overnightEndHour" class="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !text-sm" type="time"/>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </p-card>
                     </div>
                     <div class="lg:col-span-5 flex flex-col gap-6">
-                        <div class="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <p-card styleClass="!bg-surface-light dark:!bg-surface-dark !rounded-3xl !border !border-gray-100 dark:!border-gray-800 !shadow-sm">
                             <div class="flex items-center gap-3 mb-6">
-                                <div class="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
-                                    <span class="material-symbols-outlined">timer</span>
+                                <div class="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                                    <span class="material-symbols-outlined !text-[20px] !leading-none">timer</span>
                                 </div>
                                 <div>
                                     <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Limits & Grace Periods</h3>
@@ -163,35 +127,26 @@
                                         Entry Grace Period
                                         <span class="text-xs font-normal text-text-secondary-light">Before charging starts</span>
                                     </label>
-                                    <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                        <input formControlName="entryGracePeriod" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number"/>
-                                        <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">MINUTES</span>
-                                    </div>
+                                    <p-inputNumber formControlName="entryGracePeriod" suffix=" MINUTES" styleClass="w-full" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium"></p-inputNumber>
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark flex justify-between">
                                         Exit Grace Period
                                         <span class="text-xs font-normal text-text-secondary-light">After payment is made</span>
                                     </label>
-                                    <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                        <input formControlName="exitGracePeriod" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number"/>
-                                        <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">MINUTES</span>
-                                    </div>
+                                    <p-inputNumber formControlName="exitGracePeriod" suffix=" MINUTES" styleClass="w-full" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium"></p-inputNumber>
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <label class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Max Reservation Hold</label>
-                                    <div class="p-input-wrapper flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl transition-all overflow-hidden">
-                                        <input formControlName="maxReservationHold" class="w-full bg-transparent border-none focus:ring-0 p-3 text-text-primary-light dark:text-text-primary-dark font-mono font-medium" placeholder="0" type="number"/>
-                                        <span class="pr-4 text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">MINUTES</span>
-                                    </div>
+                                    <p-inputNumber formControlName="maxReservationHold" suffix=" MINUTES" styleClass="w-full" inputStyleClass="!w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl !p-3 !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium"></p-inputNumber>
                                     <p class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">Time held for a user before reservation expires if they don't arrive.</p>
                                 </div>
                             </div>
-                        </div>
-                        <div class="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        </p-card>
+                        <p-card styleClass="!bg-surface-light dark:!bg-surface-dark !rounded-3xl !border !border-gray-100 dark:!border-gray-800 !shadow-sm">
                             <div class="flex items-center gap-3 mb-6">
-                                <div class="p-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
-                                    <span class="material-symbols-outlined">gavel</span>
+                                <div class="p-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center">
+                                    <span class="material-symbols-outlined !text-[20px] !leading-none">gavel</span>
                                 </div>
                                 <div>
                                     <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Penalties</h3>
@@ -204,26 +159,26 @@
                                         <span class="text-sm font-bold text-text-primary-light dark:text-text-primary-dark">Lost Ticket</span>
                                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Flat penalty fee</span>
                                     </div>
-                                    <div class="p-input-wrapper w-32 flex items-center bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-600 rounded-lg transition-all overflow-hidden">
-                                        <span class="pl-3 text-text-secondary-light dark:text-text-secondary-dark font-semibold text-xs">₱</span>
-                                        <input formControlName="lostTicketPenalty" class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number"/>
-                                    </div>
+                                    <p-inputNumber formControlName="lostTicketPenalty" mode="currency" currency="PHP" locale="en-PH" styleClass="w-32" inputStyleClass="!w-full !bg-white dark:!bg-white/10 !border-gray-200 dark:!border-gray-600 !rounded-lg !py-2 !px-3 !text-sm !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium !text-right"></p-inputNumber>
                                 </div>
                                 <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-700">
                                     <div class="flex flex-col">
                                         <span class="text-sm font-bold text-text-primary-light dark:text-text-primary-dark">Illegal Parking</span>
                                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Wrong slot / Double park</span>
                                     </div>
-                                    <div class="p-input-wrapper w-32 flex items-center bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-600 rounded-lg transition-all overflow-hidden">
-                                        <span class="pl-3 text-text-secondary-light dark:text-text-secondary-dark font-semibold text-xs">₱</span>
-                                        <input formControlName="illegalParkingPenalty" class="w-full bg-transparent border-none focus:ring-0 py-2 px-1 text-sm text-text-primary-light dark:text-text-primary-dark font-mono font-medium text-right" type="number"/>
-                                    </div>
+                                    <p-inputNumber formControlName="illegalParkingPenalty" mode="currency" currency="PHP" locale="en-PH" styleClass="w-32" inputStyleClass="!w-full !bg-white dark:!bg-white/10 !border-gray-200 dark:!border-gray-600 !rounded-lg !py-2 !px-3 !text-sm !text-text-primary-light dark:!text-text-primary-dark !font-mono !font-medium !text-right"></p-inputNumber>
                                 </div>
                             </div>
-                        </div>
+                        </p-card>
                     </div>
                 </div>
             </form>
         </main>
     </div>
+    <p-confirmDialog 
+        [baseZIndex]="10000"
+        [style]="{width: '400px'}"
+        acceptButtonStyleClass="!bg-red-500 !border-red-500 !text-white !rounded-full !px-4 !py-2 !font-bold !text-sm hover:!bg-red-600"
+        rejectButtonStyleClass="!text-gray-600 !border-none !bg-transparent !rounded-full !px-4 !py-2 !font-semibold !text-sm hover:!bg-gray-100">
+    </p-confirmDialog>
 </div>

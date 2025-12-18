@@ -1,0 +1,253 @@
+/* ============================================
+   AUTH / LOGIN PAGE STYLES
+   ============================================ */
+
+/* Main Login Container */
+.login-container {
+  @apply min-h-screen flex flex-col lg:flex-row;
+}
+
+/* Left Section: Form Area */
+.login-form-section {
+  @apply flex-1 flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24;
+  @apply bg-background-light dark:bg-background-dark;
+  @apply relative overflow-hidden;
+}
+
+.login-form-wrapper {
+  @apply mx-auto w-full max-w-sm lg:max-w-md z-10;
+}
+
+/* Header Area */
+.login-header {
+  @apply flex flex-col gap-6 mb-10;
+}
+
+.login-logo {
+  @apply flex items-center gap-2;
+}
+
+.login-logo-icon {
+  @apply flex items-center justify-center w-10 h-10 rounded-full bg-primary text-text-main;
+}
+
+.login-logo-text {
+  @apply text-xl font-bold tracking-tight text-text-main dark:text-white;
+}
+
+.login-title {
+  @apply text-3xl font-black leading-tight tracking-[-0.033em] text-text-main dark:text-white mb-2;
+}
+
+.login-subtitle {
+  @apply text-text-muted dark:text-gray-400 text-base font-normal leading-normal;
+}
+
+/* Form Elements */
+.login-form {
+  @apply flex flex-col gap-6;
+}
+
+.login-input-group {
+  @apply flex flex-col gap-2;
+}
+
+.login-input-label {
+  @apply text-text-main dark:text-gray-200 text-sm font-medium leading-normal ml-1;
+}
+
+.login-input-wrapper {
+  @apply relative flex items-center;
+}
+
+.login-input-icon {
+  @apply absolute left-4 text-text-muted select-none z-10;
+}
+
+.login-input {
+  @apply w-full rounded-full h-12 sm:h-14;
+  @apply text-text-main dark:text-white text-base font-normal leading-normal;
+  @apply bg-surface-light dark:bg-surface-dark;
+  @apply border border-[#e9e8ce] dark:border-[#444];
+  @apply shadow-sm transition-all;
+  @apply focus:outline-none focus:ring-2 focus:ring-primary/50;
+  @apply placeholder:text-text-muted;
+  padding-left: 3rem;
+  padding-right: 1rem;
+  
+  &.has-toggle {
+    padding-right: 3rem;
+  }
+}
+
+.login-input-toggle {
+  @apply absolute right-2 top-1/2 -translate-y-1/2 p-2;
+  @apply text-text-muted hover:text-text-main dark:hover:text-white;
+  @apply transition-colors rounded-full;
+}
+
+/* Actions Row */
+.login-actions {
+  @apply flex items-center justify-between;
+}
+
+.login-remember {
+  @apply flex items-center gap-x-3 cursor-pointer;
+}
+
+.login-remember-label {
+  @apply text-text-main dark:text-gray-300 text-sm font-normal leading-normal;
+  @apply hover:text-primary transition-colors cursor-pointer;
+}
+
+.login-forgot-link {
+  @apply text-sm font-medium text-text-main dark:text-white;
+  @apply underline decoration-primary/50 hover:decoration-primary decoration-2 underline-offset-4;
+  @apply transition-all;
+}
+
+/* Error Message */
+.login-error {
+  @apply flex items-center gap-3 p-4 rounded-xl;
+  @apply bg-red-50 dark:bg-red-900/20;
+  @apply border border-red-200 dark:border-red-800;
+  @apply text-red-700 dark:text-red-300;
+}
+
+.login-error-icon {
+  @apply text-[20px];
+}
+
+.login-error-text {
+  @apply text-sm;
+}
+
+/* Submit Button */
+.login-submit {
+  @apply w-full h-12 sm:h-14 rounded-full mt-2;
+  @apply bg-primary hover:bg-[#e6e205] active:scale-[0.99];
+  @apply text-[#1c1c0d] text-base font-bold leading-normal tracking-[0.015em];
+  @apply shadow-lg shadow-primary/20;
+  @apply transition-all duration-200 border-none;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply flex items-center justify-center;
+}
+
+/* Footer */
+.login-footer {
+  @apply mt-10 text-center;
+}
+
+.login-footer-text {
+  @apply text-text-muted dark:text-gray-500 text-sm;
+}
+
+.login-footer-link {
+  @apply text-text-main dark:text-gray-300 font-medium hover:text-primary transition-colors;
+}
+
+/* Right Section: Visual */
+.login-visual-section {
+  @apply hidden lg:block relative w-0 flex-1 bg-surface-dark;
+}
+
+.login-visual-container {
+  @apply absolute inset-0 h-full w-full bg-surface-dark;
+}
+
+.login-visual-bg {
+  @apply h-full w-full bg-cover bg-center opacity-80 mix-blend-overlay;
+}
+
+.login-visual-overlay {
+  @apply absolute inset-0 bg-gradient-to-t from-background-dark/90 via-background-dark/20 to-transparent;
+}
+
+/* Visual Content */
+.login-visual-content {
+  @apply absolute bottom-0 left-0 right-0 p-12 text-white;
+}
+
+.login-visual-content-inner {
+  @apply max-w-lg;
+}
+
+.login-visual-badge {
+  @apply inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6;
+  @apply bg-primary/20 border border-primary/30 backdrop-blur-md;
+}
+
+.login-visual-badge-dot {
+  @apply w-2 h-2 rounded-full bg-primary animate-pulse;
+}
+
+.login-visual-badge-text {
+  @apply text-xs font-bold text-primary tracking-wide uppercase;
+}
+
+.login-visual-title {
+  @apply text-4xl font-black tracking-tight mb-4;
+}
+
+.login-visual-desc {
+  @apply text-lg text-gray-300 font-normal leading-relaxed;
+}
+
+/* Floating Cards */
+.login-floating-card {
+  @apply absolute p-4 w-48 shadow-2xl;
+  @apply bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl;
+  @apply hover:rotate-0 transition-transform duration-500;
+}
+
+.login-floating-card-1 {
+  @apply top-1/4 right-20;
+  transform: rotate(3deg);
+}
+
+.login-floating-card-2 {
+  @apply top-1/3 right-48;
+  transform: rotate(-2deg);
+  transition-delay: 100ms;
+}
+
+.login-floating-card-header {
+  @apply flex items-center gap-3 mb-2;
+}
+
+.login-floating-card-icon {
+  @apply w-8 h-8 rounded-full flex items-center justify-center;
+}
+
+.login-floating-card-icon-primary {
+  @apply bg-primary text-black;
+}
+
+.login-floating-card-icon-white {
+  @apply bg-white text-black;
+}
+
+.login-floating-card-label {
+  @apply text-xs text-white/60;
+}
+
+.login-floating-card-value {
+  @apply text-sm font-bold text-white;
+}
+
+.login-floating-card-progress {
+  @apply w-full bg-white/20 rounded-full h-1.5;
+}
+
+.login-floating-card-progress-bar {
+  @apply bg-primary h-1.5 rounded-full;
+}
+
+.login-floating-card-trend {
+  @apply flex text-[10px] text-primary gap-1 items-center;
+}
+
+/* Top accent line */
+.login-accent-line {
+  @apply absolute top-0 left-0 w-full h-2 bg-primary;
+}

@@ -1,0 +1,81 @@
+/* ============================================
+   FORM INPUT STYLES
+   ============================================ */
+
+/* Base Input */
+.input {
+  @apply w-full bg-gray-50 dark:bg-white/5;
+  @apply border border-gray-200 dark:border-gray-700;
+  @apply rounded-xl p-3;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+  @apply text-sm;
+  @apply transition-all;
+  @apply focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary;
+  
+  &::placeholder {
+    @apply text-text-secondary-light dark:text-text-secondary-dark opacity-60;
+  }
+}
+
+/* Rounded Input (pill style) */
+.input-rounded {
+  width: 100%;
+  border-radius: 9999px;
+  
+  @apply bg-background-light dark:bg-[#2a2a20];
+  @apply border-border-light dark:border-border-dark;
+}
+
+/* Input with monospace font (for numbers, codes) */
+.input-mono {
+  @apply input font-mono font-medium;
+}
+
+/* Compact Input */
+.input-sm {
+  @apply input py-2 px-3 text-sm;
+}
+
+/* Input Label */
+.input-label {
+  @apply font-bold text-sm;
+}
+
+/* Input Helper Text */
+.input-helper {
+  @apply text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1;
+}
+
+/* Input Error */
+.input-error {
+  @apply text-xs text-red-500 mt-1;
+}
+
+/* Input Group (label + input + helper) */
+.input-group {
+  @apply flex flex-col gap-2;
+}
+
+/* Search Input */
+.input-search {
+  @apply input pl-10;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0.75rem center;
+  background-size: 1.25rem;
+}
+
+/* Toggle/Switch Container */
+.toggle-row {
+  @apply flex items-center justify-between gap-4;
+}
+
+/* Checkbox/Toggle with label */
+.toggle-with-label {
+  @apply flex items-center gap-3;
+}
+
+/* Form Dialog Footer */
+.form-actions {
+  @apply flex justify-end gap-2 mt-4;
+}
