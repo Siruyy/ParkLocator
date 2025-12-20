@@ -72,6 +72,7 @@ export class FinanceComponent implements OnInit, OnDestroy {
   }
 
   onSearchInput(term: string) {
+    console.log('Finance onSearchInput:', term);
     this.searchSubject.next(term);
   }
 
@@ -86,6 +87,7 @@ export class FinanceComponent implements OnInit, OnDestroy {
   }
 
   onSearch() {
+    console.log('Finance onSearch triggering with term:', this.searchTerm);
     this.currentPage = 1;
     this.loadTransactions(1);
   }

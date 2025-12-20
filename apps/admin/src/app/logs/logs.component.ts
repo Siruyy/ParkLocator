@@ -93,10 +93,12 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   onSearchInput(term: string) {
+    console.log('onSearchInput:', term);
     this.searchSubject.next(term);
   }
 
   onSearch() {
+    console.log('onSearch triggering with term:', this.searchTerm);
     this.currentPage = 1;
     if (this.activeTab === 'qr') {
       this.loadLogs({ first: 0, rows: this.pageSize });
