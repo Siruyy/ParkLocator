@@ -133,6 +133,7 @@ export class ReportsService {
           .orWhere('venue.name ILIKE :search', { search: `%${search}%` })
           .orWhere('r.id::text ILIKE :search', { search: `%${search}%` });
       }));
+      console.log('getTransactions query:', query.getSql(), query.getParameters());
     }
 
     const [data, total] = await query.getManyAndCount();
@@ -161,6 +162,7 @@ export class ReportsService {
           .orWhere('r.id::text ILIKE :search', { search: `%${search}%` })
           .orWhere('r.qrCode ILIKE :search', { search: `%${search}%` });
       }));
+      console.log('getLogs query:', query.getSql(), query.getParameters());
     }
 
     const [data, total] = await query.getManyAndCount();
