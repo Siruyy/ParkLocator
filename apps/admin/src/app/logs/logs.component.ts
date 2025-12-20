@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
@@ -11,6 +11,8 @@ import { Select } from 'primeng/select';
 import { FinanceService, Log } from '../core/services/finance.service';
 import { AuthService } from '../core/services/auth.service';
 import { VenuesService } from '../core/services/venues.service';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-logs',
@@ -29,10 +31,13 @@ import { VenuesService } from '../core/services/venues.service';
   templateUrl: './logs.component.html',
   styleUrl: './logs.component.scss'
 })
-export class LogsComponent implements OnInit {
+export class LogsComponent implements OnInit, OnDestroy {
   private financeService = inject(FinanceService);
   public authService = inject(AuthService);
   private venuesService = inject(VenuesService);
+
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
 
   logs: Log[] = [];
   loading = true;
@@ -58,6 +63,15 @@ export class LogsComponent implements OnInit {
     this.loadLogs({ first: 0, rows: this.pageSize });
     this.loadVenues();
     
+    // Setup search debounce
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      this.searchTerm = term;
+      this.onSearch();
+    });
+
     // Hide Admin Logs tab for non-super admins
     if (this.authService.currentUser()?.role !== 'super_admin') {
       this.activeTab = 'qr';
@@ -66,12 +80,20 @@ export class LogsComponent implements OnInit {
     }
   }
 
+  ngOnDestroy() {
+    this.searchSubscription?.unsubscribe();
+  }
+
   loadVenues() {
     if (this.authService.currentUser()?.role === 'super_admin') {
       this.venuesService.getVenues().subscribe(venues => {
         this.venues = ['All Venues', ...venues.map(v => v.name)];
       });
     }
+  }
+
+  onSearchInput(term: string) {
+    this.searchSubject.next(term);
   }
 
   onSearch() {

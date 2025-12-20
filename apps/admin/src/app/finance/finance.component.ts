@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
@@ -8,6 +8,8 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { FinanceService, RevenueStat, Transaction, FinanceSummary } from '../core/services/finance.service';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-finance',
@@ -25,9 +27,12 @@ import { FinanceService, RevenueStat, Transaction, FinanceSummary } from '../cor
   templateUrl: './finance.component.html',
   styleUrl: './finance.component.scss'
 })
-export class FinanceComponent implements OnInit {
+export class FinanceComponent implements OnInit, OnDestroy {
   protected readonly Math = Math;
   private financeService = inject(FinanceService);
+
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
 
   // Summary Data
   summary: FinanceSummary | null = null;
@@ -51,6 +56,23 @@ export class FinanceComponent implements OnInit {
     this.initChartOptions();
     this.loadRevenueData(this.currentPeriod);
     this.loadTransactions(1);
+
+    // Setup search debounce
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      this.searchTerm = term;
+      this.onSearch();
+    });
+  }
+
+  ngOnDestroy() {
+    this.searchSubscription?.unsubscribe();
+  }
+
+  onSearchInput(term: string) {
+    this.searchSubject.next(term);
   }
 
   setPeriod(period: 'day' | 'month') {

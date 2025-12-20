@@ -79,8 +79,8 @@
                             <div class="relative w-full sm:w-72">
                                 <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
                                 <input 
-                                    [(ngModel)]="searchTerm" 
-                                    (input)="onSearch()"
+                                    [ngModel]="searchTerm" 
+                                    (ngModelChange)="onSearchInput($event)"
                                     class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary transition-all placeholder:text-gray-400 outline-none" 
                                     placeholder="Search by Res ID or Gate..." 
                                     type="text"/>
@@ -220,8 +220,8 @@
                             <div class="relative w-full sm:w-72">
                                 <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
                                 <input 
-                                    [(ngModel)]="searchTerm" 
-                                    (input)="onSearch()"
+                                    [ngModel]="searchTerm" 
+                                    (ngModelChange)="onSearchInput($event)"
                                     class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary transition-all placeholder:text-gray-400 outline-none" 
                                     placeholder="Search by User or Action..." 
                                     type="text"/>
