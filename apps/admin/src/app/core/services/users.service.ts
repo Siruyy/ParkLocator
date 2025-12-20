@@ -20,6 +20,7 @@ export interface User {
   employeeId?: string;
   department?: string;
   location?: string;
+  avatarUrl?: string;
 }
 
 export interface PaginatedUsers {
@@ -79,6 +80,16 @@ export class UsersService {
 
   updateProfile(user: Partial<User>): Observable<User> {
     return this.http.patch<User>(`${this.apiUrl}/profile`, user);
+  }
+
+  changePassword(password: string): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/profile/password`, { password });
+  }
+
+  uploadAvatar(file: File): Observable<User> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<User>(`${this.apiUrl}/profile/avatar`, formData);
   }
 
   deleteUser(id: string): Observable<void> {

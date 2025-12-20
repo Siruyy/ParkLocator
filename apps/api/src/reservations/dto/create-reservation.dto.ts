@@ -18,6 +18,10 @@ export class CreateReservationDto {
   spotId: string;
 
   @IsOptional()
+  @IsUUID()
+  vehicleId?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(24)

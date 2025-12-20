@@ -17,6 +17,7 @@ export interface User {
   employeeId?: string;
   department?: string;
   location?: string;
+  avatarUrl?: string;
 }
 
 export interface AuthResponse {
@@ -143,5 +144,11 @@ export class AuthService {
 
   clearError(): void {
     this.errorSignal.set(null);
+  }
+
+  updateCurrentUser(user: User): void {
+    const storage = localStorage.getItem(USER_KEY) ? localStorage : sessionStorage;
+    storage.setItem(USER_KEY, JSON.stringify(user));
+    this.currentUserSignal.set(user);
   }
 }

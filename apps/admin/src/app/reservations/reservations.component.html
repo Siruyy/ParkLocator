@@ -10,7 +10,7 @@
                 <div class="flex-between">
                     <div class="flex flex-col gap-2">
                         <h1 class="heading-1">Reservation Management</h1>
-                        <p class="text-secondary">Monitor real-time bookings, validate entries, and manage parking inventory.</p>
+                        <p class="text-secondary">Manage all parking reservations and active sessions.</p>
                     </div>
                     <div class="flex gap-3">
                         <button class="btn-primary flex items-center gap-2">
@@ -77,6 +77,15 @@
                                     styleClass="input-rounded" />
                             </div>
 
+                            <!-- Type Filter -->
+                            <div class="w-full sm:w-[160px]">
+                                <p-select 
+                                    [options]="typeOptions" 
+                                    [(ngModel)]="selectedType" 
+                                    placeholder="All Types"
+                                    styleClass="input-rounded" />
+                            </div>
+
                             <div class="w-full sm:w-[160px]">
                                 <p-datepicker 
                                     [(ngModel)]="selectedDate" 
@@ -116,6 +125,9 @@
                                     <div class="flex items-center gap-1">User <p-sortIcon field="user.name"></p-sortIcon></div>
                                 </th>
                                 <th class="table-header-cell">Vehicle</th>
+                                <th pSortableColumn="type" class="table-header-cell cursor-pointer hover:text-text-main">
+                                    <div class="flex items-center gap-1">Type <p-sortIcon field="type"></p-sortIcon></div>
+                                </th>
                                 <th pSortableColumn="venue" class="table-header-cell cursor-pointer hover:text-text-main">
                                     <div class="flex items-center gap-1">Venue <p-sortIcon field="venue"></p-sortIcon></div>
                                 </th>
@@ -157,6 +169,12 @@
                                         <span class="table-user-name">{{ res.vehicle.plateNumber }}</span>
                                         <span class="table-user-email">{{ res.vehicle.model }}</span>
                                     </div>
+                                </td>
+                                <td class="table-cell">
+                                    <span [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ' + (res.type === 'IMMEDIATE' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800' : 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800')">
+                                        <span class="material-symbols-outlined text-[14px]">{{ res.type === 'IMMEDIATE' ? 'bolt' : 'event' }}</span>
+                                        {{ res.type === 'IMMEDIATE' ? 'Book Now' : 'Scheduled' }}
+                                    </span>
                                 </td>
                                 <td class="table-cell">
                                     <span class="text-body">{{ res.venue }}</span>

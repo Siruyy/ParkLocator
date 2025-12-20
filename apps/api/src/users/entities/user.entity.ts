@@ -6,9 +6,11 @@ import {
   UpdateDateColumn,
   Index,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { Venue } from '../../venues/entities/venue.entity';
+import { Vehicle } from './vehicle.entity';
 
 export enum UserRole {
   SUPER_ADMIN = 'super_admin',
@@ -61,9 +63,15 @@ export class User {
   @Column({ nullable: true, type: 'varchar' })
   location: string | null;
 
+  @Column({ name: 'avatar_url', nullable: true, type: 'varchar' })
+  avatarUrl: string | null;
+
   @ManyToOne(() => Venue, (venue) => venue.users)
   @JoinColumn({ name: 'venue_id' })
   venue: Venue | null;
+
+  @OneToMany(() => Vehicle, (vehicle) => vehicle.user)
+  vehicles: Vehicle[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

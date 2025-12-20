@@ -11,6 +11,7 @@ import { User, UserRole, UserStatus } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { AuditService } from '../audit/audit.service';
 
 export interface PaginatedUsers {
   data: Omit<User, 'password'>[];
@@ -27,6 +28,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly auditService: AuditService,
   ) {}
 
   async findAll(query: QueryUsersDto, currentUser?: User): Promise<PaginatedUsers> {
@@ -195,5 +197,26 @@ export class UsersService {
     }
 
     await this.usersRepository.remove(user);
+  }
+
+  async changePassword(id: string, newPassword: string): Promise<void> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const salt = await bcrypt.genSalt();
+    user.password = await bcrypt.hash(newPassword, salt);
+    
+    await this.usersRepository.save(user);
+
+    await this.auditService.log(
+      'CHANGE_PASSWORD',
+      'User changed their password',
+      id,
+      id,
+      'User'
+    );
   }
 }

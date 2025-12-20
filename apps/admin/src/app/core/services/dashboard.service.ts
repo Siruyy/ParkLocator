@@ -11,6 +11,7 @@ export interface DashboardStats {
     attendants: number;
   };
   occupancyRate: number;
+  occupancyTrend?: number;
   totalOccupied: number;
   totalCapacity: number;
   occupancyData: {
@@ -21,6 +22,7 @@ export interface DashboardStats {
   }[];
   activeReservations: number;
   todaysRevenue: number;
+  revenueTrend?: number;
   recentActivities: {
     title: string;
     time: string | Date;

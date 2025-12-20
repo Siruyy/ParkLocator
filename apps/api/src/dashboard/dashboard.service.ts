@@ -24,14 +24,17 @@ export class DashboardService {
     const venueId = user.venueId;
 
     // 1. User Stats
-    const totalUsers = await this.usersRepository.count(); // Global count is fine, or filter if needed
+    const userWhere = isManager ? { venue: { id: venueId } } : {};
+    const totalUsers = await this.usersRepository.count({ where: userWhere });
     
-    // For managers, we might want to count only their attendants? 
-    // But currently users are global or linked to venue. 
-    // Let's filter attendants by venue if manager.
     const managerWhere = isManager ? { venue: { id: venueId } } : {};
 
-    const managers = await this.usersRepository.count({ where: { role: UserRole.MANAGER } });
+    const managers = await this.usersRepository.count({ 
+      where: { 
+        role: UserRole.MANAGER,
+        ...managerWhere
+      } 
+    });
     const attendants = await this.usersRepository.count({ 
       where: { 
         role: UserRole.ATTENDANT,
@@ -76,23 +79,58 @@ export class DashboardService {
       ]
     });
 
-    // 4. Revenue Stats (Today)
+    // 4. Revenue Stats (Today vs Yesterday)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
     const todaysReservations = await this.reservationsRepository.find({
       where: {
         createdAt: Between(today, tomorrow),
-        status: ReservationStatus.CONFIRMED, // Assuming only confirmed/paid count
+        status: ReservationStatus.CONFIRMED,
+        ...(isManager ? { venue: { id: venueId } } : {})
+      }
+    });
+
+    const yesterdaysReservations = await this.reservationsRepository.find({
+      where: {
+        createdAt: Between(yesterday, today),
+        status: ReservationStatus.CONFIRMED,
         ...(isManager ? { venue: { id: venueId } } : {})
       }
     });
 
     const todaysRevenue = todaysReservations.reduce((sum, res) => sum + Number(res.amount), 0);
+    const yesterdaysRevenue = yesterdaysReservations.reduce((sum, res) => sum + Number(res.amount), 0);
+    
+    const revenueTrend = yesterdaysRevenue === 0 
+      ? (todaysRevenue > 0 ? 100 : 0) 
+      : Math.round(((todaysRevenue - yesterdaysRevenue) / yesterdaysRevenue) * 100);
 
-    // 5. Recent Activities (Mocked or fetched from logs if available, using reservations for now)
+    // Occupancy Trend (using Check-ins as proxy)
+    const todaysCheckins = await this.reservationsRepository.count({
+      where: {
+        startAt: Between(today, tomorrow),
+        ...(isManager ? { venue: { id: venueId } } : {})
+      }
+    });
+    
+    const yesterdaysCheckins = await this.reservationsRepository.count({
+      where: {
+        startAt: Between(yesterday, today),
+        ...(isManager ? { venue: { id: venueId } } : {})
+      }
+    });
+    
+    const occupancyTrend = yesterdaysCheckins === 0
+      ? (todaysCheckins > 0 ? 100 : 0)
+      : Math.round(((todaysCheckins - yesterdaysCheckins) / yesterdaysCheckins) * 100);
+
+    // 5. Recent Activities
     const recentReservations = await this.reservationsRepository.find({
       where: isManager ? { venue: { id: venueId } } : {},
       relations: ['user', 'venue'],
@@ -125,6 +163,8 @@ export class DashboardService {
       ],
       activeReservations,
       todaysRevenue,
+      revenueTrend,
+      occupancyTrend,
       recentActivities
     };
   }

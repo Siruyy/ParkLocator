@@ -78,12 +78,23 @@
 
                 <!-- Transactions Table -->
                 <div class="table-wrapper">
-                    <div class="flex-between p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
                         <h3 class="heading-4">Recent Transactions</h3>
-                        <button (click)="exportCSV()" class="btn-primary flex items-center gap-2">
-                            <i class="pi pi-download"></i>
-                            Export CSV
-                        </button>
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <div class="relative w-full sm:w-64">
+                                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
+                                <input 
+                                    [(ngModel)]="searchTerm" 
+                                    (input)="onSearch()"
+                                    class="w-full pl-9 pr-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary transition-all placeholder:text-gray-400 outline-none" 
+                                    placeholder="Search transactions..." 
+                                    type="text"/>
+                            </div>
+                            <button (click)="exportCSV()" class="btn-primary flex items-center gap-2 whitespace-nowrap">
+                                <span class="material-symbols-outlined text-[16px]">download</span>
+                                Export CSV
+                            </button>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -143,8 +154,20 @@
                     </div>
                     
                     <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                        <div class="text-xs text-muted">
-                            Showing <span class="font-semibold text-body">{{ (currentPage - 1) * pageSize + 1 }}</span> to <span class="font-semibold text-body">{{ Math.min(currentPage * pageSize, totalRecords) }}</span> of <span class="font-semibold text-body">{{ totalRecords }}</span> entries
+                        <div class="flex items-center gap-4">
+                            <div class="text-xs text-muted">
+                                Showing <span class="font-semibold text-body">{{ (currentPage - 1) * pageSize + 1 }}</span> to <span class="font-semibold text-body">{{ Math.min(currentPage * pageSize, totalRecords) }}</span> of <span class="font-semibold text-body">{{ totalRecords }}</span> entries
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-muted">Rows per page:</span>
+                                <p-select 
+                                    [(ngModel)]="pageSize" 
+                                    [options]="pageSizeOptions" 
+                                    (onChange)="onPageSizeChange()"
+                                    styleClass="!h-8 !min-h-0 flex items-center text-xs"
+                                    [style]="{'width': '60px'}">
+                                </p-select>
+                            </div>
                         </div>
                         <div class="flex items-center gap-2">
                             <button 

@@ -58,15 +58,27 @@ export class FinanceService {
     });
   }
 
-  getTransactions(page: number = 1, limit: number = 10): Observable<{ success: boolean; data: Transaction[]; meta: any }> {
-    return this.http.get<{ success: boolean; data: Transaction[]; meta: any }>(`${this.apiUrl}/transactions`, {
-      params: new HttpParams().set('page', page).set('limit', limit)
-    });
+  getTransactions(page: number = 1, limit: number = 10, search?: string): Observable<{ success: boolean; data: Transaction[]; meta: any }> {
+    let params = new HttpParams().set('page', page).set('limit', limit);
+    if (search) {
+      params = params.set('search', search);
+    }
+    return this.http.get<{ success: boolean; data: Transaction[]; meta: any }>(`${this.apiUrl}/transactions`, { params });
   }
 
-  getLogs(page: number = 1, limit: number = 20): Observable<{ success: boolean; data: Log[]; meta: any }> {
-    return this.http.get<{ success: boolean; data: Log[]; meta: any }>(`${this.apiUrl}/logs`, {
-      params: new HttpParams().set('page', page).set('limit', limit)
-    });
+  getLogs(page: number = 1, limit: number = 20, search?: string): Observable<{ success: boolean; data: Log[]; meta: any }> {
+    let params = new HttpParams().set('page', page).set('limit', limit);
+    if (search) {
+      params = params.set('search', search);
+    }
+    return this.http.get<{ success: boolean; data: Log[]; meta: any }>(`${this.apiUrl}/logs`, { params });
+  }
+
+  getAuditLogs(page: number = 1, limit: number = 20, search?: string): Observable<{ success: boolean; data: any[]; meta: any }> {
+    let params = new HttpParams().set('page', page).set('limit', limit);
+    if (search) {
+      params = params.set('search', search);
+    }
+    return this.http.get<{ success: boolean; data: any[]; meta: any }>(`${this.apiUrl}/audit-logs`, { params });
   }
 }

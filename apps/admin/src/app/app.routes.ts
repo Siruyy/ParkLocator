@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+// Routes configuration
 import { LoginComponent } from './login/login.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { UsersComponent } from './users/users.component';

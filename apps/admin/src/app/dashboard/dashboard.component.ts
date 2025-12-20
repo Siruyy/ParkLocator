@@ -5,7 +5,7 @@ import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
 import { ChartModule } from 'primeng/chart';
 import { ButtonModule } from 'primeng/button';
-import { DashboardService } from '../core/services/dashboard.service';
+import { DashboardService, DashboardStats } from '../core/services/dashboard.service';
 import { interval, Subscription } from 'rxjs';
 
 interface Alert {
@@ -73,7 +73,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadStats() {
     this.loading = true;
     this.dashboardService.getStats().subscribe({
-      next: (data) => {
+      next: (data: DashboardStats) => {
         this.occupancyRate = data.occupancyRate;
         this.activeReservations = data.activeReservations;
         this.todaysRevenue = data.todaysRevenue;
@@ -83,9 +83,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.totalOccupied = data.totalOccupied || 0;
         this.totalCapacity = data.totalCapacity || 0;
         
-        // Mock trends for now (could be added to API later)
-        this.occupancyTrend = Math.floor(Math.random() * 10) - 3; // -3 to +7
-        this.revenueTrend = Math.floor(Math.random() * 20) - 5; // -5 to +15
+        // Real trends from API
+        this.occupancyTrend = data.occupancyTrend || 0;
+        this.revenueTrend = data.revenueTrend || 0;
         
         // Generate alerts based on occupancy
         this.generateAlerts();

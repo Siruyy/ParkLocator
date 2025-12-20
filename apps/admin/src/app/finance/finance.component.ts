@@ -1,10 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
 import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { Select } from 'primeng/select';
 import { FinanceService, RevenueStat, Transaction, FinanceSummary } from '../core/services/finance.service';
 
 @Component({
@@ -12,11 +14,13 @@ import { FinanceService, RevenueStat, Transaction, FinanceSummary } from '../cor
   standalone: true,
   imports: [
     CommonModule, 
+    FormsModule,
     SidebarComponent, 
     HeaderComponent,
     ChartModule,
     TableModule,
-    ButtonModule
+    ButtonModule,
+    Select
   ],
   templateUrl: './finance.component.html',
   styleUrl: './finance.component.scss'
@@ -38,7 +42,9 @@ export class FinanceComponent implements OnInit {
   loading = true;
   totalRecords = 0;
   pageSize = 5;
+  pageSizeOptions = [5, 10, 20, 50];
   currentPage = 1;
+  searchTerm = '';
 
   ngOnInit() {
     this.loadSummary();
@@ -50,6 +56,16 @@ export class FinanceComponent implements OnInit {
   setPeriod(period: 'day' | 'month') {
     this.currentPeriod = period;
     this.loadRevenueData(period);
+  }
+
+  onPageSizeChange() {
+    this.currentPage = 1;
+    this.loadTransactions(1);
+  }
+
+  onSearch() {
+    this.currentPage = 1;
+    this.loadTransactions(1);
   }
 
   loadSummary() {
@@ -127,7 +143,7 @@ export class FinanceComponent implements OnInit {
     this.loading = true;
     this.currentPage = page;
     
-    this.financeService.getTransactions(page, this.pageSize).subscribe(response => {
+    this.financeService.getTransactions(page, this.pageSize, this.searchTerm).subscribe(response => {
       this.transactions = response.data;
       this.totalRecords = response.meta.total;
       this.loading = false;

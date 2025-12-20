@@ -21,6 +21,7 @@ import {
 } from '../reservations/entities/reservation.entity';
 
 import { User, UserRole } from '../users/entities/user.entity';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class VenuesService {
@@ -34,6 +35,7 @@ export class VenuesService {
     @InjectRepository(VenueConfiguration)
     private venueConfigurationRepository: Repository<VenueConfiguration>,
     private dataSource: DataSource,
+    private auditService: AuditService,
   ) {}
 
   // ==================== VENUE OPERATIONS ====================
@@ -104,7 +106,17 @@ export class VenuesService {
 
     // Update other fields
     Object.assign(venue, rest);
-    return this.venuesRepository.save(venue);
+    const updatedVenue = await this.venuesRepository.save(venue);
+
+    await this.auditService.log(
+      'UPDATE_VENUE',
+      `Updated venue ${venue.name}`,
+      'SYSTEM', // Or pass user ID if available
+      id,
+      'Venue'
+    );
+
+    return updatedVenue;
   }
 
   async remove(id: string): Promise<void> {

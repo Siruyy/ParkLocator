@@ -41,7 +41,7 @@ export class AuthService {
     await this.usersRepository.save(user);
 
     // Generate JWT
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role, venueId: user.venueId };
     const access_token = await this.jwtService.signAsync(payload);
 
     return {
@@ -70,7 +70,7 @@ export class AuthService {
     }
 
     // Generate JWT
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role, venueId: user.venueId };
     const access_token = await this.jwtService.signAsync(payload);
 
     return {

@@ -1,9 +1,9 @@
-import { Component, inject, computed, signal, OnInit } from '@angular/core';
+import { Component, inject, computed, signal, OnInit, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
-import { AuthService } from '../core/services/auth.service';
+import { AuthService, User } from '../core/services/auth.service';
 import { UsersService } from '../core/services/users.service';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 
@@ -19,9 +19,12 @@ export class ProfileComponent implements OnInit {
   private usersService = inject(UsersService);
   private fb = inject(FormBuilder);
   
-  user = this.authService.currentUser;
+  user: Signal<User | null> = this.authService.currentUser;
   profileForm: FormGroup;
+  passwordForm: FormGroup;
   isSubmitting = signal(false);
+  isChangingPassword = signal(false);
+  isUploadingAvatar = signal(false);
   
   constructor() {
     this.profileForm = this.fb.group({
@@ -29,6 +32,17 @@ export class ProfileComponent implements OnInit {
       department: [''],
       location: ['']
     });
+
+    this.passwordForm = this.fb.group({
+      currentPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required]
+    }, { validators: this.passwordMatchValidator });
+  }
+
+  passwordMatchValidator(g: FormGroup) {
+    return g.get('newPassword')?.value === g.get('confirmPassword')?.value
+      ? null : { mismatch: true };
   }
 
   ngOnInit() {
@@ -60,14 +74,8 @@ export class ProfileComponent implements OnInit {
     this.isSubmitting.set(true);
     this.usersService.updateProfile(this.profileForm.value).subscribe({
       next: (updatedUser) => {
-        // Update the auth service with new user data
-        // This assumes authService has a way to update the current user signal
-        // For now, we might need to reload or manually update if authService exposes a setter
-        // But typically authService.currentUser is a signal derived from a BehaviorSubject or similar
-        
-        // Ideally: this.authService.updateCurrentUser(updatedUser);
-        // Since we don't have that, we'll just stop loading
         this.isSubmitting.set(false);
+        this.authService.updateCurrentUser(updatedUser as any);
         alert('Profile updated successfully');
       },
       error: (err) => {
@@ -77,4 +85,44 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
+
+  onChangePassword() {
+    if (this.passwordForm.invalid) return;
+
+    this.isChangingPassword.set(true);
+    const { newPassword } = this.passwordForm.value;
+
+    this.usersService.changePassword(newPassword).subscribe({
+      next: () => {
+        this.isChangingPassword.set(false);
+        this.passwordForm.reset();
+        alert('Password updated successfully');
+      },
+      error: (err) => {
+        console.error('Failed to update password', err);
+        this.isChangingPassword.set(false);
+        alert('Failed to update password');
+      }
+    });
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.isUploadingAvatar.set(true);
+    this.usersService.uploadAvatar(file).subscribe({
+      next: (updatedUser) => {
+        this.isUploadingAvatar.set(false);
+        this.authService.updateCurrentUser(updatedUser as any);
+        alert('Avatar updated successfully');
+      },
+      error: (err) => {
+        console.error('Failed to upload avatar', err);
+        this.isUploadingAvatar.set(false);
+        alert('Failed to upload avatar');
+      }
+    });
+  }
 }
+

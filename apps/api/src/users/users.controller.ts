@@ -9,7 +9,12 @@ import {
   Query,
   UseGuards,
   ParseUUIDPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { UsersService, PaginatedUsers } from './users.service';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
@@ -23,10 +28,42 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole, User } from './entities/user.entity';
 import type { AuthUser } from '../auth/types/auth-user.type';
 
+import { ChangePasswordDto } from './dto/change-password.dto';
+
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  /**
+   * Change password for the current user
+   */
+  @Patch('profile/password')
+  async changePassword(
+    @CurrentUser() currentUser: AuthUser,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.usersService.changePassword(currentUser.userId, changePasswordDto.newPassword);
+    return { message: 'Password updated successfully' };
+  }
+
+  @Post('profile/avatar')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads/avatars',
+      filename: (req, file, cb) => {
+        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+        return cb(null, `${randomName}${extname(file.originalname)}`);
+      }
+    })
+  }))
+  async uploadAvatar(
+    @CurrentUser() currentUser: AuthUser,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const avatarUrl = `/uploads/avatars/${file.filename}`;
+    return this.usersService.updateProfile(currentUser.userId, { avatarUrl });
+  }
 
   /**
    * Get all users with optional filtering and pagination

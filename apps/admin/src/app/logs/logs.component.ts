@@ -9,6 +9,8 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { FinanceService, Log } from '../core/services/finance.service';
+import { AuthService } from '../core/services/auth.service';
+import { VenuesService } from '../core/services/venues.service';
 
 @Component({
   selector: 'app-logs',
@@ -29,85 +31,153 @@ import { FinanceService, Log } from '../core/services/finance.service';
 })
 export class LogsComponent implements OnInit {
   private financeService = inject(FinanceService);
+  public authService = inject(AuthService);
+  private venuesService = inject(VenuesService);
 
   logs: Log[] = [];
   loading = true;
   totalRecords = 0;
   pageSize = 20;
+  pageSizeOptions = [10, 20, 50, 100];
+  currentPage = 1;
+  protected readonly Math = Math;
   
   activeTab: 'qr' | 'admin' = 'qr';
   selectedVenue: string = 'All Venues';
+  searchTerm = '';
   
   detailsVisible: boolean = false;
   selectedLog: any = null;
 
-  venues = ['All Venues', 'SM Megamall', 'Glorietta 4', 'Greenbelt 3', 'Trinoma'];
+  venues = ['All Venues'];
 
-  // Mock data for UI demonstration
-  qrLogs = [
-    { timestamp: 'Oct 24, 14:30:15', venue: 'SM Megamall', gateId: 'Gate-North-1', reservationId: '#RES-9982', result: 'PASS', reason: 'Authorized Entry' },
-    { timestamp: 'Oct 24, 14:15:22', venue: 'Glorietta 4', gateId: 'Gate-South-2', reservationId: '#RES-9901', result: 'FAIL', reason: 'Invalid Time Window' },
-    { timestamp: 'Oct 24, 13:55:04', venue: 'SM Megamall', gateId: 'Gate-North-1', reservationId: '#RES-8822', result: 'PASS', reason: 'Authorized Entry' },
-    { timestamp: 'Oct 24, 13:12:45', venue: 'Trinoma', gateId: 'Gate-West-3', reservationId: 'UNKNOWN', result: 'FAIL', reason: 'QR Code Unreadable' },
-    { timestamp: 'Oct 24, 12:45:10', venue: 'Greenbelt 3', gateId: 'Gate-South-2', reservationId: '#RES-9800', result: 'PASS', reason: 'Authorized Entry' },
-  ];
-
-  adminLogs = [
-    { 
-      user: { name: 'Juan Dela Cruz', role: 'Manager', initials: 'JD', color: 'blue' }, 
-      venue: 'SM Megamall',
-      action: 'Updated Venue Config', 
-      details: 'Changed Gate 1 closing time', 
-      timestamp: 'Oct 24, 10:00:00 AM', 
-      entity: 'Venue Settings',
-      severity: 'info',
-      changes: [
-        { field: 'Gate 1 Closing Time', before: '22:00', after: '23:00' },
-        { field: 'Weekend Rates', before: '₱50.00', after: '₱60.00' }
-      ]
-    },
-    { 
-      user: { name: 'Maria Santos', role: 'Attendant', initials: 'MS', color: 'green' }, 
-      venue: 'Glorietta 4',
-      action: 'Manual Gate Override', 
-      details: 'Opened barrier for emergency vehicle', 
-      timestamp: 'Oct 24, 09:42:12 AM', 
-      entity: 'Gate-North-1',
-      severity: 'warning',
-      changes: null // No diff for this action
-    },
-    { 
-      user: { name: 'Juan Dela Cruz', role: 'Manager', initials: 'JD', color: 'orange' }, 
-      venue: 'SM Megamall',
-      action: 'User Role Updated', 
-      details: 'Promoted r.diaz to Senior Attendant', 
-      timestamp: 'Oct 23, 16:15:33 PM', 
-      entity: 'User: r.diaz',
-      severity: 'success',
-      changes: [
-        { field: 'Role', before: 'Attendant', after: 'Senior Attendant' },
-        { field: 'Permissions', before: 'Read-Only', after: 'Read-Write' }
-      ]
-    },
-  ];
+  qrLogs: any[] = [];
+  adminLogs: any[] = [];
 
   ngOnInit() {
-    this.loadLogs({ first: 0, rows: 20 });
+    this.loadLogs({ first: 0, rows: this.pageSize });
+    this.loadVenues();
+    
+    // Hide Admin Logs tab for non-super admins
+    if (this.authService.currentUser()?.role !== 'super_admin') {
+      this.activeTab = 'qr';
+    } else {
+      this.loadAuditLogs({ first: 0, rows: this.pageSize });
+    }
+  }
+
+  loadVenues() {
+    if (this.authService.currentUser()?.role === 'super_admin') {
+      this.venuesService.getVenues().subscribe(venues => {
+        this.venues = ['All Venues', ...venues.map(v => v.name)];
+      });
+    }
+  }
+
+  onSearch() {
+    this.currentPage = 1;
+    if (this.activeTab === 'qr') {
+      this.loadLogs({ first: 0, rows: this.pageSize });
+    } else {
+      this.loadAuditLogs({ first: 0, rows: this.pageSize });
+    }
+  }
+
+  onPageSizeChange() {
+    this.loadLogs({ first: 0, rows: this.pageSize });
+    if (this.authService.currentUser()?.role === 'super_admin') {
+      this.loadAuditLogs({ first: 0, rows: this.pageSize });
+    }
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize);
+  }
+
+  get pages(): number[] {
+    const total = this.totalPages;
+    let start = Math.max(1, this.currentPage - 2);
+    let end = Math.min(total, start + 4);
+    
+    if (end - start < 4) {
+      start = Math.max(1, end - 4);
+    }
+    
+    return Array.from({length: end - start + 1}, (_, i) => start + i);
   }
 
   loadLogs(event: any) {
     this.loading = true;
-    const page = (event.first / event.rows) + 1;
+    this.currentPage = (event.first / event.rows) + 1;
     
-    this.financeService.getLogs(page, event.rows).subscribe(response => {
+    this.financeService.getLogs(this.currentPage, event.rows, this.searchTerm).subscribe(response => {
       this.logs = response.data;
+      
+      // Map API logs to QR Logs format for display
+      this.qrLogs = this.logs.map(log => {
+        const parts = log.details.split(' at ');
+        const venueName = parts[1] || 'Unknown';
+        const idPart = parts[0].split(' ');
+        const id = idPart[idPart.length - 1]; // Get the last part which is the ID
+
+        return {
+          timestamp: new Date(log.timestamp).toLocaleString(),
+          venue: venueName,
+          gateId: this.getGateId(log.status),
+          reservationId: id,
+          result: ['confirmed', 'checked_in', 'completed'].includes(log.status) ? 'PASS' : 'FAIL',
+          reason: log.action,
+          originalLog: log
+        };
+      });
+
       this.totalRecords = response.meta.total;
       this.loading = false;
     });
   }
 
+  loadAuditLogs(event: any) {
+    this.financeService.getAuditLogs(this.currentPage, event.rows, this.searchTerm).subscribe(response => {
+      this.adminLogs = response.data.map(log => ({
+        user: {
+          name: log.user?.email || 'System',
+          initials: (log.user?.email || 'S').substring(0, 2).toUpperCase(),
+          color: 'blue',
+          role: log.user?.role || 'System'
+        },
+        venue: 'N/A', // Audit logs might not always be tied to a venue directly in this view
+        action: log.action,
+        details: log.details,
+        timestamp: new Date(log.createdAt).toLocaleString(),
+        entity: log.resourceType,
+        severity: 'info',
+        originalLog: log
+      }));
+    });
+  }
+
+  getGateId(status: string): string {
+    if (status === 'checked_in') return 'Entry Gate';
+    if (status === 'completed') return 'Exit Gate';
+    return 'Main Gate';
+  }
+
   showDetails(log: any) {
-    this.selectedLog = log;
+    const original = log.originalLog || log;
+    
+    // Normalize for dialog display since API data structure differs from Mock data
+    this.selectedLog = {
+        ...original,
+        user: typeof original.user === 'string' ? {
+            name: original.user,
+            initials: original.user.substring(0, 2).toUpperCase(),
+            color: 'blue',
+            role: 'User'
+        } : original.user,
+        entity: original.entity || 'Reservation',
+        changes: original.changes || []
+    };
+    
     this.detailsVisible = true;
   }
 

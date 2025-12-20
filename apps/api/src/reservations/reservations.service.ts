@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, LessThan, In } from 'typeorm';
-import { Reservation, ReservationStatus } from './entities/reservation.entity';
+import { Reservation, ReservationStatus, ReservationType } from './entities/reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Spot, SpotStatus } from '../venues/entities/spot.entity';
 import { Level } from '../venues/entities/level.entity';
@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventsGateway } from '../events/events.gateway';
 
 import { User, UserRole } from '../users/entities/user.entity';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class ReservationsService {
@@ -32,6 +33,7 @@ export class ReservationsService {
     private venueConfigurationRepository: Repository<VenueConfiguration>,
     private dataSource: DataSource,
     private eventsGateway: EventsGateway,
+    private auditService: AuditService,
   ) {}
 
   /**
@@ -45,6 +47,7 @@ export class ReservationsService {
       venueId,
       levelId,
       spotId,
+      vehicleId,
       durationHours = 1,
       startAt,
       endAt,
@@ -117,13 +120,16 @@ export class ReservationsService {
       // After base duration, succeeding hour rate applies (tracked by sensors, paid on exit)
       let reservationStartAt: Date;
       let reservationEndAt: Date;
+      let reservationType: ReservationType;
 
       if (startAt) {
         // "Book for Later" - use provided start date
         reservationStartAt = new Date(startAt as string);
+        reservationType = ReservationType.SCHEDULED;
       } else {
         // "Book Now" - start immediately
         reservationStartAt = new Date();
+        reservationType = ReservationType.IMMEDIATE;
       }
       
       // End time = Start + Base Duration (succeeding hours tracked separately)
@@ -175,6 +181,7 @@ export class ReservationsService {
         venueId,
         levelId,
         spotId,
+        vehicleId,
         status: ReservationStatus.CONFIRMED, // Skip pending for now, assume payment is instant
         amount,
         durationHours: baseDurationHours,
@@ -183,6 +190,7 @@ export class ReservationsService {
         arrivalWindowMinutes: arrivalWindow,
         expiresAt,
         qrCode,
+        type: reservationType,
       });
 
       await queryRunner.manager.save(reservation);
@@ -242,7 +250,7 @@ export class ReservationsService {
 
     return this.reservationsRepository.find({
       where,
-      relations: ['user', 'venue', 'level', 'spot'],
+      relations: ['user', 'venue', 'level', 'spot', 'vehicle'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -355,6 +363,14 @@ export class ReservationsService {
       }
 
       await queryRunner.commitTransaction();
+
+      await this.auditService.log(
+        'CANCEL_RESERVATION',
+        `Cancelled reservation ${reservation.qrCode}`,
+        userId,
+        id,
+        'Reservation'
+      );
 
       return this.findOne(id);
     } catch (error) {

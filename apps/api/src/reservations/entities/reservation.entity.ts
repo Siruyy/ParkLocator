@@ -9,6 +9,7 @@ import {
   Index,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Vehicle } from '../../users/entities/vehicle.entity';
 import { Spot } from '../../venues/entities/spot.entity';
 import { Level } from '../../venues/entities/level.entity';
 import { Venue } from '../../venues/entities/venue.entity';
@@ -23,10 +24,22 @@ export enum ReservationStatus {
   NO_SHOW = 'no_show', // Paid but didn't arrive
 }
 
+export enum ReservationType {
+  IMMEDIATE = 'immediate', // Book Now
+  SCHEDULED = 'scheduled', // Book for Later
+}
+
 @Entity('reservations')
 export class Reservation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({
+    type: 'enum',
+    enum: ReservationType,
+    default: ReservationType.IMMEDIATE,
+  })
+  type: ReservationType;
 
   @Column({ name: 'user_id' })
   @Index()
@@ -35,6 +48,14 @@ export class Reservation {
   @ManyToOne(() => User, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column({ name: 'vehicle_id', nullable: true })
+  @Index()
+  vehicleId: string | null;
+
+  @ManyToOne(() => Vehicle, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'vehicle_id' })
+  vehicle: Vehicle | null;
 
   @Column({ name: 'venue_id' })
   @Index()

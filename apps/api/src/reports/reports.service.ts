@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Brackets } from 'typeorm';
 import { Reservation, ReservationStatus } from '../reservations/entities/reservation.entity';
+import { UserRole } from '../users/entities/user.entity';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class ReportsService {
@@ -9,32 +11,37 @@ export class ReportsService {
     @InjectRepository(Reservation)
     private reservationsRepository: Repository<Reservation>,
     private dataSource: DataSource,
+    private auditService: AuditService,
   ) {}
 
-  async getFinanceSummary() {
+  async getAuditLogs(page: number, limit: number, search?: string) {
+    return this.auditService.findAll(page, limit, search);
+  }
+
+  async getFinanceSummary(user: any) {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
+    const isManager = user.role === UserRole.MANAGER;
+    const venueId = user.venueId;
+
     // Helper to get stats for a date range
     const getStats = async (start: Date, end: Date) => {
-      const { sum } = await this.reservationsRepository
+      const query = this.reservationsRepository
         .createQueryBuilder('r')
-        .select('SUM(r.amount)', 'sum')
         .where('r.status IN (:...statuses)', {
           statuses: [ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN, ReservationStatus.COMPLETED]
         })
-        .andWhere('r.created_at >= :start AND r.created_at <= :end', { start, end })
-        .getRawOne();
+        .andWhere('r.created_at >= :start AND r.created_at <= :end', { start, end });
 
-      const count = await this.reservationsRepository
-        .createQueryBuilder('r')
-        .where('r.status IN (:...statuses)', {
-          statuses: [ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN, ReservationStatus.COMPLETED]
-        })
-        .andWhere('r.created_at >= :start AND r.created_at <= :end', { start, end })
-        .getCount();
+      if (isManager) {
+        query.andWhere('r.venueId = :venueId', { venueId });
+      }
+
+      const { sum } = await query.select('SUM(r.amount)', 'sum').getRawOne();
+      const count = await query.getCount();
 
       return { revenue: parseFloat(sum || '0'), transactions: count };
     };
@@ -75,9 +82,10 @@ export class ReportsService {
     };
   }
 
-  async getRevenueStats(period: 'day' | 'month') {
+  async getRevenueStats(period: 'day' | 'month', user: any) {
     // Aggregate revenue by date
     const dateFormat = period === 'day' ? 'YYYY-MM-DD' : 'YYYY-MM';
+    const isManager = user.role === UserRole.MANAGER;
     
     // Note: This is Postgres specific syntax
     const query = this.reservationsRepository
@@ -86,7 +94,13 @@ export class ReportsService {
       .addSelect('SUM(r.amount)', 'revenue')
       .where('r.status IN (:...statuses)', { 
         statuses: [ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN, ReservationStatus.COMPLETED] 
-      })
+      });
+
+    if (isManager) {
+      query.andWhere('r.venueId = :venueId', { venueId: user.venueId });
+    }
+
+    query
       .groupBy('date')
       .orderBy('date', 'ASC')
       .limit(30); // Last 30 periods
@@ -99,32 +113,63 @@ export class ReportsService {
     }));
   }
 
-  async getTransactions(page: number, limit: number) {
-    const [data, total] = await this.reservationsRepository.findAndCount({
-      relations: ['user', 'venue', 'level', 'spot'],
-      order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+  async getTransactions(page: number, limit: number, user: any, search?: string) {
+    const query = this.reservationsRepository.createQueryBuilder('r')
+      .leftJoinAndSelect('r.user', 'user')
+      .leftJoinAndSelect('r.venue', 'venue')
+      .leftJoinAndSelect('r.level', 'level')
+      .leftJoinAndSelect('r.spot', 'spot')
+      .orderBy('r.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (user.role === UserRole.MANAGER) {
+      query.andWhere('r.venueId = :venueId', { venueId: user.venueId });
+    }
+
+    if (search) {
+      query.andWhere(new Brackets(qb => {
+        qb.where('user.email ILIKE :search', { search: `%${search}%` })
+          .orWhere('venue.name ILIKE :search', { search: `%${search}%` })
+          .orWhere('r.id::text ILIKE :search', { search: `%${search}%` });
+      }));
+    }
+
+    const [data, total] = await query.getManyAndCount();
 
     return { data, total };
   }
 
-  async getLogs(page: number, limit: number) {
+  async getLogs(page: number, limit: number, user: any, search?: string) {
     // For MVP, we'll treat reservations as the source of truth for logs
     // In a real system, we'd query a dedicated AuditLog table
-    const [data, total] = await this.reservationsRepository.findAndCount({
-      relations: ['user', 'venue'],
-      order: { updatedAt: 'DESC' }, // Show most recent updates
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+    const query = this.reservationsRepository.createQueryBuilder('r')
+      .leftJoinAndSelect('r.user', 'user')
+      .leftJoinAndSelect('r.venue', 'venue')
+      .orderBy('r.updatedAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (user.role === UserRole.MANAGER) {
+      query.andWhere('r.venueId = :venueId', { venueId: user.venueId });
+    }
+
+    if (search) {
+      query.andWhere(new Brackets(qb => {
+        qb.where('user.email ILIKE :search', { search: `%${search}%` })
+          .orWhere('venue.name ILIKE :search', { search: `%${search}%` })
+          .orWhere('r.id::text ILIKE :search', { search: `%${search}%` })
+          .orWhere('r.qrCode ILIKE :search', { search: `%${search}%` });
+      }));
+    }
+
+    const [data, total] = await query.getManyAndCount();
 
     // Transform to a log-like structure
     const logs = data.map(r => ({
       id: r.id,
       action: this.getActionFromStatus(r.status),
-      details: `Reservation ${(r.qrCode || 'UNKNOWN').substring(0, 8)} at ${r.venue?.name || 'Unknown Venue'}`,
+      details: `${r.type === 'immediate' ? 'Book Now' : 'Reservation'} ${(r.qrCode || 'UNKNOWN').substring(0, 8)} at ${r.venue?.name || 'Unknown Venue'}`,
       user: r.user?.email || 'Deleted User',
       timestamp: r.updatedAt,
       status: r.status
