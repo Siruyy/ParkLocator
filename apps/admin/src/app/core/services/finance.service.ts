@@ -63,6 +63,7 @@ export class FinanceService {
     if (search) {
       params = params.set('search', search);
     }
+    console.log('getTransactions params:', params.toString());
     return this.http.get<{ success: boolean; data: Transaction[]; meta: any }>(`${this.apiUrl}/transactions`, { params });
   }
 
@@ -71,6 +72,7 @@ export class FinanceService {
     if (search) {
       params = params.set('search', search);
     }
+    console.log('getLogs params:', params.toString());
     return this.http.get<{ success: boolean; data: Log[]; meta: any }>(`${this.apiUrl}/logs`, { params });
   }
 
@@ -79,6 +81,7 @@ export class FinanceService {
     if (search) {
       params = params.set('search', search);
     }
+    console.log('getAuditLogs params:', params.toString());
     return this.http.get<{ success: boolean; data: any[]; meta: any }>(`${this.apiUrl}/audit-logs`, { params });
   }
 }

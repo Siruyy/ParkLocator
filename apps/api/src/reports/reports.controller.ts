@@ -39,6 +39,7 @@ export class ReportsController {
     @Query('limit') limit: number = 10,
     @Query('search') search?: string,
   ) {
+    console.log('Backend getTransactions search:', search);
     const { data, total } = await this.reportsService.getTransactions(
       page,
       limit,
@@ -63,6 +64,7 @@ export class ReportsController {
     @Query('limit') limit: number = 20,
     @Query('search') search?: string,
   ) {
+    console.log('Backend getLogs search:', search);
     // For MVP, logs are essentially reservation history/events
     const { data, total } = await this.reportsService.getLogs(page, limit, req.user, search);
     return {
@@ -83,6 +85,7 @@ export class ReportsController {
     @Query('limit') limit: number = 20,
     @Query('search') search?: string,
   ) {
+    console.log('Backend getAuditLogs search:', search);
     const { data, total } = await this.reportsService.getAuditLogs(page, limit, search);
     return {
       success: true,
