@@ -63,13 +63,12 @@ export class LogsComponent implements OnInit, OnDestroy {
     this.loadLogs({ first: 0, rows: this.pageSize });
     this.loadVenues();
     
-    // Setup search debounce
+    // Setup search debounce - only debounce the API call, not the UI
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
-    ).subscribe(term => {
-      this.searchTerm = term;
-      this.onSearch();
+    ).subscribe(() => {
+      this.performSearch();
     });
 
     // Hide Admin Logs tab for non-super admins
@@ -93,12 +92,11 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   onSearchInput(term: string) {
-    console.log('onSearchInput:', term);
-    this.searchSubject.next(term);
+    this.searchTerm = term; // Update immediately for responsive UI
+    this.searchSubject.next(term); // Trigger debounced search
   }
 
-  onSearch() {
-    console.log('onSearch triggering with term:', this.searchTerm);
+  performSearch() {
     this.currentPage = 1;
     if (this.activeTab === 'qr') {
       this.loadLogs({ first: 0, rows: this.pageSize });

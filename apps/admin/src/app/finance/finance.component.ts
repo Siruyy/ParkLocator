@@ -57,13 +57,12 @@ export class FinanceComponent implements OnInit, OnDestroy {
     this.loadRevenueData(this.currentPeriod);
     this.loadTransactions(1);
 
-    // Setup search debounce
+    // Setup search debounce - only debounce the API call, not the UI
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
-    ).subscribe(term => {
-      this.searchTerm = term;
-      this.onSearch();
+    ).subscribe(() => {
+      this.performSearch();
     });
   }
 
@@ -72,8 +71,8 @@ export class FinanceComponent implements OnInit, OnDestroy {
   }
 
   onSearchInput(term: string) {
-    console.log('Finance onSearchInput:', term);
-    this.searchSubject.next(term);
+    this.searchTerm = term; // Update immediately for responsive UI
+    this.searchSubject.next(term); // Trigger debounced search
   }
 
   setPeriod(period: 'day' | 'month') {
@@ -86,8 +85,7 @@ export class FinanceComponent implements OnInit, OnDestroy {
     this.loadTransactions(1);
   }
 
-  onSearch() {
-    console.log('Finance onSearch triggering with term:', this.searchTerm);
+  performSearch() {
     this.currentPage = 1;
     this.loadTransactions(1);
   }

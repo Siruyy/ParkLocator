@@ -132,7 +132,6 @@ export class ReportsService {
           .orWhere('venue.name ILIKE :search', { search: searchTerm })
           .orWhere('r.id::text ILIKE :search', { search: searchTerm });
       }));
-      console.log('getTransactions query:', query.getSql(), query.getParameters());
     }
 
     // Apply pagination after filters
@@ -163,7 +162,6 @@ export class ReportsService {
           .orWhere('r.id::text ILIKE :search', { search: searchTerm })
           .orWhere('r.qrCode ILIKE :search', { search: searchTerm });
       }));
-      console.log('getLogs query:', query.getSql(), query.getParameters());
     }
 
     // Apply pagination after filters
