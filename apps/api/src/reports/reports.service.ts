@@ -119,22 +119,24 @@ export class ReportsService {
       .leftJoinAndSelect('r.venue', 'venue')
       .leftJoinAndSelect('r.level', 'level')
       .leftJoinAndSelect('r.spot', 'spot')
-      .orderBy('r.createdAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit);
+      .orderBy('r.createdAt', 'DESC');
 
     if (user.role === UserRole.MANAGER) {
       query.andWhere('r.venueId = :venueId', { venueId: user.venueId });
     }
 
-    if (search) {
+    if (search && search.trim().length > 0) {
+      const searchTerm = `%${search.trim()}%`;
       query.andWhere(new Brackets(qb => {
-        qb.where('user.email ILIKE :search', { search: `%${search}%` })
-          .orWhere('venue.name ILIKE :search', { search: `%${search}%` })
-          .orWhere('r.id::text ILIKE :search', { search: `%${search}%` });
+        qb.where('user.email ILIKE :search', { search: searchTerm })
+          .orWhere('venue.name ILIKE :search', { search: searchTerm })
+          .orWhere('r.id::text ILIKE :search', { search: searchTerm });
       }));
       console.log('getTransactions query:', query.getSql(), query.getParameters());
     }
+
+    // Apply pagination after filters
+    query.skip((page - 1) * limit).take(limit);
 
     const [data, total] = await query.getManyAndCount();
 
@@ -147,23 +149,25 @@ export class ReportsService {
     const query = this.reservationsRepository.createQueryBuilder('r')
       .leftJoinAndSelect('r.user', 'user')
       .leftJoinAndSelect('r.venue', 'venue')
-      .orderBy('r.updatedAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit);
+      .orderBy('r.updatedAt', 'DESC');
 
     if (user.role === UserRole.MANAGER) {
       query.andWhere('r.venueId = :venueId', { venueId: user.venueId });
     }
 
-    if (search) {
+    if (search && search.trim().length > 0) {
+      const searchTerm = `%${search.trim()}%`;
       query.andWhere(new Brackets(qb => {
-        qb.where('user.email ILIKE :search', { search: `%${search}%` })
-          .orWhere('venue.name ILIKE :search', { search: `%${search}%` })
-          .orWhere('r.id::text ILIKE :search', { search: `%${search}%` })
-          .orWhere('r.qrCode ILIKE :search', { search: `%${search}%` });
+        qb.where('user.email ILIKE :search', { search: searchTerm })
+          .orWhere('venue.name ILIKE :search', { search: searchTerm })
+          .orWhere('r.id::text ILIKE :search', { search: searchTerm })
+          .orWhere('r.qrCode ILIKE :search', { search: searchTerm });
       }));
       console.log('getLogs query:', query.getSql(), query.getParameters());
     }
+
+    // Apply pagination after filters
+    query.skip((page - 1) * limit).take(limit);
 
     const [data, total] = await query.getManyAndCount();
 
