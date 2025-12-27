@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/common/widgets/custom_header.dart';
 
 class WalletPage extends StatelessWidget {
   const WalletPage({super.key});
@@ -22,40 +23,7 @@ class WalletPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top App Bar
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildIconButton(
-                            icon: Icons.arrow_back_ios_new,
-                            onTap: () => Navigator.of(context).maybePop(),
-                            isDark: isDark,
-                          ),
-                          _buildIconButton(
-                            icon: Icons.more_horiz,
-                            onTap: () {},
-                            isDark: isDark,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'My Wallet',
-                        style: GoogleFonts.inter(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                          height: 1.1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                const CustomHeader(title: 'Wallet'),
 
                 // Balance Card
                 Padding(
@@ -435,29 +403,7 @@ class WalletPage extends StatelessWidget {
     );
   }
 
-  Widget _buildIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required bool isDark,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.transparent,
-        ),
-        child: Icon(
-          icon,
-          color: isDark ? Colors.white : const Color(0xFF0F172A),
-          size: 24,
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildCreditCard({
     required BuildContext context,

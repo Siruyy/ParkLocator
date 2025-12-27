@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/auth/bloc/auth_bloc.dart';
+import 'package:mobile/common/widgets/custom_header.dart';
 import 'package:mobile/profile/view/edit_profile_page.dart';
 import 'package:mobile/profile/view/my_vehicles_page.dart';
 import 'package:mobile/profile/view/security_page.dart';
@@ -12,10 +13,12 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor =
+        isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor =
+        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return BlocBuilder<AuthBloc, AuthState>(
@@ -26,169 +29,151 @@ class ProfilePage extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: backgroundColor,
-          appBar: AppBar(
-            backgroundColor: backgroundColor.withOpacity(0.9),
-            elevation: 0,
-            centerTitle: true,
-            automaticallyImplyLeading: false,
-            title: Text(
-              'Account',
-              style: GoogleFonts.inter(
-                color: textColor,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Container(
-                color: isDark ? Colors.grey[800] : Colors.grey[200],
-                height: 1,
-              ),
-            ),
-          ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 40),
-              child: Column(
-                children: [
-                  // Profile Header
-                  _ProfileHeader(
-                    userName: userName,
-                    userEmail: userEmail,
-                    isDark: isDark,
-                    textColor: textColor,
-                    subTextColor: subTextColor,
-                    primaryColor: primaryColor,
-                  ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 40),
+                child: Column(
+                  children: [
+                    const CustomHeader(title: 'Account'),
+                    // Profile Header
+                    _ProfileHeader(
+                      userName: userName,
+                      userEmail: userEmail,
+                      isDark: isDark,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      primaryColor: primaryColor,
+                    ),
 
-                  // Essentials Section
-                  _buildSectionHeader('Essentials', subTextColor),
-                  _buildSectionContainer(
-                    context,
-                    isDark,
-                    surfaceColor,
-                    [
-                      _buildMenuItem(
-                        context: context,
-                        icon: Icons.directions_car,
-                        title: 'My Vehicles',
-                        onTap: () {
-                          Navigator.of(context).push(MyVehiclesPage.route());
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                      ),
-                    ],
-                  ),
+                    // Essentials Section
+                    _buildSectionHeader('Essentials', subTextColor),
+                    _buildSectionContainer(
+                      context,
+                      isDark,
+                      surfaceColor,
+                      [
+                        _buildMenuItem(
+                          context: context,
+                          icon: Icons.directions_car,
+                          title: 'My Vehicles',
+                          onTap: () {
+                            Navigator.of(context).push(MyVehiclesPage.route());
+                          },
+                          isDark: isDark,
+                          textColor: textColor,
+                          primaryColor: primaryColor,
+                        ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // Preferences Section
-                  _buildSectionHeader('Preferences', subTextColor),
-                  _buildSectionContainer(
-                    context,
-                    isDark,
-                    surfaceColor,
-                    [
-                      _buildSwitchItem(
-                        context: context,
-                        icon: Icons.notifications,
-                        title: 'Push Notifications',
-                        value: true,
-                        onChanged: (val) {
-                          _showComingSoon(context);
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildMenuItem(
-                        context: context,
-                        icon: Icons.lock,
-                        title: 'Security & Password',
-                        onTap: () {
-                          Navigator.of(context).push(SecurityPage.route());
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildMenuItem(
-                        context: context,
-                        icon: Icons.language,
-                        title: 'Language',
-                        trailingText: 'English',
-                        onTap: () {
-                          _showComingSoon(context);
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                        subTextColor: subTextColor,
-                      ),
-                    ],
-                  ),
+                    // Preferences Section
+                    _buildSectionHeader('Preferences', subTextColor),
+                    _buildSectionContainer(
+                      context,
+                      isDark,
+                      surfaceColor,
+                      [
+                        _buildSwitchItem(
+                          context: context,
+                          icon: Icons.notifications,
+                          title: 'Push Notifications',
+                          value: true,
+                          onChanged: (val) {
+                            _showComingSoon(context);
+                          },
+                          isDark: isDark,
+                          textColor: textColor,
+                          primaryColor: primaryColor,
+                        ),
+                        _buildDivider(isDark),
+                        _buildMenuItem(
+                          context: context,
+                          icon: Icons.lock,
+                          title: 'Security & Password',
+                          onTap: () {
+                            Navigator.of(context).push(SecurityPage.route());
+                          },
+                          isDark: isDark,
+                          textColor: textColor,
+                          primaryColor: primaryColor,
+                        ),
+                        _buildDivider(isDark),
+                        _buildMenuItem(
+                          context: context,
+                          icon: Icons.language,
+                          title: 'Language',
+                          trailingText: 'English',
+                          onTap: () {
+                            _showComingSoon(context);
+                          },
+                          isDark: isDark,
+                          textColor: textColor,
+                          primaryColor: primaryColor,
+                          subTextColor: subTextColor,
+                        ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // Support Section
-                  _buildSectionHeader('Support', subTextColor),
-                  _buildSectionContainer(
-                    context,
-                    isDark,
-                    surfaceColor,
-                    [
-                      _buildMenuItem(
-                        context: context,
-                        icon: Icons.help,
-                        title: 'How to Park',
-                        onTap: () {
-                          _showComingSoon(context);
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildMenuItem(
-                        context: context,
-                        icon: Icons.bug_report,
-                        title: 'Report a Problem',
-                        onTap: () {
-                          _showComingSoon(context);
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildMenuItem(
-                        context: context,
-                        icon: Icons.description,
-                        title: 'Terms of Service',
-                        onTap: () {
-                          _showComingSoon(context);
-                        },
-                        isDark: isDark,
-                        textColor: textColor,
-                        primaryColor: primaryColor,
-                      ),
-                    ],
-                  ),
+                    // Support Section
+                    _buildSectionHeader('Support', subTextColor),
+                    _buildSectionContainer(
+                      context,
+                      isDark,
+                      surfaceColor,
+                      [
+                        _buildMenuItem(
+                          context: context,
+                          icon: Icons.help,
+                          title: 'How to Park',
+                          onTap: () {
+                            _showComingSoon(context);
+                          },
+                          isDark: isDark,
+                          textColor: textColor,
+                          primaryColor: primaryColor,
+                        ),
+                        _buildDivider(isDark),
+                        _buildMenuItem(
+                          context: context,
+                          icon: Icons.bug_report,
+                          title: 'Report a Problem',
+                          onTap: () {
+                            _showComingSoon(context);
+                          },
+                          isDark: isDark,
+                          textColor: textColor,
+                          primaryColor: primaryColor,
+                        ),
+                        _buildDivider(isDark),
+                        _buildMenuItem(
+                          context: context,
+                          icon: Icons.description,
+                          title: 'Terms of Service',
+                          onTap: () {
+                            _showComingSoon(context);
+                          },
+                          isDark: isDark,
+                          textColor: textColor,
+                          primaryColor: primaryColor,
+                        ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 40),
+                    const SizedBox(height: 40),
 
-                  // Logout Section
-                  _LogoutSection(
-                    surfaceColor: surfaceColor,
-                    isDark: isDark,
-                    subTextColor: subTextColor,
-                  ),
-                ],
+                    // Logout Section
+                    _LogoutSection(
+                      surfaceColor: surfaceColor,
+                      isDark: isDark,
+                      subTextColor: subTextColor,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -208,7 +193,6 @@ class ProfilePage extends StatelessWidget {
 
   String _extractNameFromEmail(String email) {
     final localPart = email.split('@').first;
-    // Convert dots and underscores to spaces and capitalize each word
     final words = localPart.split(RegExp('[._]'));
     return words.map((word) {
       if (word.isEmpty) return '';
@@ -285,7 +269,8 @@ class ProfilePage extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF334155) : const Color(0xFFEFF6FF),
+                color:
+                    isDark ? const Color(0xFF334155) : const Color(0xFFEFF6FF),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(

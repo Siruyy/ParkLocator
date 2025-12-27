@@ -73,4 +73,9 @@ class Venue {
     }
     return '${(distance! / 1000).toStringAsFixed(1)} km';
   }
+
+  bool get hasCoveredParking {
+    if (levels == null || levels!.isEmpty) return false;
+    return levels!.any((level) => level.isCovered);
+  }
 }

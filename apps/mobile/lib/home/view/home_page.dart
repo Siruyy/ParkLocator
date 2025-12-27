@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:mobile/api/api.dart' as api;
-import 'package:mobile/notifications/notifications.dart';
+import 'package:mobile/common/widgets/custom_header.dart';
 import 'package:mobile/reservations/repository/reservations_repository.dart';
 import 'package:mobile/reservations/view/booking_expired_page.dart';
 import 'package:mobile/reservations/view/reservation_detail_page.dart';
@@ -222,7 +222,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTopAppBar(),
+                const CustomHeader(title: 'Bookings'),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Text(
@@ -277,61 +277,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopAppBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.grey[300]!),
-                  image: const DecorationImage(
-                    image: NetworkImage(
-                      'https://lh3.googleusercontent.com/aida-public/AB6AXuDm5c2sSpmv-qGIGemqCCLfHFVGggRwGhFl-dEClUSROu_yMZu97wrzl6HpO-WfCbKn58d1zbwbPIsay4qMl2wHAQ3RMTTaN60QHXVb-JnqZ0E4pjanQQ3UGc3X8gqnXYaz_n2_-ZoKdnNscD7Z61sDcTl_8KVonDjnfXfq019lKHJg5RJmrt41qYwKbqIKnbZ3R6jCFJXkmfnojEIb0TC0ivzhvGVsgAkLeRlIpWK9qYQRHjW2V9V_Ln5bZ4QYqNOE9Iwi-HAElHNk',
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'ParkLocator',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-            ],
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.notifications_outlined, size: 24),
-              color: const Color(0xFF0F172A),
-              onPressed: () {
-                Navigator.of(context).push(NotificationsPage.route());
-              },
-              padding: EdgeInsets.zero,
-            ),
-          ),
-        ],
       ),
     );
   }
