@@ -93,7 +93,7 @@ export class UsersService {
     };
   }
 
-  async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
+  async create(createUserDto: CreateUserDto, currentUserId: string): Promise<Omit<User, 'password'>> {
     const { email, password, role, venueId } = createUserDto;
     
     const existingUser = await this.usersRepository.findOne({ where: { email } });
@@ -110,6 +110,14 @@ export class UsersService {
     });
 
     await this.usersRepository.save(user);
+
+    await this.auditService.log(
+      'CREATE_USER',
+      `Created user ${email} with role ${role}`,
+      currentUserId,
+      user.id,
+      'User'
+    );
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = user;
@@ -131,8 +139,30 @@ export class UsersService {
     return result;
   }
 
-  async updateProfile(id: string, updateUserDto: UpdateUserDto): Promise<Omit<User, 'password'>> {
+  async updateProfile(id: string, updateUserDto: UpdateUserDto, currentUserId?: string): Promise<Omit<User, 'password'>> {
+    const beforeUser = await this.usersRepository.findOne({ where: { id } });
+    
     await this.usersRepository.update(id, updateUserDto);
+    
+    if (currentUserId && beforeUser) {
+      const afterUser = await this.usersRepository.findOne({ where: { id } });
+      const changes = this.auditService.calculateChanges(
+        beforeUser,
+        { ...beforeUser, ...updateUserDto },
+        Object.keys(updateUserDto)
+      );
+      
+      await this.auditService.log(
+        'UPDATE_USER',
+        `Updated profile for user ${beforeUser.email}`,
+        currentUserId,
+        id,
+        'User',
+        undefined,
+        changes
+      );
+    }
+
     return this.findOne(id);
   }
 
@@ -152,8 +182,19 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
+    const oldRole = user.role;
     user.role = newRole;
     await this.usersRepository.save(user);
+
+    await this.auditService.log(
+      'UPDATE_ROLE',
+      `Updated role for user ${user.email}`,
+      currentUserId,
+      user.id,
+      'User',
+      undefined,
+      [{ field: 'role', before: oldRole, after: newRole }]
+    );
 
     // Return user without password
     const { password, ...result } = user;
@@ -176,8 +217,19 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
+    const oldStatus = user.status;
     user.status = newStatus;
     await this.usersRepository.save(user);
+
+    await this.auditService.log(
+      'UPDATE_STATUS',
+      `Updated status for user ${user.email}`,
+      currentUserId,
+      user.id,
+      'User',
+      undefined,
+      [{ field: 'status', before: oldStatus, after: newStatus }]
+    );
 
     // Return user without password
     const { password, ...result } = user;
@@ -197,6 +249,14 @@ export class UsersService {
     }
 
     await this.usersRepository.remove(user);
+
+    await this.auditService.log(
+      'DELETE_USER',
+      `Deleted user ${user.email}`,
+      currentUserId,
+      id,
+      'User'
+    );
   }
 
   async changePassword(id: string, newPassword: string): Promise<void> {

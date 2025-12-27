@@ -308,14 +308,19 @@ export class ReservationsService {
   /**
    * Cancel a reservation and release the spot
    */
-  async cancel(id: string, userId: string): Promise<Reservation> {
+  async cancel(id: string, userId: string, checkOwnership: boolean = true): Promise<Reservation> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
+      const where: any = { id };
+      if (checkOwnership) {
+        where.userId = userId;
+      }
+
       const reservation = await queryRunner.manager.findOne(Reservation, {
-        where: { id, userId },
+        where,
         relations: ['spot', 'level'],
       });
 

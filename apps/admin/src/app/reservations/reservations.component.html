@@ -184,11 +184,11 @@
                                     <div class="flex flex-col gap-1">
                                         <div class="flex items-center gap-1 text-muted">
                                             <span class="material-symbols-outlined text-[14px]">login</span>
-                                            {{ res.startTime | date:'shortTime' }}
+                                            {{ res.startTime ? (res.startTime | date:'shortTime') : 'N/A' }}
                                         </div>
                                         <div class="flex items-center gap-1 text-muted">
                                             <span class="material-symbols-outlined text-[14px]">logout</span>
-                                            {{ res.endTime | date:'shortTime' }}
+                                            {{ res.endTime ? (res.endTime | date:'shortTime') : 'N/A' }}
                                         </div>
                                     </div>
                                 </td>
@@ -302,11 +302,11 @@
                     <div class="flex flex-col gap-2">
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-text-secondary">Start Time</span>
-                            <span class="font-bold text-text-main dark:text-white">{{ selectedReservation.startTime | date:'medium' }}</span>
+                            <span class="font-bold text-text-main dark:text-white">{{ selectedReservation.startTime ? (selectedReservation.startTime | date:'medium') : 'N/A' }}</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-text-secondary">End Time</span>
-                            <span class="font-bold text-text-main dark:text-white">{{ selectedReservation.endTime | date:'medium' }}</span>
+                            <span class="font-bold text-text-main dark:text-white">{{ selectedReservation.endTime ? (selectedReservation.endTime | date:'medium') : 'N/A' }}</span>
                         </div>
                     </div>
                 </div>

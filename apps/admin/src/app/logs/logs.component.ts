@@ -55,6 +55,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   selectedLog: any = null;
 
   venues = ['All Venues'];
+  private venueMap: Map<string, string> = new Map(); // venueId -> venueName
 
   qrLogs: any[] = [];
   adminLogs: any[] = [];
@@ -87,8 +88,15 @@ export class LogsComponent implements OnInit, OnDestroy {
     if (this.authService.currentUser()?.role === 'super_admin') {
       this.venuesService.getVenues().subscribe(venues => {
         this.venues = ['All Venues', ...venues.map(v => v.name)];
+        // Build venue map for lookups
+        venues.forEach(v => this.venueMap.set(v.id, v.name));
       });
     }
+  }
+
+  getVenueName(venueId: string | null): string {
+    if (!venueId) return 'N/A';
+    return this.venueMap.get(venueId) || 'N/A';
   }
 
   onSearchInput(term: string) {
@@ -159,23 +167,61 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   loadAuditLogs(event: any) {
+    this.loading = true;
     this.financeService.getAuditLogs(this.currentPage, event.rows, this.searchTerm).subscribe(response => {
-      this.adminLogs = response.data.map(log => ({
-        user: {
-          name: log.user?.email || 'System',
-          initials: (log.user?.email || 'S').substring(0, 2).toUpperCase(),
-          color: 'blue',
-          role: log.user?.role || 'System'
-        },
-        venue: 'N/A', // Audit logs might not always be tied to a venue directly in this view
-        action: log.action,
-        details: log.details,
-        timestamp: new Date(log.createdAt).toLocaleString(),
-        entity: log.resourceType,
-        severity: 'info',
-        originalLog: log
-      }));
+      this.adminLogs = response.data.map(log => {
+        // Determine venue name from resourceId if resourceType is Venue
+        let venueName = 'N/A';
+        
+        if (log.resourceType === 'Venue' && log.resourceId) {
+          // Try to get venue name from map
+          venueName = this.getVenueName(log.resourceId);
+          
+          // If not found in map, try to extract from details
+          if (venueName === 'N/A' && log.details) {
+            const venueMatch = log.details.match(/\[Venue: ([^\]]+)\]/);
+            if (venueMatch) {
+              venueName = venueMatch[1];
+            }
+          }
+        }
+
+        return {
+          user: {
+            name: log.user?.email || 'System',
+            initials: (log.user?.email || 'S').substring(0, 2).toUpperCase(),
+            color: this.getColorForAction(log.action),
+            role: log.user?.role || 'System'
+          },
+          venue: venueName,
+          action: this.formatAction(log.action),
+          details: log.details,
+          timestamp: new Date(log.createdAt).toLocaleString(),
+          entity: log.resourceType,
+          severity: this.getSeverityForAction(log.action),
+          changes: log.changes || [],
+          originalLog: log
+        };
+      });
+      this.totalRecords = response.meta?.total || this.adminLogs.length;
+      this.loading = false;
     });
+  }
+
+  getColorForAction(action: string): string {
+    if (action.startsWith('DELETE') || action === 'CANCEL_RESERVATION') return 'orange';
+    if (action.startsWith('CREATE') || action === 'USER_REGISTER') return 'green';
+    return 'blue';
+  }
+
+  formatAction(action: string): string {
+    return action.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  getSeverityForAction(action: string): string {
+    if (action.startsWith('DELETE') || action === 'CANCEL_RESERVATION') return 'warning';
+    if (action.startsWith('CREATE') || action === 'USER_REGISTER') return 'success';
+    return 'info';
   }
 
   getGateId(status: string): string {
@@ -190,13 +236,19 @@ export class LogsComponent implements OnInit, OnDestroy {
     // Normalize for dialog display since API data structure differs from Mock data
     this.selectedLog = {
         ...original,
-        user: typeof original.user === 'string' ? {
+        ...log, // Include the mapped properties from loadAuditLogs
+        user: log.user || (typeof original.user === 'string' ? {
             name: original.user,
             initials: original.user.substring(0, 2).toUpperCase(),
             color: 'blue',
             role: 'User'
-        } : original.user,
-        entity: original.entity || 'Reservation',
+        } : original.user) || { name: 'System', initials: 'SY', color: 'blue', role: 'System' },
+        action: log.action || original.action || 'Unknown Action',
+        details: log.details || original.details || '',
+        timestamp: log.timestamp || (original.createdAt ? new Date(original.createdAt).toLocaleString() : ''),
+        entity: log.entity || original.resourceType || 'Activity',
+        resourceId: original.resourceId || null,
+        ipAddress: original.ipAddress || null,
         changes: original.changes || []
     };
     

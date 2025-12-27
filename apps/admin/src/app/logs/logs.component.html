@@ -360,28 +360,41 @@
         <!-- Header Info -->
         <div class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-700">
             <div 
-                [class.bg-blue-100]="selectedLog.user.color === 'blue'"
-                [class.text-blue-600]="selectedLog.user.color === 'blue'"
-                [class.bg-green-100]="selectedLog.user.color === 'green'"
-                [class.text-green-600]="selectedLog.user.color === 'green'"
-                [class.bg-orange-100]="selectedLog.user.color === 'orange'"
-                [class.text-orange-600]="selectedLog.user.color === 'orange'"
+                [class.bg-blue-100]="selectedLog.user?.color === 'blue'"
+                [class.text-blue-600]="selectedLog.user?.color === 'blue'"
+                [class.bg-green-100]="selectedLog.user?.color === 'green'"
+                [class.text-green-600]="selectedLog.user?.color === 'green'"
+                [class.bg-orange-100]="selectedLog.user?.color === 'orange'"
+                [class.text-orange-600]="selectedLog.user?.color === 'orange'"
                 class="size-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0">
-                {{ selectedLog.user.initials }}
+                {{ selectedLog.user?.initials || 'SY' }}
             </div>
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-1 flex-1">
                 <h4 class="heading-4">{{ selectedLog.action }}</h4>
                 <div class="flex items-center gap-2 text-sm text-muted">
-                    <span>by {{ selectedLog.user.name }}</span>
-                    <span>•</span>
-                    <span>{{ selectedLog.timestamp }}</span>
+                    <span>by {{ selectedLog.user?.name || 'System' }}</span>
+                    <span *ngIf="selectedLog.user?.role">•</span>
+                    <span *ngIf="selectedLog.user?.role" class="capitalize">{{ selectedLog.user?.role }}</span>
                 </div>
-                <div class="mt-1">
+                <div class="flex items-center gap-2 mt-1">
                     <span class="px-2 py-0.5 bg-gray-200 dark:bg-white/10 rounded text-xs font-mono text-body">
                         {{ selectedLog.entity }}
                     </span>
+                    <span *ngIf="selectedLog.timestamp" class="text-xs text-muted">{{ selectedLog.timestamp }}</span>
                 </div>
             </div>
+        </div>
+
+        <!-- Activity Details -->
+        <div *ngIf="selectedLog.details" class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+            <h5 class="text-sm font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-2">Description</h5>
+            <p class="text-body">{{ selectedLog.details }}</p>
+        </div>
+
+        <!-- Additional Info -->
+        <div *ngIf="selectedLog.resourceId" class="p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
+            <span class="text-xs text-muted uppercase tracking-wider">Resource ID</span>
+            <p class="text-sm font-mono text-body mt-1">{{ selectedLog.resourceId }}</p>
         </div>
 
         <!-- Changes Diff -->
@@ -407,8 +420,8 @@
             </div>
         </div>
 
-        <!-- No Changes Message -->
-        <div *ngIf="!selectedLog.changes || selectedLog.changes.length === 0" class="text-center py-8 text-muted bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+        <!-- No Changes Message (only show for non-activity logs) -->
+        <div *ngIf="(!selectedLog.changes || selectedLog.changes.length === 0) && selectedLog.entity !== 'Activity'" class="text-center py-8 text-muted bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
             <span class="material-symbols-outlined text-4xl mb-2 opacity-50">history_edu</span>
             <p>No specific field changes recorded for this action.</p>
         </div>

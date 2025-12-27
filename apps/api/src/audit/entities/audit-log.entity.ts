@@ -35,6 +35,9 @@ export class AuditLog {
   @Column({ nullable: true })
   ipAddress: string;
 
+  @Column({ type: 'jsonb', nullable: true })
+  changes: { field: string; before: any; after: any }[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

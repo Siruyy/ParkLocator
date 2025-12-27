@@ -6,6 +6,7 @@ import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
 import { VenuesService, Venue } from '../core/services/venues.service';
 import { AuthService } from '../core/services/auth.service';
+import { ActivityTrackerService } from '../core/services/activity-tracker.service';
 
 // PrimeNG Imports
 import { TableModule } from 'primeng/table';
@@ -48,6 +49,7 @@ export class VenuesComponent implements OnInit {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
+  private activityTracker = inject(ActivityTrackerService);
 
   venues: Venue[] = [];
   selectedVenue: Venue | null = null;
@@ -176,6 +178,14 @@ export class VenuesComponent implements OnInit {
     this.selectedProperty = venue.id;
     this.onVenueChange();
     this.viewMode = 'details';
+    
+    // Track venue configuration view
+    this.activityTracker.log({
+      action: 'VIEW_VENUE_CONFIG',
+      details: `Opened Venue Configuration for ${venue.name}`,
+      venueId: venue.id,
+      venueName: venue.name
+    });
   }
 
   switchToList() {

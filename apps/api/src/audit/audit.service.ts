@@ -18,6 +18,7 @@ export class AuditService {
     resourceId?: string,
     resourceType?: string,
     ipAddress?: string,
+    changes?: { field: string; before: any; after: any }[],
   ): Promise<AuditLog> {
     const log = this.auditLogRepository.create({
       action,
@@ -26,8 +27,34 @@ export class AuditService {
       resourceId,
       resourceType,
       ipAddress,
+      changes,
     });
     return this.auditLogRepository.save(log);
+  }
+
+  /**
+   * Helper to calculate changes between two objects
+   */
+  calculateChanges(before: Record<string, any>, after: Record<string, any>, fieldsToTrack?: string[]): { field: string; before: any; after: any }[] {
+    const changes: { field: string; before: any; after: any }[] = [];
+    const keys = fieldsToTrack || Object.keys({ ...before, ...after });
+    
+    for (const key of keys) {
+      if (key === 'password' || key === 'updatedAt' || key === 'createdAt') continue;
+      
+      const beforeVal = before[key];
+      const afterVal = after[key];
+      
+      if (JSON.stringify(beforeVal) !== JSON.stringify(afterVal)) {
+        changes.push({
+          field: key,
+          before: beforeVal ?? null,
+          after: afterVal ?? null,
+        });
+      }
+    }
+    
+    return changes;
   }
 
   async findAll(page: number = 1, limit: number = 20, search?: string): Promise<{ data: AuditLog[]; total: number }> {

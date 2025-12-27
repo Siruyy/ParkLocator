@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
 import { RegisterDto, LoginDto, AuthResponseDto } from './dto/auth.dto';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    private auditService: AuditService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
@@ -39,6 +41,14 @@ export class AuthService {
     });
 
     await this.usersRepository.save(user);
+
+    await this.auditService.log(
+      'USER_REGISTER',
+      `New user registered: ${email}`,
+      user.id,
+      user.id,
+      'User'
+    );
 
     // Generate JWT
     const payload = { sub: user.id, email: user.email, role: user.role, venueId: user.venueId };
@@ -72,6 +82,14 @@ export class AuthService {
     // Generate JWT
     const payload = { sub: user.id, email: user.email, role: user.role, venueId: user.venueId };
     const access_token = await this.jwtService.signAsync(payload);
+
+    await this.auditService.log(
+      'USER_LOGIN',
+      `User logged in: ${email}`,
+      user.id,
+      user.id,
+      'User'
+    );
 
     return {
       access_token,

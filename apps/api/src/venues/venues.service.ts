@@ -40,7 +40,7 @@ export class VenuesService {
 
   // ==================== VENUE OPERATIONS ====================
 
-  async create(createVenueDto: CreateVenueDto): Promise<Venue> {
+  async create(createVenueDto: CreateVenueDto, currentUserId: string): Promise<Venue> {
     const { latitude, longitude, name, address, description, imageUrl } =
       createVenueDto;
 
@@ -59,7 +59,17 @@ export class VenuesService {
       ],
     );
 
-    return this.findOne(result[0].id);
+    const venue = await this.findOne(result[0].id);
+
+    await this.auditService.log(
+      'CREATE_VENUE',
+      `Created venue ${venue.name}`,
+      currentUserId,
+      venue.id,
+      'Venue'
+    );
+
+    return venue;
   }
 
   async findAll(user?: User): Promise<Venue[]> {
@@ -91,8 +101,9 @@ export class VenuesService {
     return venue;
   }
 
-  async update(id: string, updateVenueDto: UpdateVenueDto): Promise<Venue> {
-    const venue = await this.findOne(id);
+  async update(id: string, updateVenueDto: UpdateVenueDto, currentUserId: string): Promise<Venue> {
+    const beforeVenue = await this.findOne(id);
+    const beforeSnapshot = { ...beforeVenue };
 
     const { latitude, longitude, ...rest } = updateVenueDto;
 
@@ -105,23 +116,39 @@ export class VenuesService {
     }
 
     // Update other fields
-    Object.assign(venue, rest);
-    const updatedVenue = await this.venuesRepository.save(venue);
+    Object.assign(beforeVenue, rest);
+    const updatedVenue = await this.venuesRepository.save(beforeVenue);
+
+    const changes = this.auditService.calculateChanges(
+      beforeSnapshot,
+      updatedVenue,
+      Object.keys(updateVenueDto)
+    );
 
     await this.auditService.log(
       'UPDATE_VENUE',
-      `Updated venue ${venue.name}`,
-      'SYSTEM', // Or pass user ID if available
+      `Updated venue ${updatedVenue.name}`,
+      currentUserId,
       id,
-      'Venue'
+      'Venue',
+      undefined,
+      changes
     );
 
     return updatedVenue;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, currentUserId: string): Promise<void> {
     const venue = await this.findOne(id);
     await this.venuesRepository.remove(venue);
+
+    await this.auditService.log(
+      'DELETE_VENUE',
+      `Deleted venue ${venue.name}`,
+      currentUserId,
+      id,
+      'Venue'
+    );
   }
 
   // ==================== NEARBY SEARCH ====================
@@ -271,6 +298,7 @@ export class VenuesService {
   async createLevel(
     venueId: string,
     createLevelDto: CreateLevelDto,
+    currentUserId: string,
   ): Promise<Level> {
     const venue = await this.findOne(venueId);
 
@@ -329,6 +357,14 @@ export class VenuesService {
       }
 
       await this.spotsRepository.save(spots);
+
+      await this.auditService.log(
+        'CREATE_LEVEL',
+        `Created level ${savedLevel.levelNumber} for venue ${venue.name}`,
+        currentUserId,
+        savedLevel.id,
+        'Level'
+      );
 
       return savedLevel;
     } catch (error) {
@@ -422,6 +458,7 @@ export class VenuesService {
   async updateLevel(
     levelId: string,
     updateLevelDto: UpdateLevelDto,
+    currentUserId: string,
   ): Promise<Level> {
     const level = await this.findLevel(levelId);
 
@@ -449,10 +486,20 @@ export class VenuesService {
     }
 
     Object.assign(level, updateLevelDto);
-    return this.levelsRepository.save(level);
+    const updatedLevel = await this.levelsRepository.save(level);
+
+    await this.auditService.log(
+      'UPDATE_LEVEL',
+      `Updated level ${level.levelNumber}`,
+      currentUserId,
+      level.id,
+      'Level'
+    );
+
+    return updatedLevel;
   }
 
-  async removeLevel(id: string): Promise<void> {
+  async removeLevel(id: string, currentUserId: string): Promise<void> {
     const level = await this.levelsRepository.findOne({ where: { id } });
 
     if (!level) {
@@ -460,6 +507,14 @@ export class VenuesService {
     }
 
     await this.levelsRepository.remove(level);
+
+    await this.auditService.log(
+      'DELETE_LEVEL',
+      `Deleted level ${level.levelNumber}`,
+      currentUserId,
+      id,
+      'Level'
+    );
   }
 
   // ==================== HELPERS ====================
@@ -519,11 +574,22 @@ export class VenuesService {
   async updateVenueConfiguration(
     venueId: string,
     updateVenueConfigurationDto: UpdateVenueConfigurationDto,
+    currentUserId: string,
   ): Promise<VenueConfiguration> {
     const config = await this.getVenueConfiguration(venueId);
 
     Object.assign(config, updateVenueConfigurationDto);
 
-    return this.venueConfigurationRepository.save(config);
+    const savedConfig = await this.venueConfigurationRepository.save(config);
+
+    await this.auditService.log(
+      'UPDATE_VENUE_CONFIG',
+      `Updated configuration for venue ${venueId}`,
+      currentUserId,
+      config.id,
+      'VenueConfiguration'
+    );
+
+    return savedConfig;
   }
 }

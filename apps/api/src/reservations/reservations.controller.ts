@@ -89,7 +89,8 @@ export class ReservationsController {
 
   @Delete(':id')
   async cancel(@Request() req, @Param('id', ParseUUIDPipe) id: string) {
-    const reservation = await this.reservationsService.cancel(id, req.user.userId);
+    const isAdmin = req.user.role === UserRole.SUPER_ADMIN || req.user.role === UserRole.MANAGER;
+    const reservation = await this.reservationsService.cancel(id, req.user.userId, !isAdmin);
 
     return {
       success: true,

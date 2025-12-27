@@ -91,23 +91,32 @@ export class ReservationsComponent implements OnInit {
     this.loading = true;
     this.reservationsService.getReservations().subscribe({
       next: (response) => {
-        this.reservations = response.data.map(r => ({
-          ...r,
-          user: {
-            ...r.user,
-            name: r.user.name || r.user.email.split('@')[0]
-          },
-          // Map API fields to UI expected fields
-          vehicle: r.vehicle ? { 
-            plateNumber: r.vehicle.plateNumber, 
-            model: [r.vehicle.make, r.vehicle.model].filter(Boolean).join(' ') || 'Unknown' 
-          } : { plateNumber: 'N/A', model: 'Unknown' },
-          type: r.type, // Map the type field
-          startTime: new Date(r.startTime),
-          endTime: new Date(r.endTime),
-          spotId: r.spot?.spotNumber || 'Unassigned',
-          venue: r.venue?.name || 'Unknown Venue'
-        }));
+        this.reservations = response.data.map(r => {
+          // Safe date parsing
+          const parseDate = (dateStr: any): Date | null => {
+            if (!dateStr) return null;
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? null : d;
+          };
+
+          return {
+            ...r,
+            user: r.user ? {
+              ...r.user,
+              name: r.user.name || (r.user.email ? r.user.email.split('@')[0] : 'Unknown')
+            } : { name: 'Unknown User', email: 'N/A' },
+            // Map API fields to UI expected fields
+            vehicle: r.vehicle ? { 
+              plateNumber: r.vehicle.plateNumber, 
+              model: [r.vehicle.make, r.vehicle.model].filter(Boolean).join(' ') || 'Unknown' 
+            } : { plateNumber: 'N/A', model: 'Unknown' },
+            type: r.type, // Map the type field
+            startTime: parseDate(r.startTime),
+            endTime: parseDate(r.endTime),
+            spotId: r.spot?.spotNumber || 'Unassigned',
+            venue: r.venue?.name || 'Unknown Venue'
+          };
+        });
         
         this.calculateStats();
         this.loading = false;

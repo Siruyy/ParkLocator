@@ -27,7 +27,9 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, ROLES_KEY } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../users/entities/user.entity';
+import type { AuthUser } from '../auth/types/auth-user.type';
 
 @Controller('venues')
 export class VenuesController {
@@ -158,11 +160,12 @@ export class VenuesController {
   async create(
     @Body() createVenueDto: CreateVenueDto,
     @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() currentUser: AuthUser,
   ) {
     if (file) {
       createVenueDto.imageUrl = `/uploads/venues/${file.filename}`;
     }
-    const venue = await this.venuesService.create(createVenueDto);
+    const venue = await this.venuesService.create(createVenueDto, currentUser.userId);
 
     return {
       success: true,
@@ -177,8 +180,9 @@ export class VenuesController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateVenueDto: UpdateVenueDto,
+    @CurrentUser() currentUser: AuthUser,
   ) {
-    const venue = await this.venuesService.update(id, updateVenueDto);
+    const venue = await this.venuesService.update(id, updateVenueDto, currentUser.userId);
 
     return {
       success: true,
@@ -190,8 +194,11 @@ export class VenuesController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.venuesService.remove(id);
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() currentUser: AuthUser,
+  ) {
+    await this.venuesService.remove(id, currentUser.userId);
 
     return {
       success: true,
@@ -205,8 +212,9 @@ export class VenuesController {
   async createLevel(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createLevelDto: CreateLevelDto,
+    @CurrentUser() currentUser: AuthUser,
   ) {
-    const level = await this.venuesService.createLevel(id, createLevelDto);
+    const level = await this.venuesService.createLevel(id, createLevelDto, currentUser.userId);
 
     return {
       success: true,
@@ -235,10 +243,12 @@ export class VenuesController {
   async updateConfiguration(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateVenueConfigurationDto: UpdateVenueConfigurationDto,
+    @CurrentUser() currentUser: AuthUser,
   ) {
     const config = await this.venuesService.updateVenueConfiguration(
       id,
       updateVenueConfigurationDto,
+      currentUser.userId,
     );
 
     return {
@@ -269,8 +279,9 @@ export class LevelsController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateLevelDto: UpdateLevelDto,
+    @CurrentUser() currentUser: AuthUser,
   ) {
-    const level = await this.venuesService.updateLevel(id, updateLevelDto);
+    const level = await this.venuesService.updateLevel(id, updateLevelDto, currentUser.userId);
 
     return {
       success: true,
@@ -282,8 +293,11 @@ export class LevelsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.venuesService.removeLevel(id);
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() currentUser: AuthUser,
+  ) {
+    await this.venuesService.removeLevel(id, currentUser.userId);
 
     return {
       success: true,

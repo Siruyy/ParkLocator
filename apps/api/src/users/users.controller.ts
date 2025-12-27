@@ -62,7 +62,7 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     const avatarUrl = `/uploads/avatars/${file.filename}`;
-    return this.usersService.updateProfile(currentUser.userId, { avatarUrl });
+    return this.usersService.updateProfile(currentUser.userId, { avatarUrl }, currentUser.userId);
   }
 
   /**
@@ -92,7 +92,7 @@ export class UsersController {
     if (currentUser.role === UserRole.MANAGER) {
        createUserDto.venueId = currentUser.venueId || undefined;
     }
-    return this.usersService.create(createUserDto);
+    return this.usersService.create(createUserDto, currentUser.id);
   }
 
   /**
@@ -115,7 +115,7 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() currentUser: User,
   ): Promise<Omit<User, 'password'>> {
-    return this.usersService.updateProfile(currentUser.id, updateUserDto);
+    return this.usersService.updateProfile(currentUser.id, updateUserDto, currentUser.id);
   }
 
   /**
