@@ -4,7 +4,7 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class RealtimeService {
   RealtimeService({String? baseUrl})
-      : _baseUrl = baseUrl ?? (Platform.isAndroid ? 'http://10.0.2.2:3000' : 'http://localhost:3000');
+      : _baseUrl = baseUrl ?? 'http://localhost:3000';
 
   final String _baseUrl;
   io.Socket? _socket;

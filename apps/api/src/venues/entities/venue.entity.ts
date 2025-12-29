@@ -7,6 +7,7 @@ import {
   OneToMany,
   OneToOne,
   Index,
+  AfterLoad,
 } from 'typeorm';
 import { Level } from './level.entity';
 import { VenueConfiguration } from './venue-configuration.entity';
@@ -50,4 +51,50 @@ export class Venue {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  // Virtual properties for easier frontend consumption
+  latitude: number | null = null;
+  longitude: number | null = null;
+
+  @AfterLoad()
+  _convertLocation() {
+    if (!this.location) return;
+
+    // Handle GeoJSON object (TypeORM default for geography)
+    if (typeof this.location === 'object' && (this.location as any).type === 'Point') {
+      const coords = (this.location as any).coordinates;
+      if (Array.isArray(coords) && coords.length === 2) {
+        this.longitude = coords[0];
+        this.latitude = coords[1];
+      }
+    }
+    // Handle WKT string (e.g. "POINT(-122.4 37.7)")
+    else if (typeof this.location === 'string' && this.location.startsWith('POINT')) {
+      const match = this.location.match(/POINT\(([^ ]+) ([^)]+)\)/);
+      if (match) {
+        this.longitude = parseFloat(match[1]);
+        this.latitude = parseFloat(match[2]);
+      }
+    }
+  }
+
+  toJSON() {
+    // Ensure _convertLocation is called before serialization
+    this._convertLocation();
+    return {
+      id: this.id,
+      name: this.name,
+      address: this.address,
+      location: this.location,
+      isActive: this.isActive,
+      imageUrl: this.imageUrl,
+      description: this.description,
+      levels: this.levels,
+      configuration: this.configuration,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      latitude: this.latitude,
+      longitude: this.longitude,
+    };
+  }
 }

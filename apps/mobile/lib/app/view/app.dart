@@ -10,6 +10,8 @@ import 'package:mobile/l10n/l10n.dart';
 import 'package:mobile/login/login.dart';
 import 'package:mobile/reservations/repository/reservations_repository.dart';
 import 'package:mobile/venues/repository/venues_repository.dart';
+import 'package:mobile/profile/repository/vehicles_repository.dart';
+import 'package:mobile/notifications/repository/notifications_repository.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -24,6 +26,8 @@ class _AppState extends State<App> {
   late final AuthRepository _authRepository;
   late final VenuesRepository _venuesRepository;
   late final ReservationsRepository _reservationsRepository;
+  late final VehiclesRepository _vehiclesRepository;
+  late final NotificationsRepository _notificationsRepository;
   late final AuthBloc _authBloc;
 
   @override
@@ -34,6 +38,8 @@ class _AppState extends State<App> {
     _authRepository = AuthRepository(apiClient: _apiClient);
     _venuesRepository = VenuesRepository(apiClient: _apiClient);
     _reservationsRepository = ReservationsRepository(apiClient: _apiClient);
+    _vehiclesRepository = VehiclesRepository(apiClient: _apiClient);
+    _notificationsRepository = NotificationsRepository(apiClient: _apiClient);
     _authBloc = AuthBloc(authRepository: _authRepository)
       ..add(const AuthCheckRequested());
       
@@ -52,9 +58,12 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider.value(value: _apiClient),
         RepositoryProvider.value(value: _authRepository),
         RepositoryProvider.value(value: _venuesRepository),
         RepositoryProvider.value(value: _reservationsRepository),
+        RepositoryProvider.value(value: _vehiclesRepository),
+        RepositoryProvider.value(value: _notificationsRepository),
         RepositoryProvider.value(value: _realtimeService),
       ],
       child: BlocProvider.value(
@@ -114,23 +123,15 @@ class _SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Icon(
-                Icons.local_parking,
-                size: 60,
-                color: AppColors.primary,
-              ),
+            Image.asset(
+              'assets/images/parking_boy.png',
+              width: 180,
+              height: 180,
             ),
             const SizedBox(height: 24),
             const Text(
@@ -138,12 +139,12 @@ class _SplashScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 48),
             const CircularProgressIndicator(
-              color: Colors.white,
+              color: AppColors.primary,
             ),
           ],
         ),

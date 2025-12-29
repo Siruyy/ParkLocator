@@ -59,6 +59,7 @@ class Venue {
   double? get distance => apiVenue.distance;
   double? get latitude => apiVenue.latitude;
   double? get longitude => apiVenue.longitude;
+  api.VenueConfiguration? get configuration => apiVenue.configuration;
 
   VenueStatus get status {
     if (availableSpots == 0) return VenueStatus.full;

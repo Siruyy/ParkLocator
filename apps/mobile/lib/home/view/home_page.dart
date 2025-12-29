@@ -60,19 +60,27 @@ class _HomePageState extends State<HomePage> {
 
       // Filter out active reservations that are actually expired by time
       final now = DateTime.now();
-      final trulyActive = active
-          .where((r) => r.expiresAt.isAfter(now))
-          .toList();
-      final expiredActive = active
-          .where((r) => r.expiresAt.isBefore(now))
-          .toList();
+      final trulyActive = active.where((r) {
+        // If checked in, check against endAt (booking duration)
+        if (r.status == api.ReservationStatus.checkedIn) {
+          return r.endAt != null && r.endAt!.isAfter(now);
+        }
+        // If confirmed/pending, check against expiresAt (arrival window)
+        return r.expiresAt.isAfter(now);
+      }).toList();
+      final expiredActive = active.where((r) {
+        if (r.status == api.ReservationStatus.checkedIn) {
+          return r.endAt != null && r.endAt!.isBefore(now);
+        }
+        return r.expiresAt.isBefore(now);
+      }).toList();
 
-      // Sort active reservations by creation time descending (Newest first)
-      // This ensures the most recently booked spot is shown as the active one
+      // Sort active reservations by start time ascending (Earliest first)
+      // This ensures the most urgent/active booking is shown first
       trulyActive.sort((a, b) {
-        final aTime = a.createdAt ?? DateTime.now();
-        final bTime = b.createdAt ?? DateTime.now();
-        return bTime.compareTo(aTime); // Descending: Newest first
+        final aTime = a.startAt ?? a.createdAt ?? DateTime.now();
+        final bTime = b.startAt ?? b.createdAt ?? DateTime.now();
+        return aTime.compareTo(bTime); // Ascending: Earliest start time first
       });
 
       setState(() {
@@ -117,9 +125,18 @@ class _HomePageState extends State<HomePage> {
   void _calculateTimeLeft() {
     if (_activeReservation == null) return;
     final now = DateTime.now();
-    // Use endAt (base duration end) for countdown, fallback to expiresAt
-    final endAt = _activeReservation!.endAt ?? _activeReservation!.expiresAt;
-    final difference = endAt.difference(now);
+    
+    DateTime targetTime;
+    // If confirmed (not yet checked in), show time until arrival window expires
+    if (_activeReservation!.status == api.ReservationStatus.confirmed) {
+      targetTime = _activeReservation!.expiresAt;
+    } else {
+      // If checked in, show time until booking ends
+      // Fallback to expiresAt if endAt is null (though it shouldn't be for active reservations)
+      targetTime = _activeReservation!.endAt ?? _activeReservation!.expiresAt;
+    }
+
+    final difference = targetTime.difference(now);
 
     if (difference.isNegative) {
       _timeLeft = Duration.zero;
@@ -629,6 +646,42 @@ class _HomePageState extends State<HomePage> {
         final reservation = _upcomingReservations[index];
         final startAt =
             reservation.startAt ?? reservation.createdAt ?? DateTime.now();
+        
+        // Calculate countdown
+        final now = DateTime.now();
+        final isStarted = startAt.isBefore(now);
+        
+        DateTime targetTime;
+        if (!isStarted) {
+          // Future booking: Count down to start (though we just show "Upcoming")
+          targetTime = startAt;
+        } else if (reservation.status == api.ReservationStatus.checkedIn) {
+          // Checked in: Count down to end of parking session
+          targetTime = reservation.endAt ?? reservation.expiresAt;
+        } else {
+          // Active but not checked in (Arrival Window): Count down to entry deadline
+          targetTime = reservation.expiresAt;
+        }
+
+        final diff = targetTime.difference(now);
+        
+        String timeString;
+        if (!isStarted) {
+          timeString = 'Upcoming';
+        } else if (diff.isNegative) {
+             timeString = 'Expired';
+        } else {
+             final h = diff.inHours;
+             final m = diff.inMinutes.remainder(60);
+             final s = diff.inSeconds.remainder(60);
+             if (h > 24) {
+               timeString = '${diff.inDays}d left';
+             } else if (h > 0) {
+               timeString = '${h}h ${m}m';
+             } else {
+               timeString = '${m}m ${s}s';
+             }
+        }
 
         return GestureDetector(
           onTap: () {
@@ -707,20 +760,33 @@ class _HomePageState extends State<HomePage> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: startAt.isBefore(DateTime.now())
+                    color: isStarted
                         ? const Color(0xFF137FEC).withValues(alpha: 0.1)
                         : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    startAt.isBefore(DateTime.now()) ? 'Active' : 'Upcoming',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: startAt.isBefore(DateTime.now())
-                          ? const Color(0xFF137FEC)
-                          : const Color(0xFF475569),
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isStarted && !diff.isNegative) ...[
+                        Icon(
+                          Icons.timer_outlined,
+                          size: 12,
+                          color: const Color(0xFF137FEC),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(
+                        timeString,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isStarted
+                              ? const Color(0xFF137FEC)
+                              : const Color(0xFF475569),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -848,9 +914,11 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'TIME REMAINING',
-                style: TextStyle(
+              Text(
+                reservation.status == api.ReservationStatus.confirmed
+                    ? 'TIME TO ARRIVE'
+                    : 'TIME REMAINING',
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF64748B),

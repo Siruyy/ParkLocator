@@ -83,18 +83,9 @@ class _Header extends StatelessWidget {
     return Column(
       children: [
         // App Logo
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(
-            Icons.local_parking,
-            size: 48,
-            color: Colors.white,
-          ),
+        Image.asset(
+          'assets/images/parking_boy.png',
+          height: 180,
         ),
         const SizedBox(height: 24),
         Text(

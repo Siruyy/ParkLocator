@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:mobile/api/api.dart' as api;
 import 'package:mobile/reservations/repository/reservations_repository.dart';
 import 'package:mobile/reservations/view/reservation_confirmation_page.dart';
+import 'package:mobile/profile/repository/vehicles_repository.dart';
+import 'package:mobile/profile/view/add_vehicle_page.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({
@@ -46,8 +48,43 @@ class CheckoutPage extends StatefulWidget {
 class _CheckoutPageState extends State<CheckoutPage> {
   String _selectedPaymentMethod = 'wallet'; // Default to in-app wallet
   bool _isProcessing = false;
+  List<api.Vehicle> _vehicles = [];
+  api.Vehicle? _selectedVehicle;
+  bool _isLoadingVehicles = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVehicles();
+  }
+
+  Future<void> _fetchVehicles() async {
+    try {
+      final vehicles = await context.read<VehiclesRepository>().getVehicles();
+      if (mounted) {
+        setState(() {
+          _vehicles = vehicles;
+          if (vehicles.isNotEmpty) {
+            _selectedVehicle = vehicles.firstWhere(
+              (v) => v.isDefault,
+              orElse: () => vehicles.first,
+            );
+          }
+          _isLoadingVehicles = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingVehicles = false);
+        // Handle error silently or show snackbar
+      }
+    }
+  }
 
   Future<void> _processPaymentAndReserve() async {
+    // Capture ScaffoldMessenger before any async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     setState(() {
       _isProcessing = true;
     });
@@ -57,6 +94,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     if (!mounted) return;
 
+    if (_selectedVehicle == null) {
+      setState(() => _isProcessing = false);
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Please select a vehicle')),
+      );
+      return;
+    }
+
     try {
       final reservation = await context
           .read<ReservationsRepository>()
@@ -64,6 +109,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             venueId: widget.venue.id,
             levelId: widget.level.id,
             spotId: widget.spot.id,
+            vehicleId: _selectedVehicle!.id,
             startAt: widget.startDate,
             endAt: widget.endDate,
           );
@@ -75,14 +121,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
         );
       }
     } catch (e) {
-      setState(() {
-        _isProcessing = false;
-      });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to process reservation: $e'),
-            backgroundColor: Colors.red,
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+      
+      String errorMessage;
+      String title = 'Booking Failed';
+
+      if (e is api.ApiException) {
+        errorMessage = e.message;
+        if (e.statusCode == 409) {
+          title = 'Booking Conflict';
+        }
+      } else {
+        errorMessage = e.toString();
+        if (errorMessage.contains('Exception:')) {
+          errorMessage = errorMessage.replaceAll('Exception:', '').trim();
+        }
+        if (errorMessage.contains('ApiException:')) {
+          errorMessage = errorMessage.replaceAll('ApiException:', '').trim();
+        }
+      }
+      
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(title),
+            content: Text(errorMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
           ),
         );
       }
@@ -282,6 +356,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             const SizedBox(height: 24),
+            _buildVehicleSelection(),
+            const SizedBox(height: 24),
             const Text(
               'Payment Method',
               style: TextStyle(
@@ -423,6 +499,147 @@ class _CheckoutPageState extends State<CheckoutPage> {
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Color(0xFF0F172A),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVehicleSelection() {
+    if (_isLoadingVehicles) {
+      return const Center(child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: CircularProgressIndicator(),
+      ));
+    }
+
+    if (_vehicles.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.orange.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'No Vehicles Found',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Please add a vehicle to your profile to proceed.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddVehiclePage()));
+                  _fetchVehicles();
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Add Vehicle'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.orange,
+                  side: const BorderSide(color: Colors.orange),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Select Vehicle',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddVehiclePage()));
+                _fetchVehicles();
+              },
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('Add New'),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: Column(
+            children: _vehicles.map((vehicle) {
+              final isSelected = _selectedVehicle?.id == vehicle.id;
+              return RadioListTile<api.Vehicle>(
+                value: vehicle,
+                groupValue: _selectedVehicle,
+                onChanged: (api.Vehicle? value) {
+                  setState(() {
+                    _selectedVehicle = value;
+                  });
+                },
+                title: Text(
+                  vehicle.plateNumber,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text('${vehicle.color ?? ''} ${vehicle.make ?? ''} ${vehicle.model ?? ''}'.trim()),
+                secondary: vehicle.photoUrl != null
+                    ? Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: NetworkImage('${context.read<api.ApiClient>().baseUrl.replaceAll('/api/v1', '')}${vehicle.photoUrl}'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        vehicle.type == 'motorcycle' ? Icons.two_wheeler : Icons.directions_car,
+                        color: isSelected ? const Color(0xFF137FEC) : Colors.grey,
+                      ),
+                activeColor: const Color(0xFF137FEC),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+              );
+            }).toList(),
           ),
         ),
       ],

@@ -7,6 +7,10 @@ import { Spot } from '../venues/entities/spot.entity';
 import { Level } from '../venues/entities/level.entity';
 import { Venue } from '../venues/entities/venue.entity';
 import { VenueConfiguration } from '../venues/entities/venue-configuration.entity';
+import { UsersModule } from '../users/users.module';
+import { AuditModule } from '../audit/audit.module';
+import { EventsModule } from '../events/events.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,6 +21,10 @@ import { VenueConfiguration } from '../venues/entities/venue-configuration.entit
       Venue,
       VenueConfiguration,
     ]),
+    UsersModule,
+    AuditModule,
+    EventsModule,
+    NotificationsModule,
   ],
   controllers: [ReservationsController],
   providers: [ReservationsService],

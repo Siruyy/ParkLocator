@@ -141,6 +141,9 @@ export class ReservationsController {
             id: reservation.venue.id,
             name: reservation.venue.name,
             address: reservation.venue.address,
+            latitude: reservation.venue.latitude,
+            longitude: reservation.venue.longitude,
+            imageUrl: reservation.venue.imageUrl,
           }
         : null,
       level: reservation.level

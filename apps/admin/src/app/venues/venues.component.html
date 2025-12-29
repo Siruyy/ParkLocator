@@ -277,12 +277,20 @@
         <!-- Coordinates -->
         <div class="grid grid-cols-2 gap-4">
             <div class="input-group">
-                <label class="input-label">Latitude</label>
+                <label class="input-label flex items-center gap-2">
+                    Latitude
+                    <i class="pi pi-info-circle text-text-muted cursor-help text-xs" pTooltip="Right-click a location on Google Maps to copy the latitude." tooltipPosition="top"></i>
+                </label>
                 <input pInputText formControlName="latitude" type="number" step="any" class="w-full">
+                <small *ngIf="propertyForm.get('latitude')?.touched && propertyForm.get('latitude')?.invalid" class="input-error">Valid latitude is required (-90 to 90)</small>
             </div>
             <div class="input-group">
-                <label class="input-label">Longitude</label>
+                <label class="input-label flex items-center gap-2">
+                    Longitude
+                    <i class="pi pi-info-circle text-text-muted cursor-help text-xs" pTooltip="Right-click a location on Google Maps to copy the longitude." tooltipPosition="top"></i>
+                </label>
                 <input pInputText formControlName="longitude" type="number" step="any" class="w-full">
+                <small *ngIf="propertyForm.get('longitude')?.touched && propertyForm.get('longitude')?.invalid" class="input-error">Valid longitude is required (-180 to 180)</small>
             </div>
         </div>
 

@@ -116,14 +116,16 @@ class BookingTypePage extends StatelessWidget {
                                 color: subTextColor,
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                venue.address,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  color: subTextColor,
+                              Expanded(
+                                child: Text(
+                                  venue.address,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: subTextColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -243,7 +245,7 @@ class BookingTypePage extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Reservations are held for 15 minutes past the start time. Cancellations made less than 1 hour before booking may incur a fee.',
+                        'Reservations are held for ${venue.configuration?.entryGracePeriod ?? 15} minutes past the start time. Cancellations made less than 1 hour before booking may incur a fee.',
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: subTextColor,

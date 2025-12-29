@@ -51,12 +51,31 @@ class Venue extends Equatable {
     double? latitude;
     double? longitude;
 
-    if (json['location'] != null && json['location'] is Map) {
-      final coords = json['location']['coordinates'] as List;
-      if (coords.length >= 2) {
-        longitude = parseDouble(coords[0]);
-        latitude = parseDouble(coords[1]);
+    if (json['location'] != null) {
+      if (json['location'] is Map) {
+        final coords = json['location']['coordinates'] as List;
+        if (coords.length >= 2) {
+          longitude = parseDouble(coords[0]);
+          latitude = parseDouble(coords[1]);
+        }
+      } else if (json['location'] is String) {
+        final location = json['location'] as String;
+        if (location.startsWith('POINT')) {
+          final match =
+              RegExp(r'POINT\(([^ ]+) ([^)]+)\)').firstMatch(location);
+          if (match != null) {
+            longitude = parseDouble(match.group(1));
+            latitude = parseDouble(match.group(2));
+          }
+        }
       }
+    }
+
+    if (latitude == null) {
+      latitude = parseDouble(json['latitude']);
+    }
+    if (longitude == null) {
+      longitude = parseDouble(json['longitude']);
     }
 
     return Venue(

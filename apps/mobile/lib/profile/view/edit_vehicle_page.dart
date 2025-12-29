@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/profile/repository/vehicles_repository.dart';
 
 class EditVehiclePage extends StatefulWidget {
   const EditVehiclePage({
-    required this.make, required this.model, required this.plateNumber, required this.color, required this.isDefault, super.key,
+    required this.vehicleId, required this.make, required this.model, required this.plateNumber, required this.color, required this.isDefault, super.key,
   });
 
+  final String vehicleId;
   final String make;
   final String model;
   final String plateNumber;
@@ -13,6 +16,7 @@ class EditVehiclePage extends StatefulWidget {
   final bool isDefault;
 
   static Route<void> route({
+    required String vehicleId,
     required String make,
     required String model,
     required String plateNumber,
@@ -21,6 +25,7 @@ class EditVehiclePage extends StatefulWidget {
   }) {
     return MaterialPageRoute<void>(
       builder: (_) => EditVehiclePage(
+        vehicleId: vehicleId,
         make: make,
         model: model,
         plateNumber: plateNumber,
@@ -40,6 +45,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
   late final TextEditingController _plateController;
   late final TextEditingController _colorController;
   late bool _isDefault;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -58,6 +64,87 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
     _plateController.dispose();
     _colorController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveVehicle() async {
+    if (_plateController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a plate number')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final repository = context.read<VehiclesRepository>();
+      await repository.updateVehicle(
+        widget.vehicleId,
+        plateNumber: _plateController.text,
+        make: _makeController.text,
+        model: _modelController.text,
+        color: _colorController.text,
+        isDefault: _isDefault,
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _deleteVehicle() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Vehicle'),
+        content: Text(
+          'Are you sure you want to delete this vehicle (${widget.plateNumber})?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isLoading = true);
+      try {
+        final repository = context.read<VehiclesRepository>();
+        await repository.deleteVehicle(widget.vehicleId);
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete vehicle: $e')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
   }
 
   @override
@@ -214,9 +301,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                       child: SizedBox(
                         width: double.infinity,
                         child: TextButton.icon(
-                          onPressed: () {
-                            // TODO: Implement delete logic
-                          },
+                          onPressed: _isLoading ? null : _deleteVehicle,
                           icon: const Icon(Icons.delete_outline),
                           label: const Text('Delete Vehicle'),
                           style: TextButton.styleFrom(
@@ -281,10 +366,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implement save logic
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: _isLoading ? null : _saveVehicle,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,

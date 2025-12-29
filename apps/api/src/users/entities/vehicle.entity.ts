@@ -39,6 +39,9 @@ export class Vehicle {
   @Column({ name: 'is_default', default: false })
   isDefault: boolean;
 
+  @Column({ name: 'photo_url', nullable: true })
+  photoUrl: string;
+
   @Column({ type: 'varchar', default: 'car' }) // car, motorcycle, etc.
   type: string;
 

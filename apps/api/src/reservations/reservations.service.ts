@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, LessThan, In } from 'typeorm';
+import { Repository, DataSource, LessThan, MoreThan, In } from 'typeorm';
 import { Reservation, ReservationStatus, ReservationType } from './entities/reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Spot, SpotStatus } from '../venues/entities/spot.entity';
@@ -17,6 +17,9 @@ import { EventsGateway } from '../events/events.gateway';
 
 import { User, UserRole } from '../users/entities/user.entity';
 import { AuditService } from '../audit/audit.service';
+import { VehiclesService } from '../users/vehicles.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class ReservationsService {
@@ -34,7 +37,10 @@ export class ReservationsService {
     private dataSource: DataSource,
     private eventsGateway: EventsGateway,
     private auditService: AuditService,
+    private vehiclesService: VehiclesService,
+    private notificationsService: NotificationsService,
   ) {}
+
 
   /**
    * Create a reservation with transactional spot locking to prevent double-booking
@@ -52,6 +58,33 @@ export class ReservationsService {
       startAt,
       endAt,
     } = createReservationDto;
+
+    if (!vehicleId) {
+      throw new BadRequestException('Vehicle is required for reservation');
+    }
+
+    // Verify vehicle belongs to user
+    const vehicle = await this.vehiclesService.findOne(vehicleId);
+    if (vehicle.userId !== userId) {
+      throw new BadRequestException('Invalid vehicle selected');
+    }
+
+    const startTime = startAt ? new Date(startAt) : new Date();
+    const endTime = endAt ? new Date(endAt) : new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
+
+    // Check for overlapping reservations for this vehicle
+    const overlappingReservation = await this.reservationsRepository.findOne({
+      where: {
+        vehicleId,
+        status: In([ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN]),
+        startAt: LessThan(endTime),
+        endAt: MoreThan(startTime),
+      },
+    });
+
+    if (overlappingReservation) {
+      throw new ConflictException('This vehicle already has a reservation for the selected time slot.');
+    }
 
     // Use a transaction to ensure atomicity
     const queryRunner = this.dataSource.createQueryRunner();
@@ -137,6 +170,29 @@ export class ReservationsService {
         reservationStartAt.getTime() + baseDurationHours * 60 * 60 * 1000,
       );
 
+      // Check if vehicle has another active reservation overlapping with this time
+      const overlappingVehicleReservation = await queryRunner.manager
+        .createQueryBuilder(Reservation, 'r')
+        .where('r.vehicle_id = :vehicleId', { vehicleId })
+        .andWhere('r.status IN (:...activeStatuses)', {
+          activeStatuses: [
+            ReservationStatus.PENDING,
+            ReservationStatus.CONFIRMED,
+            ReservationStatus.CHECKED_IN,
+          ],
+        })
+        .andWhere(
+          '(r.start_at < :endAt AND r.end_at > :startAt)',
+          { startAt: reservationStartAt, endAt: reservationEndAt },
+        )
+        .getOne();
+
+      if (overlappingVehicleReservation) {
+        throw new ConflictException(
+          `Vehicle ${vehicle.plateNumber} already has an active reservation for this time period`,
+        );
+      }
+
       // Check for overlapping reservations on this spot for the requested time range
       const overlappingReservation = await queryRunner.manager
         .createQueryBuilder(Reservation, 'r')
@@ -218,7 +274,17 @@ export class ReservationsService {
       await queryRunner.commitTransaction();
 
       // Return the complete reservation with relations
-      return this.findOne(reservation.id);
+      const createdReservation = await this.findOne(reservation.id);
+
+      // Send notification
+      await this.notificationsService.create(
+        userId,
+        'Booking Confirmed',
+        `Your parking spot at ${venue.name} has been successfully reserved.`,
+        NotificationType.SUCCESS,
+      );
+
+      return createdReservation;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -377,6 +443,14 @@ export class ReservationsService {
         'Reservation'
       );
 
+      // Send notification
+      await this.notificationsService.create(
+        reservation.userId,
+        'Reservation Cancelled',
+        'Your reservation has been successfully cancelled.',
+        NotificationType.INFO,
+      );
+
       return this.findOne(id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -408,6 +482,14 @@ export class ReservationsService {
     reservation.status = ReservationStatus.CHECKED_IN;
     reservation.checkedInAt = new Date();
     await this.reservationsRepository.save(reservation);
+
+    // Send notification
+    await this.notificationsService.create(
+      reservation.userId,
+      'Checked In',
+      'Welcome! You have successfully checked in.',
+      NotificationType.INFO,
+    );
 
     return this.findOne(reservation.id);
   }
@@ -468,6 +550,14 @@ export class ReservationsService {
       }
 
       await queryRunner.commitTransaction();
+
+      // Send notification
+      await this.notificationsService.create(
+        reservation.userId,
+        'Checked Out',
+        'Thank you for parking with us. Have a safe trip!',
+        NotificationType.SUCCESS,
+      );
 
       return this.findOne(reservation.id);
     } catch (error) {

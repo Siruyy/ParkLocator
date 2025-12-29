@@ -11,6 +11,8 @@ class VenueConfiguration extends Equatable {
     required this.isWeekendSurchargeActive,
     required this.motorcycleFlatRate,
     required this.isMotorcycleFlatRateActive,
+    required this.entryGracePeriod,
+    required this.maxReservationHold,
   });
 
   factory VenueConfiguration.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,8 @@ class VenueConfiguration extends Equatable {
       motorcycleFlatRate: parseDouble(json['motorcycleFlatRate'], 30),
       isMotorcycleFlatRateActive:
           json['isMotorcycleFlatRateActive'] as bool? ?? false,
+      entryGracePeriod: parseInt(json['entryGracePeriod'], 15),
+      maxReservationHold: parseInt(json['maxReservationHold'], 30),
     );
   }
 
@@ -52,6 +56,8 @@ class VenueConfiguration extends Equatable {
   final bool isWeekendSurchargeActive;
   final double motorcycleFlatRate;
   final bool isMotorcycleFlatRateActive;
+  final int entryGracePeriod;
+  final int maxReservationHold;
 
   @override
   List<Object?> get props => [
@@ -64,5 +70,7 @@ class VenueConfiguration extends Equatable {
     isWeekendSurchargeActive,
     motorcycleFlatRate,
     isMotorcycleFlatRateActive,
+    entryGracePeriod,
+    maxReservationHold,
   ];
 }

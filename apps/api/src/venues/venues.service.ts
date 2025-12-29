@@ -41,8 +41,8 @@ export class VenuesService {
   // ==================== VENUE OPERATIONS ====================
 
   async create(createVenueDto: CreateVenueDto, currentUserId: string): Promise<Venue> {
-    const { latitude, longitude, name, address, description, imageUrl } =
-      createVenueDto;
+    const { latitude, longitude } = createVenueDto;
+    const { name, address, description, imageUrl } = createVenueDto;
 
     // Use raw query to insert with PostGIS geography
     const result = await this.dataSource.query(
@@ -107,17 +107,35 @@ export class VenuesService {
 
     const { latitude, longitude, ...rest } = updateVenueDto;
 
-    // Update location if coordinates provided
-    if (latitude !== undefined && longitude !== undefined) {
+    console.log('[VenuesService.update] Received update:', { latitude, longitude, rest });
+    console.log('[VenuesService.update] Types:', { 
+      latType: typeof latitude, 
+      lngType: typeof longitude,
+      latValue: latitude,
+      lngValue: longitude 
+    });
+
+    // Update other fields FIRST (before location update, to avoid overwriting)
+    Object.assign(beforeVenue, rest);
+    await this.venuesRepository.save(beforeVenue);
+
+    // Update location AFTER save if coordinates provided (handle both number and string)
+    // This must come after save() because save() would overwrite the raw SQL location update
+    const lat = latitude !== undefined && latitude !== null ? Number(latitude) : null;
+    const lng = longitude !== undefined && longitude !== null ? Number(longitude) : null;
+
+    if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+      console.log('[VenuesService.update] Updating location to:', { lat, lng });
       await this.dataSource.query(
         `UPDATE venues SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography WHERE id = $3`,
-        [longitude, latitude, id],
+        [lng, lat, id],
       );
+    } else {
+      console.log('[VenuesService.update] NOT updating location - invalid values');
     }
 
-    // Update other fields
-    Object.assign(beforeVenue, rest);
-    const updatedVenue = await this.venuesRepository.save(beforeVenue);
+    // Re-fetch the venue to get updated location coordinates
+    const updatedVenue = await this.findOne(id);
 
     const changes = this.auditService.calculateChanges(
       beforeSnapshot,
@@ -150,6 +168,8 @@ export class VenuesService {
       'Venue'
     );
   }
+
+
 
   // ==================== NEARBY SEARCH ====================
 
@@ -188,15 +208,12 @@ export class VenuesService {
         0,
       );
 
-      // Parse coordinates from location
-      const coords = this.parseLocation(venue.location);
-
       return {
         id: venue.id,
         name: venue.name,
         address: venue.address,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
+        latitude: venue.latitude || 0,
+        longitude: venue.longitude || 0,
         description: venue.description,
         imageUrl: venue.imageUrl,
         isActive: venue.isActive,

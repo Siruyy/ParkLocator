@@ -21,6 +21,8 @@ export interface Venue {
   address: string;
   description: string;
   imageUrl: string;
+  latitude?: number;
+  longitude?: number;
   levels: Level[];
 }
 
@@ -95,6 +97,8 @@ export class VenuesService {
       map(() => void 0)
     );
   }
+
+
 
   getVenueConfiguration(venueId: string): Observable<VenueConfiguration> {
     return this.http

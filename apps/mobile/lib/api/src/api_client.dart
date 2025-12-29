@@ -8,10 +8,10 @@ class ApiClient {
   ApiClient({
     http.Client? httpClient,
     String? baseUrl,
-  })  : _httpClient = httpClient ?? http.Client(),
-        // For physical devices: use your laptop's IP on the network
-        // For emulators: 10.0.2.2 maps to host machine's localhost
-        _baseUrl = baseUrl ?? 'http://10.165.42.46:3000/api/v1';
+  }) : _httpClient = httpClient ?? http.Client(),
+       // Using localhost with ADB reverse port forwarding (adb reverse tcp:3000 tcp:3000)
+       // This tunnels phone's localhost:3000 to Mac's localhost:3000 via USB
+       _baseUrl = baseUrl ?? 'http://localhost:3000/api/v1';
 
   final http.Client _httpClient;
   final String _baseUrl;
@@ -120,7 +120,9 @@ class ApiClient {
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       final jsonList = json['data'] as List<dynamic>;
-      return jsonList.map((json) => Venue.fromJson(json as Map<String, dynamic>)).toList();
+      return jsonList
+          .map((json) => Venue.fromJson(json as Map<String, dynamic>))
+          .toList();
     } else {
       throw ApiException(
         message: 'Failed to fetch venues',
@@ -130,9 +132,13 @@ class ApiClient {
   }
 
   /// Get venue details
-  Future<Venue> getVenue(String id, {DateTime? startAt, DateTime? endAt}) async {
+  Future<Venue> getVenue(
+    String id, {
+    DateTime? startAt,
+    DateTime? endAt,
+  }) async {
     var url = '$_baseUrl/venues/$id';
-    
+
     // If dates provided, append them as query params for availability calculation
     if (startAt != null && endAt != null) {
       final startParam = Uri.encodeComponent(startAt.toUtc().toIso8601String());
@@ -163,7 +169,7 @@ class ApiClient {
     DateTime? endAt,
   }) async {
     var url = '$_baseUrl/venues/$venueId/availability';
-    
+
     if (startAt != null && endAt != null) {
       final startParam = Uri.encodeComponent(startAt.toUtc().toIso8601String());
       final endParam = Uri.encodeComponent(endAt.toUtc().toIso8601String());
@@ -178,7 +184,9 @@ class ApiClient {
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       final jsonList = json['data'] as List<dynamic>;
-      return jsonList.map((json) => Level.fromJson(json as Map<String, dynamic>)).toList();
+      return jsonList
+          .map((json) => Level.fromJson(json as Map<String, dynamic>))
+          .toList();
     } else {
       throw ApiException(
         message: 'Failed to fetch venue availability',
@@ -222,6 +230,7 @@ class ApiClient {
     required String venueId,
     required String levelId,
     required String spotId,
+    required String vehicleId,
     int durationHours = 1,
     DateTime? startAt,
     DateTime? endAt,
@@ -230,6 +239,7 @@ class ApiClient {
       'venueId': venueId,
       'levelId': levelId,
       'spotId': spotId,
+      'vehicleId': vehicleId,
       'durationHours': durationHours,
     };
 
@@ -351,6 +361,207 @@ class ApiClient {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       throw ApiException(
         message: body['message'] as String? ?? 'Failed to check in',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+  /// Get notifications
+  Future<List<Notification>> getNotifications() async {
+    final response = await _httpClient.get(
+      Uri.parse('$_baseUrl/notifications'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as List;
+      return json
+          .map((e) => Notification.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch notifications',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Mark notification as read
+  Future<void> markNotificationAsRead(String id) async {
+    final response = await _httpClient.patch(
+      Uri.parse('$_baseUrl/notifications/$id/read'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw ApiException(
+        message: 'Failed to mark notification as read',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Mark all notifications as read
+  Future<void> markAllNotificationsAsRead() async {
+    final response = await _httpClient.post(
+      Uri.parse('$_baseUrl/notifications/read-all'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw ApiException(
+        message: 'Failed to mark all notifications as read',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Get user vehicles
+  Future<List<Vehicle>> getVehicles() async {
+    final response = await _httpClient.get(
+      Uri.parse('$_baseUrl/users/me/vehicles'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final list = jsonDecode(response.body) as List;
+      return list
+          .map((e) => Vehicle.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw ApiException(
+        message: 'Failed to fetch vehicles',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Create a vehicle
+  Future<Vehicle> createVehicle({
+    required String plateNumber,
+    String? make,
+    String? model,
+    String? color,
+    bool isDefault = false,
+  }) async {
+    final body = <String, dynamic>{
+      'plateNumber': plateNumber,
+      'make': make,
+      'model': model,
+      'color': color,
+      'isDefault': isDefault,
+    };
+
+    final response = await _httpClient.post(
+      Uri.parse('$_baseUrl/users/me/vehicles'),
+      headers: _headers,
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 201) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Vehicle.fromJson(json);
+    } else {
+      String message = 'Failed to create vehicle';
+      try {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        if (body.containsKey('message')) {
+          message = body['message'] as String;
+        }
+      } catch (_) {}
+
+      throw ApiException(
+        message: message,
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Upload vehicle photo
+  Future<Vehicle> uploadVehiclePhoto(String vehicleId, String filePath) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$_baseUrl/users/me/vehicles/$vehicleId/photo'),
+    );
+
+    if (_authToken != null) {
+      request.headers['Authorization'] = 'Bearer $_authToken';
+    }
+
+    request.files.add(await http.MultipartFile.fromPath('file', filePath));
+
+    final streamedResponse = await _httpClient.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Vehicle.fromJson(json);
+    } else {
+      throw ApiException(
+        message: 'Failed to upload vehicle photo',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Update a vehicle
+  Future<Vehicle> updateVehicle(
+    String vehicleId, {
+    String? plateNumber,
+    String? make,
+    String? model,
+    String? color,
+    bool? isDefault,
+  }) async {
+    final body = <String, dynamic>{};
+    if (plateNumber != null) body['plateNumber'] = plateNumber;
+    if (make != null) body['make'] = make;
+    if (model != null) body['model'] = model;
+    if (color != null) body['color'] = color;
+    if (isDefault != null) body['isDefault'] = isDefault;
+
+    final response = await _httpClient.patch(
+      Uri.parse('$_baseUrl/users/me/vehicles/$vehicleId'),
+      headers: _headers,
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Vehicle.fromJson(json);
+    } else {
+      String message = 'Failed to update vehicle';
+      try {
+        final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+        if (responseBody.containsKey('message')) {
+          message = responseBody['message'] as String;
+        }
+      } catch (_) {}
+
+      throw ApiException(
+        message: message,
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Delete a vehicle
+  Future<void> deleteVehicle(String vehicleId) async {
+    final response = await _httpClient.delete(
+      Uri.parse('$_baseUrl/users/me/vehicles/$vehicleId'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      String message = 'Failed to delete vehicle';
+      try {
+        final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+        if (responseBody.containsKey('message')) {
+          message = responseBody['message'] as String;
+        }
+      } catch (_) {}
+
+      throw ApiException(
+        message: message,
         statusCode: response.statusCode,
       );
     }

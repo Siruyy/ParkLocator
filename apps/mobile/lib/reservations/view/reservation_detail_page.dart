@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gal/gal.dart';
+import 'package:map_launcher/map_launcher.dart';
 import 'package:mobile/api/api.dart' as api;
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:screenshot/screenshot.dart';
 
 class ReservationDetailPage extends StatefulWidget {
   const ReservationDetailPage({
@@ -23,6 +28,7 @@ class ReservationDetailPage extends StatefulWidget {
 }
 
 class _ReservationDetailPageState extends State<ReservationDetailPage> {
+  final ScreenshotController _screenshotController = ScreenshotController();
   Timer? _timer;
   Duration _timeLeft = Duration.zero;
 
@@ -311,19 +317,22 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          Container(
-                            width: 256,
-                            height: 256,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey[100]!),
-                            ),
-                            child: QrImageView(
-                              data: widget.reservation.qrCode ??
-                                  widget.reservation.id,
-                              size: 220,
+                          Screenshot(
+                            controller: _screenshotController,
+                            child: Container(
+                              width: 256,
+                              height: 256,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey[100]!),
+                              ),
+                              child: QrImageView(
+                                data: widget.reservation.qrCode ??
+                                    widget.reservation.id,
+                                size: 220,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -378,6 +387,7 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
                       child: Column(
                         children: [
                           // Map Placeholder
+                          // TODO: Replace with dynamic Google Maps Static API URL
                           Container(
                             height: 128,
                             width: double.infinity,
@@ -460,9 +470,7 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
                                         ),
                                       ),
                                       Text(
-                                        widget.reservation.spot?.spotNumber
-                                                .split('-')
-                                                .last ??
+                                        widget.reservation.spot?.spotNumber ??
                                             '--',
                                         style: const TextStyle(
                                           fontSize: 20,
@@ -503,8 +511,69 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Implement navigation
+                        onPressed: () async {
+                          final lat = widget.reservation.venue?.latitude;
+                          final lng = widget.reservation.venue?.longitude;
+                          final title =
+                              widget.reservation.venue?.name ?? 'Venue';
+
+                          if (lat == null || lng == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Venue location not available'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          try {
+                            final availableMaps =
+                                await MapLauncher.installedMaps;
+                            if (!mounted) return;
+
+                            if (availableMaps.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('No map apps installed'),
+                                ),
+                              );
+                              return;
+                            }
+
+                            await showModalBottomSheet<void>(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return SafeArea(
+                                  child: SingleChildScrollView(
+                                    child: Wrap(
+                                      children: <Widget>[
+                                        for (var map in availableMaps)
+                                          ListTile(
+                                            onTap: () => map.showMarker(
+                                              coords: Coords(lat, lng),
+                                              title: title,
+                                            ),
+                                            title: Text(map.mapName),
+                                            leading: SvgPicture.asset(
+                                              map.icon,
+                                              height: 30.0,
+                                              width: 30.0,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          } catch (e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error launching map: $e'),
+                              ),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF137FEC),
@@ -532,8 +601,29 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
                     ),
                     const SizedBox(height: 12),
                     TextButton(
-                      onPressed: () {
-                        // TODO: Implement save to photos
+                      onPressed: () async {
+                        try {
+                          final image = await _screenshotController.capture();
+                          if (image == null) return;
+
+                          await Gal.putImageBytes(image);
+                          if (!mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('QR Code saved to photos'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } catch (e) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error saving to photos: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       },
                       child: const Text(
                         'Save to Photos',

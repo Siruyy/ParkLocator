@@ -12,6 +12,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { EventsModule } from './events/events.module';
 import { ReportsModule } from './reports/reports.module';
 import { AuditModule } from './audit/audit.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuditModule } from './audit/audit.module';
     EventsModule,
     ReportsModule,
     AuditModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

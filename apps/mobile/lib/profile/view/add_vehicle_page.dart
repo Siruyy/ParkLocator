@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mobile/profile/repository/vehicles_repository.dart';
 
 class AddVehiclePage extends StatefulWidget {
   const AddVehiclePage({super.key});
@@ -14,11 +18,63 @@ class AddVehiclePage extends StatefulWidget {
 
 class _AddVehiclePageState extends State<AddVehiclePage> {
   bool _isCarSelected = true;
-  bool _isDefault = true;
+  bool _isDefault = false;
+  bool _isLoading = false;
+  File? _imageFile;
+  final _picker = ImagePicker();
   final _plateController = TextEditingController();
   final _makeController = TextEditingController();
   final _modelController = TextEditingController();
   final _colorController = TextEditingController();
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _submit() async {
+    if (_plateController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a plate number')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final repository = context.read<VehiclesRepository>();
+      final vehicle = await repository.createVehicle(
+        plateNumber: _plateController.text,
+        make: _makeController.text,
+        model: _modelController.text,
+        color: _colorController.text,
+        isDefault: _isDefault,
+      );
+
+      if (_imageFile != null) {
+        await repository.uploadVehiclePhoto(vehicle.id, _imageFile!.path);
+      }
+
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -74,6 +130,52 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 8),
+                    // Vehicle Photo Section
+                    Center(
+                      child: GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: surfaceColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+                              width: 2,
+                            ),
+                            image: _imageFile != null
+                                ? DecorationImage(
+                                    image: FileImage(_imageFile!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: _imageFile == null
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.camera_alt,
+                                      size: 32,
+                                      color: subTextColor,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Add Photo',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        color: subTextColor,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
                     // Vehicle Type Section
                     _buildSectionLabel('Vehicle Type', subTextColor),
                     const SizedBox(height: 12),
@@ -319,10 +421,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement save logic
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
@@ -333,13 +432,22 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    'Save Vehicle',
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Save Vehicle',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ),

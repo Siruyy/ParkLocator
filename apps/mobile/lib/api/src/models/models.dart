@@ -5,3 +5,6 @@ export 'spot.dart';
 export 'user.dart';
 export 'venue.dart';
 export 'venue_configuration.dart';
+export 'vehicle.dart';
+export 'notification.dart';
+

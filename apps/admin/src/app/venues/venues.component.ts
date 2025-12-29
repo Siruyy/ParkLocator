@@ -215,12 +215,8 @@ export class VenuesComponent implements OnInit {
       name: venue.name,
       address: venue.address,
       description: venue.description,
-      // Assuming venue object might not have lat/lng directly exposed or named differently?
-      // Based on previous code, it seems they are not in the Venue interface explicitly but might be in data
-      // Let's assume they are not there for now or handle if they are.
-      // The Venue interface in service has: id, name, address, description, imageUrl, levels.
-      // It seems lat/lng are missing from the interface but might be in the backend entity.
-      // I'll leave them as default or try to patch if available.
+      latitude: venue.latitude ?? 14.5995,
+      longitude: venue.longitude ?? 120.9842,
     });
     this.selectedFile = null;
     this.showAddPropertyModal = true;
@@ -314,6 +310,8 @@ export class VenuesComponent implements OnInit {
       }
     });
   }
+
+
 
   // Level Management
   openAddLevelModal() {

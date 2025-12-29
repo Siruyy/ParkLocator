@@ -163,12 +163,31 @@ class ReservationVenue extends Equatable {
     double? latitude;
     double? longitude;
 
-    if (json['location'] != null && json['location'] is Map) {
-      final coords = json['location']['coordinates'] as List;
-      if (coords.length >= 2) {
-        longitude = (coords[0] as num).toDouble();
-        latitude = (coords[1] as num).toDouble();
+    if (json['location'] != null) {
+      if (json['location'] is Map) {
+        final coords = json['location']['coordinates'] as List;
+        if (coords.length >= 2) {
+          longitude = (coords[0] as num).toDouble();
+          latitude = (coords[1] as num).toDouble();
+        }
+      } else if (json['location'] is String) {
+        final location = json['location'] as String;
+        if (location.startsWith('POINT')) {
+          final match =
+              RegExp(r'POINT\(([^ ]+) ([^)]+)\)').firstMatch(location);
+          if (match != null) {
+            longitude = double.tryParse(match.group(1)!);
+            latitude = double.tryParse(match.group(2)!);
+          }
+        }
       }
+    }
+
+    if (latitude == null && json['latitude'] != null) {
+      latitude = (json['latitude'] as num).toDouble();
+    }
+    if (longitude == null && json['longitude'] != null) {
+      longitude = (json['longitude'] as num).toDouble();
     }
 
     return ReservationVenue(
