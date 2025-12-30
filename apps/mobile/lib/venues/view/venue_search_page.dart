@@ -170,7 +170,16 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
           children: [
             // Header Section
             Container(
-              color: const Color(0xFFF6F7F8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF6F7F8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               padding: const EdgeInsets.only(bottom: 8),
               child: Column(
                 children: [

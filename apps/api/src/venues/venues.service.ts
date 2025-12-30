@@ -41,13 +41,20 @@ export class VenuesService {
   // ==================== VENUE OPERATIONS ====================
 
   async create(createVenueDto: CreateVenueDto, currentUserId: string): Promise<Venue> {
-    const { latitude, longitude } = createVenueDto;
-    const { name, address, description, imageUrl } = createVenueDto;
+    const { 
+      latitude, longitude, name, address, description, imageUrl,
+      supportsRealTimeBooking, supportsFutureBooking, requireVehicleDetails,
+      hasCoveredParking, hasCCTV
+    } = createVenueDto;
 
     // Use raw query to insert with PostGIS geography
     const result = await this.dataSource.query(
-      `INSERT INTO venues (name, address, location, description, image_url)
-       VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography, $5, $6)
+      `INSERT INTO venues (
+        name, address, location, description, image_url,
+        supports_real_time_booking, supports_future_booking, require_vehicle_details,
+        has_covered_parking, has_cctv
+      )
+       VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
       [
         name,
@@ -56,6 +63,11 @@ export class VenuesService {
         latitude,
         description || null,
         imageUrl || null,
+        supportsRealTimeBooking ?? true,
+        supportsFutureBooking ?? false,
+        requireVehicleDetails ?? true,
+        hasCoveredParking ?? false,
+        hasCCTV ?? false
       ],
     );
 
@@ -158,7 +170,9 @@ export class VenuesService {
 
   async remove(id: string, currentUserId: string): Promise<void> {
     const venue = await this.findOne(id);
-    await this.venuesRepository.remove(venue);
+    
+    // Use softRemove to set deleted_at timestamp
+    await this.venuesRepository.softRemove(venue);
 
     await this.auditService.log(
       'DELETE_VENUE',
@@ -167,6 +181,31 @@ export class VenuesService {
       id,
       'Venue'
     );
+  }
+
+  async restore(id: string, currentUserId: string): Promise<Venue> {
+    // Find with deleted to restore
+    const venue = await this.venuesRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!venue) {
+      throw new NotFoundException(`Venue with ID ${id} not found`);
+    }
+
+    // Recover the entity
+    await this.venuesRepository.recover(venue);
+
+    await this.auditService.log(
+      'RESTORE_VENUE',
+      `Restored venue ${venue.name}`,
+      currentUserId,
+      id,
+      'Venue'
+    );
+
+    return venue;
   }
 
 
@@ -223,6 +262,11 @@ export class VenuesService {
         levelsCount: venue.levels.length,
         totalCapacity,
         availableSpots,
+        supportsRealTimeBooking: venue.supportsRealTimeBooking,
+        supportsFutureBooking: venue.supportsFutureBooking,
+        requireVehicleDetails: venue.requireVehicleDetails,
+        hasCoveredParking: venue.hasCoveredParking,
+        hasCCTV: venue.hasCCTV,
       };
     });
   }

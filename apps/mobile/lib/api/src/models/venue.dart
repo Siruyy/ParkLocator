@@ -14,7 +14,18 @@ class Venue extends Equatable {
     this.latitude,
     this.longitude,
     this.configuration,
+    this.supportsRealTimeBooking = true,
+    this.supportsFutureBooking = false,
+    this.requireVehicleDetails = true,
+    this.hasCoveredParking = false,
+    this.hasCCTV = false,
   });
+
+  final bool supportsRealTimeBooking;
+  final bool supportsFutureBooking;
+  final bool requireVehicleDetails;
+  final bool hasCoveredParking;
+  final bool hasCCTV;
 
   factory Venue.fromJson(Map<String, dynamic> json) {
     double? parseDouble(dynamic value) {
@@ -89,6 +100,11 @@ class Venue extends Equatable {
       latitude: latitude,
       longitude: longitude,
       configuration: configuration,
+      supportsRealTimeBooking: json['supportsRealTimeBooking'] as bool? ?? true,
+      supportsFutureBooking: json['supportsFutureBooking'] as bool? ?? false,
+      requireVehicleDetails: json['requireVehicleDetails'] as bool? ?? true,
+      hasCoveredParking: json['hasCoveredParking'] as bool? ?? false,
+      hasCCTV: json['hasCCTV'] as bool? ?? false,
     );
   }
 

@@ -57,10 +57,14 @@ export class AuditService {
     return changes;
   }
 
-  async findAll(page: number = 1, limit: number = 20, search?: string): Promise<{ data: AuditLog[]; total: number }> {
+  async findAll(page: number = 1, limit: number = 20, search?: string, action?: string): Promise<{ data: AuditLog[]; total: number }> {
     const query = this.auditLogRepository.createQueryBuilder('log')
       .leftJoinAndSelect('log.user', 'user')
       .orderBy('log.createdAt', 'DESC');
+
+    if (action) {
+      query.andWhere('log.action = :action', { action });
+    }
 
     if (search && search.trim().length > 0) {
       const searchTerm = `%${search.trim()}%`;

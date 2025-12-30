@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile/api/src/api_exception.dart';
 import 'package:mobile/api/src/models/models.dart';
@@ -9,14 +10,16 @@ class ApiClient {
     http.Client? httpClient,
     String? baseUrl,
   }) : _httpClient = httpClient ?? http.Client(),
-       // Using localhost with ADB reverse port forwarding (adb reverse tcp:3000 tcp:3000)
-       // This tunnels phone's localhost:3000 to Mac's localhost:3000 via USB
-       _baseUrl = baseUrl ?? 'http://localhost:3000/api/v1';
+       // Use 10.0.2.2 for Android Emulator, localhost for iOS Simulator and Web
+       _baseUrl = baseUrl ??
+           (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
+               ? 'http://10.0.2.2:3000/api/v1'
+               : 'http://localhost:3000/api/v1');
 
   final http.Client _httpClient;
   final String _baseUrl;
   String? _authToken;
-
+  
   String get baseUrl => _baseUrl;
   String get assetBaseUrl => _baseUrl.replaceAll('/api/v1', '');
 
@@ -83,6 +86,32 @@ class ApiClient {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       throw ApiException(
         message: body['message'] as String? ?? 'Login failed',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Create a payment intent
+  Future<Map<String, dynamic>> createPaymentIntent({
+    required double amount,
+    required String description,
+  }) async {
+    final response = await _httpClient.post(
+      Uri.parse('$_baseUrl/payments/intent'),
+      headers: _headers,
+      body: jsonEncode({
+        'amount': amount,
+        'description': description,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return json;
+    } else {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      throw ApiException(
+        message: body['message'] as String? ?? 'Failed to create payment intent',
         statusCode: response.statusCode,
       );
     }
@@ -230,7 +259,7 @@ class ApiClient {
     required String venueId,
     required String levelId,
     required String spotId,
-    required String vehicleId,
+    String? vehicleId,
     int durationHours = 1,
     DateTime? startAt,
     DateTime? endAt,
@@ -239,9 +268,12 @@ class ApiClient {
       'venueId': venueId,
       'levelId': levelId,
       'spotId': spotId,
-      'vehicleId': vehicleId,
       'durationHours': durationHours,
     };
+
+    if (vehicleId != null) {
+      body['vehicleId'] = vehicleId;
+    }
 
     if (startAt != null) {
       body['startAt'] = startAt.toUtc().toIso8601String();

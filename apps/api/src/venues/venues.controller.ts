@@ -177,11 +177,24 @@ export class VenuesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads/venues',
+      filename: (req, file, cb) => {
+        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+        return cb(null, `${randomName}${extname(file.originalname)}`);
+      }
+    })
+  }))
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateVenueDto: UpdateVenueDto,
+    @UploadedFile() file: Express.Multer.File,
     @CurrentUser() currentUser: AuthUser,
   ) {
+    if (file) {
+      updateVenueDto.imageUrl = `/uploads/venues/${file.filename}`;
+    }
     const venue = await this.venuesService.update(id, updateVenueDto, currentUser.userId);
 
     return {
@@ -203,6 +216,22 @@ export class VenuesController {
     return {
       success: true,
       message: 'Venue deleted successfully',
+    };
+  }
+
+  @Post(':id/restore')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async restore(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() currentUser: AuthUser,
+  ) {
+    const venue = await this.venuesService.restore(id, currentUser.userId);
+
+    return {
+      success: true,
+      data: venue,
+      message: 'Venue restored successfully',
     };
   }
 

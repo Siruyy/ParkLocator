@@ -66,7 +66,7 @@ export class User {
   @Column({ name: 'avatar_url', nullable: true, type: 'varchar' })
   avatarUrl: string | null;
 
-  @ManyToOne(() => Venue, (venue) => venue.users)
+  @ManyToOne(() => Venue, (venue) => venue.users, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'venue_id' })
   venue: Venue | null;
 

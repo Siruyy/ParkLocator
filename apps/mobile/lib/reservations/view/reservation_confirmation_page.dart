@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gal/gal.dart';
+import 'package:map_launcher/map_launcher.dart';
 import 'package:mobile/api/api.dart' as api;
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:screenshot/screenshot.dart';
 
 class ReservationConfirmationPage extends StatefulWidget {
   const ReservationConfirmationPage({
@@ -25,6 +30,7 @@ class ReservationConfirmationPage extends StatefulWidget {
 
 class _ReservationConfirmationPageState
     extends State<ReservationConfirmationPage> {
+  final ScreenshotController _screenshotController = ScreenshotController();
   Timer? _timer;
   Duration _timeLeft = Duration.zero;
 
@@ -248,6 +254,87 @@ class _ReservationConfirmationPageState
     return '$displayHour:$minute $period';
   }
 
+  Future<void> _navigateToVenue() async {
+    final venue = widget.reservation.venue;
+    if (venue == null || venue.latitude == null || venue.longitude == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Venue location not available')),
+      );
+      return;
+    }
+
+    try {
+      final availableMaps = await MapLauncher.installedMaps;
+      if (!mounted) return;
+
+      if (availableMaps.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No map apps installed')),
+        );
+        return;
+      }
+
+      await showModalBottomSheet<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: SingleChildScrollView(
+              child: Wrap(
+                children: <Widget>[
+                  for (var map in availableMaps)
+                    ListTile(
+                      onTap: () => map.showMarker(
+                        coords: Coords(venue.latitude!, venue.longitude!),
+                        title: venue.name,
+                        description: venue.address,
+                      ),
+                      title: Text(map.mapName),
+                      leading: SvgPicture.asset(
+                        map.icon,
+                        height: 30.0,
+                        width: 30.0,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not launch maps: $e')),
+      );
+    }
+  }
+
+  Future<void> _saveToPhotos() async {
+    try {
+      // Check permissions first
+      final hasAccess = await Gal.hasAccess();
+      if (!hasAccess) {
+        await Gal.requestAccess();
+      }
+
+      final image = await _screenshotController.capture();
+      if (image == null) return;
+
+      await Gal.putImageBytes(image);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ticket saved to photos')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save to photos: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final minutes =
@@ -343,71 +430,74 @@ class _ReservationConfirmationPageState
                   // QR Code Card
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey[100]!),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 24,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.qr_code_scanner,
-                                  color: Color(0xFF137FEC), size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Scan at entry',
-                                style: TextStyle(
-                                  color: Color(0xFF137FEC),
-                                  fontWeight: FontWeight.w500,
+                    child: Screenshot(
+                      controller: _screenshotController,
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey[100]!),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 24,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.qr_code_scanner,
+                                    color: Color(0xFF137FEC), size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Scan at entry',
+                                  style: TextStyle(
+                                    color: Color(0xFF137FEC),
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Container(
+                              width: 256,
+                              height: 256,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey[100]!),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          Container(
-                            width: 256,
-                            height: 256,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey[100]!),
+                              child: QrImageView(
+                                data: widget.reservation.qrCode ??
+                                    widget.reservation.id,
+                                size: 220,
+                              ),
                             ),
-                            child: QrImageView(
-                              data: widget.reservation.qrCode ??
-                                  widget.reservation.id,
-                              size: 220,
+                            const SizedBox(height: 20),
+                            Text(
+                              '#${widget.reservation.id.substring(0, 8).toUpperCase()}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0D141B),
+                                letterSpacing: 0.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            '#${widget.reservation.id.substring(0, 8).toUpperCase()}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0D141B),
-                              letterSpacing: 0.5,
+                            const Text(
+                              'Ticket ID',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF4C739A),
+                              ),
                             ),
-                          ),
-                          const Text(
-                            'Ticket ID',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF4C739A),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -565,9 +655,7 @@ class _ReservationConfirmationPageState
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Implement navigation
-                        },
+                        onPressed: _navigateToVenue,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF137FEC),
                           shape: RoundedRectangleBorder(
@@ -594,9 +682,7 @@ class _ReservationConfirmationPageState
                     ),
                     const SizedBox(height: 12),
                     TextButton(
-                      onPressed: () {
-                        // TODO: Implement save to photos
-                      },
+                      onPressed: _saveToPhotos,
                       child: const Text(
                         'Save to Photos',
                         style: TextStyle(

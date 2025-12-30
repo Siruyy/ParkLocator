@@ -82,8 +82,9 @@ export class ReportsController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
     @Query('search') search?: string,
+    @Query('action') action?: string,
   ) {
-    const { data, total } = await this.reportsService.getAuditLogs(page, limit, search);
+    const { data, total } = await this.reportsService.getAuditLogs(page, limit, search, action);
     return {
       success: true,
       data,

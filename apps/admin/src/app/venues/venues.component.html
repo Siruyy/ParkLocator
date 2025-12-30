@@ -300,14 +300,61 @@
             <textarea pInputTextarea formControlName="description" rows="3" class="w-full !bg-gray-50 dark:!bg-white/5 !border-gray-200 dark:!border-gray-700 !rounded-xl"></textarea>
         </div>
 
-        <!-- Image Upload -->
-        <div class="input-group" *ngIf="!isEditingProperty">
-            <label class="input-label">Venue Image</label>
-            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-black hover:file:bg-primary-dark transition-all">
+        <!-- Booking Configuration -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="input-group">
+                <label class="input-label">Booking Options</label>
+                <div class="flex flex-col gap-3 mt-2">
+                    <div class="flex items-center gap-2">
+                        <p-checkbox formControlName="supportsRealTimeBooking" [binary]="true" inputId="realTime"></p-checkbox>
+                        <label for="realTime" class="cursor-pointer text-text-main select-none">Allow "Book for Now"</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <p-checkbox formControlName="supportsFutureBooking" [binary]="true" inputId="future"></p-checkbox>
+                        <label for="future" class="cursor-pointer text-text-main select-none">Allow "Book for Later"</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Requirements</label>
+                <div class="flex flex-col gap-3 mt-2">
+                    <div class="flex items-center gap-2">
+                        <p-checkbox formControlName="requireVehicleDetails" [binary]="true" inputId="vehicleDetails"></p-checkbox>
+                        <label for="vehicleDetails" class="cursor-pointer text-text-main select-none">Require Vehicle Details</label>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="input-group" *ngIf="isEditingProperty">
-             <label class="input-label">Venue Image</label>
-             <p class="text-muted italic">Image update not supported yet.</p>
+
+        <!-- Venue Features -->
+        <div class="input-group">
+            <label class="input-label">Venue Features</label>
+            <div class="flex flex-row gap-6 mt-2">
+                <div class="flex items-center gap-2">
+                    <p-checkbox formControlName="hasCoveredParking" [binary]="true" inputId="coveredParking"></p-checkbox>
+                    <label for="coveredParking" class="cursor-pointer text-text-main select-none">Covered Parking</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <p-checkbox formControlName="hasCCTV" [binary]="true" inputId="cctv"></p-checkbox>
+                    <label for="cctv" class="cursor-pointer text-text-main select-none">CCTV Surveillance</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="input-group">
+            <label class="input-label">Venue Image</label>
+            
+            <div *ngIf="isEditingProperty && propertyForm.get('imageUrl')?.value" class="mb-3 relative group w-full h-48 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                <img [src]="propertyForm.get('imageUrl')?.value" alt="Current Venue Image" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white text-sm font-medium">Current Image</span>
+                </div>
+            </div>
+
+            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary-light dark:text-text-primary-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-black hover:file:bg-primary-dark transition-all">
+            <p *ngIf="isEditingProperty" class="text-xs text-muted mt-1">Leave empty to keep current image.</p>
         </div>
 
         <div class="form-actions">

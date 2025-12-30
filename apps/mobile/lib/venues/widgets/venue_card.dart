@@ -124,11 +124,14 @@ class VenueCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.roofing, color: Colors.grey, size: 20),
-                        SizedBox(width: 8),
-                        Icon(Icons.videocam, color: Colors.grey, size: 20),
+                        if (venue.hasCoveredParking) ...[
+                          const Icon(Icons.roofing, color: Colors.grey, size: 20),
+                          const SizedBox(width: 8),
+                        ],
+                        if (venue.hasCCTV)
+                          const Icon(Icons.videocam, color: Colors.grey, size: 20),
                       ],
                     ),
                     ElevatedButton(

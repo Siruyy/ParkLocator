@@ -30,6 +30,13 @@
                             class="px-5 py-2 rounded-full text-sm transition-all">
                             Admin Logs
                         </button>
+                        <button 
+                            *ngIf="authService.currentUser()?.role === 'super_admin'"
+                            (click)="activeTab = 'venues'"
+                            [class]="activeTab === 'venues' ? 'bg-primary text-black font-bold' : 'text-muted font-medium hover:text-body'"
+                            class="px-5 py-2 rounded-full text-sm transition-all">
+                            Venue Logs
+                        </button>
                     </div>
                 </div>
 
@@ -296,6 +303,13 @@
                                                 title="View Details">
                                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                                             </button>
+                                            <button 
+                                                *ngIf="log.originalLog.action === 'DELETE_VENUE'"
+                                                (click)="restoreVenue(log.resourceId)"
+                                                class="btn-icon text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" 
+                                                title="Restore Venue">
+                                                <span class="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -334,6 +348,128 @@
                                 </div>
                                 <button 
                                     (click)="loadLogs({ first: currentPage * pageSize, rows: pageSize })"
+                                    [disabled]="currentPage === totalPages"
+                                    class="btn-icon !border !border-gray-200 dark:!border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Venue Logs Section -->
+                <div *ngIf="activeTab === 'venues'" class="flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="heading-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-orange-500">delete_forever</span>
+                            Deleted Venues
+                        </h3>
+                        <div class="flex items-center gap-3">
+                            <button class="btn-primary flex items-center gap-2 whitespace-nowrap">
+                                <span class="material-symbols-outlined text-[16px]">download</span>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                            <div class="relative w-full sm:w-72">
+                                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
+                                <input 
+                                    [ngModel]="searchTerm" 
+                                    (ngModelChange)="onSearchInput($event)"
+                                    class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary transition-all placeholder:text-gray-400 outline-none" 
+                                    placeholder="Search deleted venues..." 
+                                    type="text"/>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="table-header-row">
+                                        <th class="table-header-cell">Deleted By</th>
+                                        <th class="table-header-cell">Venue Name</th>
+                                        <th class="table-header-cell">Timestamp</th>
+                                        <th class="table-header-cell text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <tr *ngFor="let log of venueLogs" class="table-row-interactive">
+                                        <td class="table-cell">
+                                            <div class="table-user">
+                                                <div 
+                                                    [class.bg-blue-100]="log.user.color === 'blue'"
+                                                    [class.text-blue-600]="log.user.color === 'blue'"
+                                                    [class.bg-green-100]="log.user.color === 'green'"
+                                                    [class.text-green-600]="log.user.color === 'green'"
+                                                    [class.bg-orange-100]="log.user.color === 'orange'"
+                                                    [class.text-orange-600]="log.user.color === 'orange'"
+                                                    class="size-8 rounded-full flex items-center justify-center text-xs font-bold">
+                                                    {{ log.user.initials }}
+                                                </div>
+                                                <div class="flex flex-col">
+                                                    <span class="table-user-name">{{ log.user.name }}</span>
+                                                    <span class="table-user-email">{{ log.user.role }}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="table-cell text-body font-medium">
+                                            {{ log.venue }}
+                                        </td>
+                                        <td class="table-cell text-muted">
+                                            {{ log.timestamp }}
+                                        </td>
+                                        <td class="table-cell text-right">
+                                            <button 
+                                                (click)="showDetails(log)"
+                                                class="btn-icon" 
+                                                title="View Details">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </button>
+                                            <button 
+                                                (click)="restoreVenue(log.resourceId)"
+                                                class="btn-icon text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" 
+                                                title="Restore Venue">
+                                                <span class="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <span class="text-xs text-muted">
+                                    Showing <span class="font-semibold text-body">{{ (currentPage - 1) * pageSize + 1 }}</span> to <span class="font-semibold text-body">{{ Math.min(currentPage * pageSize, totalRecords) }}</span> of <span class="font-semibold text-body">{{ totalRecords }}</span> logs
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-muted">Rows per page:</span>
+                                    <p-select 
+                                        [(ngModel)]="pageSize" 
+                                        [options]="pageSizeOptions" 
+                                        (onChange)="onPageSizeChange()"
+                                        styleClass="!h-8 !min-h-0 flex items-center text-xs"
+                                        [style]="{'width': '60px'}">
+                                    </p-select>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    (click)="loadVenueLogs({ first: (currentPage - 2) * pageSize, rows: pageSize })"
+                                    [disabled]="currentPage === 1"
+                                    class="btn-icon !border !border-gray-200 dark:!border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                                </button>
+                                <div class="flex items-center gap-1">
+                                    <button *ngFor="let page of pages"
+                                        (click)="loadVenueLogs({ first: (page - 1) * pageSize, rows: pageSize })"
+                                        [class]="'size-8 rounded-lg font-bold text-xs flex items-center justify-center transition-colors ' + 
+                                        (currentPage === page ? 'bg-primary text-black' : 'hover:bg-gray-50 dark:hover:bg-white/5 text-muted font-medium')">
+                                        {{ page }}
+                                    </button>
+                                </div>
+                                <button 
+                                    (click)="loadVenueLogs({ first: currentPage * pageSize, rows: pageSize })"
                                     [disabled]="currentPage === totalPages"
                                     class="btn-icon !border !border-gray-200 dark:!border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                     <span class="material-symbols-outlined text-[18px]">chevron_right</span>

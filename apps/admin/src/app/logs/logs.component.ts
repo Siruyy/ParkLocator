@@ -47,7 +47,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   currentPage = 1;
   protected readonly Math = Math;
   
-  activeTab: 'qr' | 'admin' = 'qr';
+  activeTab: 'qr' | 'admin' | 'venues' = 'qr';
   selectedVenue: string = 'All Venues';
   searchTerm = '';
   
@@ -59,6 +59,7 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   qrLogs: any[] = [];
   adminLogs: any[] = [];
+  venueLogs: any[] = []; // New array for venue logs
 
   ngOnInit() {
     this.loadLogs({ first: 0, rows: this.pageSize });
@@ -77,6 +78,7 @@ export class LogsComponent implements OnInit, OnDestroy {
       this.activeTab = 'qr';
     } else {
       this.loadAuditLogs({ first: 0, rows: this.pageSize });
+      this.loadVenueLogs({ first: 0, rows: this.pageSize }); // Load venue logs
     }
   }
 
@@ -108,15 +110,21 @@ export class LogsComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     if (this.activeTab === 'qr') {
       this.loadLogs({ first: 0, rows: this.pageSize });
-    } else {
+    } else if (this.activeTab === 'admin') {
       this.loadAuditLogs({ first: 0, rows: this.pageSize });
+    } else if (this.activeTab === 'venues') {
+      this.loadVenueLogs({ first: 0, rows: this.pageSize });
     }
   }
 
   onPageSizeChange() {
-    this.loadLogs({ first: 0, rows: this.pageSize });
-    if (this.authService.currentUser()?.role === 'super_admin') {
+    this.currentPage = 1;
+    if (this.activeTab === 'qr') {
+      this.loadLogs({ first: 0, rows: this.pageSize });
+    } else if (this.activeTab === 'admin') {
       this.loadAuditLogs({ first: 0, rows: this.pageSize });
+    } else if (this.activeTab === 'venues') {
+      this.loadVenueLogs({ first: 0, rows: this.pageSize });
     }
   }
 
@@ -200,10 +208,42 @@ export class LogsComponent implements OnInit, OnDestroy {
           entity: log.resourceType,
           severity: this.getSeverityForAction(log.action),
           changes: log.changes || [],
+          resourceId: log.resourceId, // Add this line
           originalLog: log
         };
       });
-      this.totalRecords = response.meta?.total || this.adminLogs.length;
+      if (this.activeTab === 'admin') {
+        this.totalRecords = response.meta?.total || this.adminLogs.length;
+      }
+      this.loading = false;
+    });
+  }
+
+  loadVenueLogs(event: any) {
+    const page = (event.first / event.rows) + 1;
+    this.financeService.getAuditLogs(page, event.rows, this.searchTerm, 'DELETE_VENUE').subscribe(response => {
+      this.venueLogs = response.data.map(log => {
+        return {
+          user: log.user ? {
+            name: log.user.name || log.user.email,
+            initials: (log.user.name || log.user.email || 'U').substring(0, 2).toUpperCase(),
+            color: 'orange',
+            role: log.user.role || 'Admin'
+          } : { name: 'System', initials: 'SY', color: 'blue', role: 'System' },
+          venue: log.details.replace('Deleted venue ', ''),
+          action: log.action,
+          details: log.details,
+          timestamp: new Date(log.createdAt).toLocaleString(),
+          entity: log.resourceType,
+          severity: 'warning',
+          changes: log.changes || [],
+          resourceId: log.resourceId,
+          originalLog: log
+        };
+      });
+      if (this.activeTab === 'venues') {
+        this.totalRecords = response.meta?.total || this.venueLogs.length;
+      }
       this.loading = false;
     });
   }
@@ -268,5 +308,20 @@ export class LogsComponent implements OnInit, OnDestroy {
       default:
         return 'info';
     }
+  }
+
+  restoreVenue(venueId: string) {
+    if (!confirm('Are you sure you want to restore this venue?')) return;
+
+    this.venuesService.restoreVenue(venueId).subscribe({
+      next: () => {
+        alert('Venue restored successfully');
+        this.loadAuditLogs({ first: (this.currentPage - 1) * this.pageSize, rows: this.pageSize });
+      },
+      error: (err) => {
+        console.error('Failed to restore venue', err);
+        alert('Failed to restore venue');
+      }
+    });
   }
 }

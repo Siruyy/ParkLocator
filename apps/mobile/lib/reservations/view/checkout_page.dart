@@ -94,7 +94,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     if (!mounted) return;
 
-    if (_selectedVehicle == null) {
+    if (widget.venue.requireVehicleDetails && _selectedVehicle == null) {
       setState(() => _isProcessing = false);
       scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Please select a vehicle')),
@@ -109,7 +109,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             venueId: widget.venue.id,
             levelId: widget.level.id,
             spotId: widget.spot.id,
-            vehicleId: _selectedVehicle!.id,
+            vehicleId: _selectedVehicle?.id,
             startAt: widget.startDate,
             endAt: widget.endDate,
           );
@@ -514,6 +514,53 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
 
     if (_vehicles.isEmpty) {
+      if (!widget.venue.requireVehicleDetails) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Select Vehicle (Optional)',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddVehiclePage()));
+                    _fetchVehicles();
+                  },
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Add New'),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: const Text(
+                "No vehicle selected. You can proceed without one.",
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ],
+        );
+      }
+
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -575,9 +622,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Select Vehicle',
-              style: TextStyle(
+            Text(
+              widget.venue.requireVehicleDetails ? 'Select Vehicle' : 'Select Vehicle (Optional)',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF0F172A),

@@ -23,6 +23,26 @@ export class CreateVenueDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  supportsRealTimeBooking?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  supportsFutureBooking?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  requireVehicleDetails?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  hasCoveredParking?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  hasCCTV?: boolean;
 }
 
 export class UpdateVenueDto {
@@ -55,6 +75,26 @@ export class UpdateVenueDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  supportsRealTimeBooking?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  supportsFutureBooking?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  requireVehicleDetails?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  hasCoveredParking?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  hasCCTV?: boolean;
 }
 
 export class VenueResponseDto {

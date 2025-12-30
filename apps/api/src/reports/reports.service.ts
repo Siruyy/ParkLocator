@@ -14,8 +14,8 @@ export class ReportsService {
     private auditService: AuditService,
   ) {}
 
-  async getAuditLogs(page: number, limit: number, search?: string) {
-    return this.auditService.findAll(page, limit, search);
+  async getAuditLogs(page: number, limit: number, search?: string, action?: string) {
+    return this.auditService.findAll(page, limit, search, action);
   }
 
   async getFinanceSummary(user: any) {

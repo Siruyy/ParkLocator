@@ -31,6 +31,12 @@ class Venue {
         levels: apiVenue.levels,
         latitude: apiVenue.latitude,
         longitude: apiVenue.longitude,
+        configuration: apiVenue.configuration,
+        supportsRealTimeBooking: apiVenue.supportsRealTimeBooking,
+        supportsFutureBooking: apiVenue.supportsFutureBooking,
+        requireVehicleDetails: apiVenue.requireVehicleDetails,
+        hasCoveredParking: apiVenue.hasCoveredParking,
+        hasCCTV: apiVenue.hasCCTV,
       );
     }
 
@@ -75,8 +81,6 @@ class Venue {
     return '${(distance! / 1000).toStringAsFixed(1)} km';
   }
 
-  bool get hasCoveredParking {
-    if (levels == null || levels!.isEmpty) return false;
-    return levels!.any((level) => level.isCovered);
-  }
+  bool get hasCoveredParking => apiVenue.hasCoveredParking;
+  bool get hasCCTV => apiVenue.hasCCTV;
 }

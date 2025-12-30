@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventsGateway } from '../events/events.gateway';
 
 import { User, UserRole } from '../users/entities/user.entity';
+import { Vehicle } from '../users/entities/vehicle.entity';
 import { AuditService } from '../audit/audit.service';
 import { VehiclesService } from '../users/vehicles.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -59,31 +60,40 @@ export class ReservationsService {
       endAt,
     } = createReservationDto;
 
-    if (!vehicleId) {
-      throw new BadRequestException('Vehicle is required for reservation');
+    const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
+    if (!venue) {
+      throw new NotFoundException('Venue not found');
     }
 
-    // Verify vehicle belongs to user
-    const vehicle = await this.vehiclesService.findOne(vehicleId);
-    if (vehicle.userId !== userId) {
-      throw new BadRequestException('Invalid vehicle selected');
+    if (venue.requireVehicleDetails && !vehicleId) {
+      throw new BadRequestException('Vehicle is required for reservation at this venue');
     }
 
     const startTime = startAt ? new Date(startAt) : new Date();
     const endTime = endAt ? new Date(endAt) : new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
 
-    // Check for overlapping reservations for this vehicle
-    const overlappingReservation = await this.reservationsRepository.findOne({
-      where: {
-        vehicleId,
-        status: In([ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN]),
-        startAt: LessThan(endTime),
-        endAt: MoreThan(startTime),
-      },
-    });
+    let vehicle: Vehicle | null = null;
 
-    if (overlappingReservation) {
-      throw new ConflictException('This vehicle already has a reservation for the selected time slot.');
+    if (vehicleId) {
+      // Verify vehicle belongs to user
+      vehicle = await this.vehiclesService.findOne(vehicleId);
+      if (vehicle && vehicle.userId !== userId) {
+        throw new BadRequestException('Invalid vehicle selected');
+      }
+
+      // Check for overlapping reservations for this vehicle
+      const overlappingReservation = await this.reservationsRepository.findOne({
+        where: {
+          vehicleId,
+          status: In([ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN]),
+          startAt: LessThan(endTime),
+          endAt: MoreThan(startTime),
+        },
+      });
+
+      if (overlappingReservation) {
+        throw new ConflictException('This vehicle already has a reservation for the selected time slot.');
+      }
     }
 
     // Use a transaction to ensure atomicity
@@ -171,26 +181,31 @@ export class ReservationsService {
       );
 
       // Check if vehicle has another active reservation overlapping with this time
-      const overlappingVehicleReservation = await queryRunner.manager
-        .createQueryBuilder(Reservation, 'r')
-        .where('r.vehicle_id = :vehicleId', { vehicleId })
-        .andWhere('r.status IN (:...activeStatuses)', {
-          activeStatuses: [
-            ReservationStatus.PENDING,
-            ReservationStatus.CONFIRMED,
-            ReservationStatus.CHECKED_IN,
-          ],
-        })
-        .andWhere(
-          '(r.start_at < :endAt AND r.end_at > :startAt)',
-          { startAt: reservationStartAt, endAt: reservationEndAt },
-        )
-        .getOne();
+      if (vehicleId) {
+        const overlappingVehicleReservation = await queryRunner.manager
+          .createQueryBuilder(Reservation, 'r')
+          .where('r.vehicle_id = :vehicleId', { vehicleId })
+          .andWhere('r.status IN (:...activeStatuses)', {
+            activeStatuses: [
+              ReservationStatus.PENDING,
+              ReservationStatus.CONFIRMED,
+              ReservationStatus.CHECKED_IN,
+            ],
+          })
+          .andWhere(
+            '(r.start_at < :endAt AND r.end_at > :startAt)',
+            { startAt: reservationStartAt, endAt: reservationEndAt },
+          )
+          .getOne();
 
-      if (overlappingVehicleReservation) {
-        throw new ConflictException(
-          `Vehicle ${vehicle.plateNumber} already has an active reservation for this time period`,
-        );
+        if (overlappingVehicleReservation) {
+          // Use type assertion or optional chaining carefully. 
+          // Since we fetched vehicle above, it should be available if vehicleId is present.
+          const plateNumber = vehicle ? vehicle.plateNumber : 'selected';
+          throw new ConflictException(
+            `Vehicle ${plateNumber} already has an active reservation for this time period`,
+          );
+        }
       }
 
       // Check for overlapping reservations on this spot for the requested time range

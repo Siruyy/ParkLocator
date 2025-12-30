@@ -1,10 +1,13 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class RealtimeService {
   RealtimeService({String? baseUrl})
-      : _baseUrl = baseUrl ?? 'http://localhost:3000';
+      : _baseUrl = baseUrl ??
+            (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
+                ? 'http://10.0.2.2:3000'
+                : 'http://localhost:3000');
 
   final String _baseUrl;
   io.Socket? _socket;

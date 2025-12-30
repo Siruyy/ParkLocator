@@ -10,7 +10,7 @@ class ReservationsRepository {
     required String venueId,
     required String levelId,
     required String spotId,
-    required String vehicleId,
+    String? vehicleId,
     int durationHours = 1,
     DateTime? startAt,
     DateTime? endAt,

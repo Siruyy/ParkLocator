@@ -19,6 +19,7 @@ import { CardModule } from 'primeng/card';
 import { SelectModule } from 'primeng/select';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-venues',
@@ -39,7 +40,8 @@ import { InputIconModule } from 'primeng/inputicon';
     CardModule,
     SelectModule,
     IconFieldModule,
-    InputIconModule
+    InputIconModule,
+    CheckboxModule
   ],
   templateUrl: './venues.component.html',
   styleUrl: './venues.component.scss'
@@ -80,7 +82,12 @@ export class VenuesComponent implements OnInit {
       latitude: [14.5995, [Validators.required, Validators.min(-90), Validators.max(90)]],
       longitude: [120.9842, [Validators.required, Validators.min(-180), Validators.max(180)]],
       description: [''],
-      imageUrl: ['']
+      imageUrl: [''],
+      supportsRealTimeBooking: [true],
+      supportsFutureBooking: [false],
+      requireVehicleDetails: [true],
+      hasCoveredParking: [false],
+      hasCCTV: [false]
     });
 
     this.levelForm = this.fb.group({
@@ -201,8 +208,11 @@ export class VenuesComponent implements OnInit {
     this.isEditingProperty = false;
     this.editingVenueId = null;
     this.propertyForm.reset({
-      latitude: 14.5995,
-      longitude: 120.9842
+      supportsRealTimeBooking: true,
+      supportsFutureBooking: false,
+      requireVehicleDetails: true,
+      hasCoveredParking: false,
+      hasCCTV: false
     });
     this.selectedFile = null;
     this.showAddPropertyModal = true;
@@ -215,8 +225,14 @@ export class VenuesComponent implements OnInit {
       name: venue.name,
       address: venue.address,
       description: venue.description,
+      imageUrl: venue.imageUrl,
       latitude: venue.latitude ?? 14.5995,
       longitude: venue.longitude ?? 120.9842,
+      supportsRealTimeBooking: venue.supportsRealTimeBooking ?? true,
+      supportsFutureBooking: venue.supportsFutureBooking ?? false,
+      requireVehicleDetails: venue.requireVehicleDetails ?? true,
+      hasCoveredParking: venue.hasCoveredParking ?? false,
+      hasCCTV: venue.hasCCTV ?? false
     });
     this.selectedFile = null;
     this.showAddPropertyModal = true;
@@ -253,8 +269,23 @@ export class VenuesComponent implements OnInit {
     // I will proceed with JSON update for now, and FormData for create.
 
     if (this.isEditingProperty && this.editingVenueId) {
-      const updateData = this.propertyForm.value;
-      this.venuesService.updateVenue(this.editingVenueId, updateData).subscribe({
+      // Use FormData for update as well to support image upload
+      const formData = new FormData();
+      Object.keys(this.propertyForm.value).forEach(key => {
+        const value = this.propertyForm.value[key];
+        if (value !== null && value !== undefined) {
+          formData.append(key, value);
+        }
+      });
+
+      if (this.selectedFile) {
+        formData.append('image', this.selectedFile);
+      }
+
+      // We need to cast to any because updateVenue expects Partial<Venue> but we are sending FormData
+      // The service needs to be updated to accept FormData for updateVenue as well
+      // Or we can just cast it here if the HTTP client handles it correctly (Angular HttpClient does)
+      this.venuesService.updateVenue(this.editingVenueId, formData).subscribe({
         next: (updatedVenue) => {
           this.isSubmitting = false;
           this.showAddPropertyModal = false;

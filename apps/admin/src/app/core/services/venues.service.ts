@@ -24,6 +24,11 @@ export interface Venue {
   latitude?: number;
   longitude?: number;
   levels: Level[];
+  supportsRealTimeBooking?: boolean;
+  supportsFutureBooking?: boolean;
+  requireVehicleDetails?: boolean;
+  hasCoveredParking?: boolean;
+  hasCCTV?: boolean;
 }
 
 export interface VenueConfiguration {
@@ -78,7 +83,7 @@ export class VenuesService {
     );
   }
 
-  updateVenue(id: string, venue: Partial<Venue>): Observable<Venue> {
+  updateVenue(id: string, venue: Partial<Venue> | FormData): Observable<Venue> {
     return this.http.patch<ApiResponse<Venue>>(`${this.apiUrl}/${id}`, venue).pipe(
       map(response => this.transformVenue(response.data))
     );
@@ -95,6 +100,12 @@ export class VenuesService {
   deleteVenue(id: string): Observable<void> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`).pipe(
       map(() => void 0)
+    );
+  }
+
+  restoreVenue(id: string): Observable<Venue> {
+    return this.http.post<ApiResponse<Venue>>(`${this.apiUrl}/${id}/restore`, {}).pipe(
+      map(response => this.transformVenue(response.data))
     );
   }
 
