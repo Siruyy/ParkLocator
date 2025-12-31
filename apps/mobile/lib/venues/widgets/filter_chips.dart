@@ -77,7 +77,7 @@ class _FilterChip extends StatelessWidget {
                     color: const Color(0xFF137FEC).withValues(alpha: 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ]
               : null,
         ),

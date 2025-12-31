@@ -16,7 +16,9 @@ class VenuesRepository {
       lng: lng,
       radius: radius,
     );
-    return apiVenues.map((v) => Venue.fromApi(v, baseUrl: _apiClient.assetBaseUrl)).toList();
+    return apiVenues
+        .map((v) => Venue.fromApi(v, baseUrl: _apiClient.assetBaseUrl))
+        .toList();
   }
 
   Future<Venue> getVenueDetails(
@@ -24,7 +26,11 @@ class VenuesRepository {
     DateTime? startAt,
     DateTime? endAt,
   }) async {
-    final apiVenue = await _apiClient.getVenue(id, startAt: startAt, endAt: endAt);
+    final apiVenue = await _apiClient.getVenue(
+      id,
+      startAt: startAt,
+      endAt: endAt,
+    );
     return Venue.fromApi(apiVenue, baseUrl: _apiClient.assetBaseUrl);
   }
 
@@ -35,7 +41,11 @@ class VenuesRepository {
     DateTime? startAt,
     DateTime? endAt,
   }) async {
-    return _apiClient.getVenueAvailability(venueId, startAt: startAt, endAt: endAt);
+    return _apiClient.getVenueAvailability(
+      venueId,
+      startAt: startAt,
+      endAt: endAt,
+    );
   }
 
   Future<api.Level> getLevelDetails(

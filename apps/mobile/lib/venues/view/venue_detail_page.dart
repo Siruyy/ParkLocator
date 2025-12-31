@@ -38,7 +38,8 @@ class VenueDetailPage extends StatefulWidget {
 
 class _VenueDetailPageState extends State<VenueDetailPage> {
   Venue? _venue;
-  List<api.Level>? _availabilityLevels; // Levels with date-specific availability
+  List<api.Level>?
+  _availabilityLevels; // Levels with date-specific availability
   bool _isLoading = true;
   String? _error;
 
@@ -66,11 +67,13 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
       // If booking for later, fetch availability for the specific date range
       List<api.Level>? availability;
       if (_isBookForLater) {
-        availability = await context.read<VenuesRepository>().getVenueAvailability(
-          widget.venueId,
-          startAt: widget.startDate,
-          endAt: widget.endDate,
-        );
+        availability = await context
+            .read<VenuesRepository>()
+            .getVenueAvailability(
+              widget.venueId,
+              startAt: widget.startDate,
+              endAt: widget.endDate,
+            );
       }
 
       setState(() {
@@ -102,10 +105,13 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   /// Get total available spots across all levels
   int _getTotalAvailableSpots() {
     if (_venue == null) return 0;
-    
+
     if (_availabilityLevels != null) {
       // Sum from date-specific availability
-      return _availabilityLevels!.fold(0, (sum, level) => sum + level.availableSpots);
+      return _availabilityLevels!.fold(
+        0,
+        (sum, level) => sum + level.availableSpots,
+      );
     }
     // Fall back to venue's default
     return _venue!.availableSpots;
@@ -255,7 +261,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         },
                         child: LevelCard(
                           level: level,
-                          overrideAvailableSpots: _isBookForLater ? availableSpots : null,
+                          overrideAvailableSpots: _isBookForLater
+                              ? availableSpots
+                              : null,
                         ),
                       );
                     },
@@ -272,80 +280,86 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               left: 0,
               right: 0,
               child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    const Color(0xFFF6F7F8),
-                    const Color(0xFFF6F7F8).withValues(alpha: 0.8),
-                    const Color(0xFFF6F7F8).withValues(alpha: 0),
-                  ],
-                ),
-              ),
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF137FEC),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      const Color(0xFFF6F7F8),
+                      const Color(0xFFF6F7F8).withValues(alpha: 0.8),
+                      const Color(0xFFF6F7F8).withValues(alpha: 0),
+                    ],
                   ),
-                  elevation: 8,
-                  shadowColor: const Color(0xFF137FEC).withValues(alpha: 0.4),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'QUICK RESERVE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        Text(
-                          'Book Best Spot (B1)',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF137FEC),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 8,
+                    shadowColor: const Color(0xFF137FEC).withValues(alpha: 0.4),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '₱${(venue.apiVenue.configuration != null ? (venue.apiVenue.configuration!.baseRate + venue.apiVenue.configuration!.reservationFee) : 40).toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                            'QUICK RESERVE',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1,
+                              color: Colors.white70,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.arrow_forward, size: 16),
+                          Text(
+                            'Book Best Spot (B1)',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              '₱${(venue.apiVenue.configuration != null ? (venue.apiVenue.configuration!.baseRate + venue.apiVenue.configuration!.reservationFee) : 40).toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.arrow_forward, size: 16),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

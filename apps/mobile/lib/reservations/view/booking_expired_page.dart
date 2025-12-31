@@ -84,7 +84,7 @@ class BookingExpiredPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Title
                     const Text(
                       'Booking Expired',
@@ -95,7 +95,7 @@ class BookingExpiredPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Description
                     Text(
                       'Your reservation at ${reservation.venue?.name ?? 'Venue'} has expired because check-in was not completed by the grace period.',
@@ -124,9 +124,17 @@ class BookingExpiredPage extends StatelessWidget {
                             child: Transform.rotate(
                               angle: 0.2,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: const Color(0xFF0F172A).withOpacity(0.1), width: 4),
+                                  border: Border.all(
+                                    color: const Color(
+                                      0xFF0F172A,
+                                    ).withValues(alpha: 0.1),
+                                    width: 4,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -134,14 +142,16 @@ class BookingExpiredPage extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.w900,
-                                    color: const Color(0xFF0F172A).withOpacity(0.1),
+                                    color: const Color(
+                                      0xFF0F172A,
+                                    ).withValues(alpha: 0.1),
                                     letterSpacing: 4,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          
+
                           Padding(
                             padding: const EdgeInsets.all(16),
                             child: Row(
@@ -156,7 +166,9 @@ class BookingExpiredPage extends StatelessWidget {
                                     color: Colors.grey[300],
                                     image: reservation.venue?.imageUrl != null
                                         ? DecorationImage(
-                                            image: NetworkImage(reservation.venue!.imageUrl!),
+                                            image: NetworkImage(
+                                              reservation.venue!.imageUrl!,
+                                            ),
                                             fit: BoxFit.cover,
                                             colorFilter: const ColorFilter.mode(
                                               Colors.grey,
@@ -167,19 +179,25 @@ class BookingExpiredPage extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 16),
-                                
+
                                 // Details
                                 Expanded(
                                   child: Opacity(
                                     opacity: 0.7,
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFE2E8F0),
-                                            borderRadius: BorderRadius.circular(100),
+                                            borderRadius: BorderRadius.circular(
+                                              100,
+                                            ),
                                           ),
                                           child: const Text(
                                             'EXPIRED',
@@ -204,7 +222,11 @@ class BookingExpiredPage extends StatelessWidget {
                                         const SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            const Icon(Icons.calendar_today, size: 16, color: Color(0xFF94A3B8)),
+                                            const Icon(
+                                              Icons.calendar_today,
+                                              size: 16,
+                                              color: Color(0xFF94A3B8),
+                                            ),
                                             const SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
@@ -234,25 +256,36 @@ class BookingExpiredPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF137FEC).withOpacity(0.05),
+                        color: const Color(0xFF137FEC).withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.info_outline, size: 20, color: Color(0xFF137FEC)),
+                          const Icon(
+                            Icons.info_outline,
+                            size: 20,
+                            color: Color(0xFF137FEC),
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: RichText(
                               text: const TextSpan(
-                                style: TextStyle(fontSize: 12, color: Color(0xFF475569), height: 1.5),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF475569),
+                                  height: 1.5,
+                                ),
                                 children: [
                                   TextSpan(
                                     text: 'No Refund Policy: ',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   TextSpan(
-                                    text: 'As per our no-show terms, missed reservations are non-refundable. ',
+                                    text:
+                                        'As per our no-show terms, missed reservations are non-refundable. ',
                                   ),
                                   TextSpan(
                                     text: 'Read Policy',
@@ -272,7 +305,7 @@ class BookingExpiredPage extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Bottom Buttons
             Container(
               padding: const EdgeInsets.all(16),
@@ -347,7 +380,10 @@ class BookingExpiredPage extends StatelessWidget {
                     },
                     child: RichText(
                       text: const TextSpan(
-                        style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF64748B),
+                        ),
                         children: [
                           TextSpan(text: 'Was this a mistake? '),
                           TextSpan(

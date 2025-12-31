@@ -22,10 +22,10 @@ class _AttendantHomePageState extends State<AttendantHomePage> {
 
   Future<void> _onScan(BarcodeCapture capture) async {
     if (_isLoading) return;
-    
+
     final barcodes = capture.barcodes;
     if (barcodes.isEmpty) return;
-    
+
     final qrCode = barcodes.first.rawValue;
     if (qrCode == null) return;
 
@@ -35,13 +35,16 @@ class _AttendantHomePageState extends State<AttendantHomePage> {
     });
 
     try {
-      final reservation = await context.read<ReservationsRepository>().checkIn(qrCode);
-      
+      final reservation = await context.read<ReservationsRepository>().checkIn(
+        qrCode,
+      );
+
       if (mounted) {
         _showResultDialog(
           success: true,
           title: 'Access Granted',
-          message: 'Reservation confirmed for ${reservation.venue?.name ?? 'Unknown Venue'}',
+          message:
+              'Reservation confirmed for ${reservation.venue?.name ?? 'Unknown Venue'}',
           reservation: reservation,
         );
       }
@@ -105,8 +108,14 @@ class _AttendantHomePageState extends State<AttendantHomePage> {
                 ),
                 child: Column(
                   children: [
-                    _buildInfoRow('Level', reservation.level?.name ?? 'Unknown Level'),
-                    _buildInfoRow('Spot', reservation.spot?.spotNumber ?? 'Unknown Spot'),
+                    _buildInfoRow(
+                      'Level',
+                      reservation.level?.name ?? 'Unknown Level',
+                    ),
+                    _buildInfoRow(
+                      'Spot',
+                      reservation.spot?.spotNumber ?? 'Unknown Spot',
+                    ),
                     _buildInfoRow('Plate', 'ABC 1234'), // Mock
                   ],
                 ),
@@ -175,7 +184,8 @@ class _AttendantHomePageState extends State<AttendantHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => context.read<AuthBloc>().add(const AuthLogoutRequested()),
+            onPressed: () =>
+                context.read<AuthBloc>().add(const AuthLogoutRequested()),
           ),
         ],
       ),
@@ -186,7 +196,7 @@ class _AttendantHomePageState extends State<AttendantHomePage> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF137FEC).withOpacity(0.1),
+                color: const Color(0xFF137FEC).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

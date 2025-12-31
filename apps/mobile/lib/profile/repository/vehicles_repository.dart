@@ -2,7 +2,7 @@ import 'package:mobile/api/api.dart' as api;
 
 class VehiclesRepository {
   VehiclesRepository({required api.ApiClient apiClient})
-      : _apiClient = apiClient;
+    : _apiClient = apiClient;
 
   final api.ApiClient _apiClient;
 
@@ -28,7 +28,10 @@ class VehiclesRepository {
     );
   }
 
-  Future<api.Vehicle> uploadVehiclePhoto(String vehicleId, String filePath) async {
+  Future<api.Vehicle> uploadVehiclePhoto(
+    String vehicleId,
+    String filePath,
+  ) async {
     return _apiClient.uploadVehiclePhoto(vehicleId, filePath);
   }
 
@@ -56,4 +59,3 @@ class VehiclesRepository {
     return _apiClient.deleteVehicle(vehicleId);
   }
 }
-

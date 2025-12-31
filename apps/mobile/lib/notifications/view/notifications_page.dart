@@ -23,10 +23,14 @@ class NotificationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return Scaffold(
@@ -49,7 +53,9 @@ class NotificationsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              context.read<NotificationsBloc>().add(AllNotificationsMarkedAsRead());
+              context.read<NotificationsBloc>().add(
+                AllNotificationsMarkedAsRead(),
+              );
             },
             child: Text(
               'Mark all as read',
@@ -92,9 +98,9 @@ class NotificationsPage extends StatelessWidget {
               return GestureDetector(
                 onTap: () {
                   if (!item.isRead) {
-                    context
-                        .read<NotificationsBloc>()
-                        .add(NotificationMarkedAsRead(item.id));
+                    context.read<NotificationsBloc>().add(
+                      NotificationMarkedAsRead(item.id),
+                    );
                   }
                 },
                 child: _buildNotificationCard(
@@ -134,7 +140,7 @@ class NotificationsPage extends StatelessWidget {
         boxShadow: !item.isRead
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -158,7 +164,9 @@ class NotificationsPage extends StatelessWidget {
                         item.title,
                         style: GoogleFonts.inter(
                           fontSize: 16,
-                          fontWeight: !item.isRead ? FontWeight.bold : FontWeight.w600,
+                          fontWeight: !item.isRead
+                              ? FontWeight.bold
+                              : FontWeight.w600,
                           color: textColor,
                         ),
                       ),
@@ -179,7 +187,9 @@ class NotificationsPage extends StatelessWidget {
                   item.message,
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: !item.isRead ? textColor.withOpacity(0.8) : subTextColor,
+                    color: !item.isRead
+                        ? textColor.withValues(alpha: 0.8)
+                        : subTextColor,
                     height: 1.4,
                   ),
                 ),
@@ -225,20 +235,19 @@ class NotificationsPage extends StatelessWidget {
       case api.NotificationType.success:
         iconData = Icons.check_circle;
         color = Colors.green;
-        bgColor = Colors.green.withOpacity(0.1);
+        bgColor = Colors.green.withValues(alpha: 0.1);
       case api.NotificationType.warning:
         iconData = Icons.warning_amber_rounded;
         color = Colors.orange;
-        bgColor = Colors.orange.withOpacity(0.1);
+        bgColor = Colors.orange.withValues(alpha: 0.1);
       case api.NotificationType.error:
         iconData = Icons.error_outline;
         color = Colors.red;
-        bgColor = Colors.red.withOpacity(0.1);
+        bgColor = Colors.red.withValues(alpha: 0.1);
       case api.NotificationType.info:
-      default:
         iconData = Icons.notifications;
         color = const Color(0xFF137FEC);
-        bgColor = const Color(0xFF137FEC).withOpacity(0.1);
+        bgColor = const Color(0xFF137FEC).withValues(alpha: 0.1);
     }
 
     return Container(

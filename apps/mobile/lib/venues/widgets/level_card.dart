@@ -9,6 +9,7 @@ class LevelCard extends StatelessWidget {
   });
 
   final api.Level level;
+
   /// Optional override for available spots count (used for date-specific availability)
   final int? overrideAvailableSpots;
 
@@ -16,14 +17,14 @@ class LevelCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Use override if provided, otherwise use level's default
     final availableSpots = overrideAvailableSpots ?? level.availableSpots;
-    
+
     final occupancy = level.totalCapacity > 0
         ? (level.totalCapacity - availableSpots) / level.totalCapacity
         : 1.0;
-    
+
     final isFull = availableSpots == 0;
     final isFillingFast = !isFull && availableSpots < 10;
-    
+
     Color statusColor;
     String statusText;
     Color iconBgColor;

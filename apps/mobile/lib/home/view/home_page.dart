@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    unawaited(_fetchData());
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted && _activeReservation != null) {
         setState(_calculateTimeLeft);
@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
   void _calculateTimeLeft() {
     if (_activeReservation == null) return;
     final now = DateTime.now();
-    
+
     DateTime targetTime;
     // If confirmed (not yet checked in), show time until arrival window expires
     if (_activeReservation!.status == api.ReservationStatus.confirmed) {
@@ -537,7 +537,7 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () => _onMapPressed(reservation),
+                          onPressed: () => unawaited(_onMapPressed(reservation)),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             side: BorderSide(color: Colors.grey[200]!),
@@ -617,7 +617,7 @@ class _HomePageState extends State<HomePage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, VenueSearchPage.route());
+                  unawaited(Navigator.push(context, VenueSearchPage.route()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF137FEC),
@@ -646,11 +646,11 @@ class _HomePageState extends State<HomePage> {
         final reservation = _upcomingReservations[index];
         final startAt =
             reservation.startAt ?? reservation.createdAt ?? DateTime.now();
-        
+
         // Calculate countdown
         final now = DateTime.now();
         final isStarted = startAt.isBefore(now);
-        
+
         DateTime targetTime;
         if (!isStarted) {
           // Future booking: Count down to start (though we just show "Upcoming")
@@ -664,30 +664,32 @@ class _HomePageState extends State<HomePage> {
         }
 
         final diff = targetTime.difference(now);
-        
+
         String timeString;
         if (!isStarted) {
           timeString = 'Upcoming';
         } else if (diff.isNegative) {
-             timeString = 'Expired';
+          timeString = 'Expired';
         } else {
-             final h = diff.inHours;
-             final m = diff.inMinutes.remainder(60);
-             final s = diff.inSeconds.remainder(60);
-             if (h > 24) {
-               timeString = '${diff.inDays}d left';
-             } else if (h > 0) {
-               timeString = '${h}h ${m}m';
-             } else {
-               timeString = '${m}m ${s}s';
-             }
+          final h = diff.inHours;
+          final m = diff.inMinutes.remainder(60);
+          final s = diff.inSeconds.remainder(60);
+          if (h > 24) {
+            timeString = '${diff.inDays}d left';
+          } else if (h > 0) {
+            timeString = '${h}h ${m}m';
+          } else {
+            timeString = '${m}m ${s}s';
+          }
         }
 
         return GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              ReservationDetailPage.route(reservation: reservation),
+            unawaited(
+              Navigator.push(
+                context,
+                ReservationDetailPage.route(reservation: reservation),
+              ),
             );
           },
           child: Container(
@@ -769,10 +771,10 @@ class _HomePageState extends State<HomePage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isStarted && !diff.isNegative) ...[
-                        Icon(
+                        const Icon(
                           Icons.timer_outlined,
                           size: 12,
-                          color: const Color(0xFF137FEC),
+                          color: Color(0xFF137FEC),
                         ),
                         const SizedBox(width: 4),
                       ],
@@ -818,9 +820,11 @@ class _HomePageState extends State<HomePage> {
             if (reservation.status == api.ReservationStatus.expired ||
                 reservation.status == api.ReservationStatus.cancelled ||
                 reservation.status == api.ReservationStatus.noShow) {
-              Navigator.push(
-                context,
-                BookingExpiredPage.route(reservation: reservation),
+              unawaited(
+                Navigator.push(
+                  context,
+                  BookingExpiredPage.route(reservation: reservation),
+                ),
               );
             }
           },

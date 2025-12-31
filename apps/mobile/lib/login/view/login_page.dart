@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/auth/repository/src/auth_repository.dart';
@@ -34,7 +35,8 @@ class LoginView extends StatelessWidget {
       body: BlocListener<LoginCubit, LoginState>(
         listenWhen: (previous, current) => previous.status != current.status,
         listener: (context, state) {
-          if (state.status == LoginStatus.failure && state.errorMessage != null) {
+          if (state.status == LoginStatus.failure &&
+              state.errorMessage != null) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -91,16 +93,16 @@ class _Header extends StatelessWidget {
         Text(
           'Welcome Back',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           'Sign in to continue',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
     );
@@ -246,7 +248,7 @@ class _SignUpLink extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
-            Navigator.of(context).push(SignUpPage.route());
+            unawaited(Navigator.of(context).push(SignUpPage.route()));
           },
           child: const Text(
             'Sign Up',

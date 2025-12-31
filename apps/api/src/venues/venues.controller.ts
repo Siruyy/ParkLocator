@@ -51,16 +51,7 @@ export class VenuesController {
       radius ? parseFloat(radius) : 5,
     );
 
-    return {
-      success: true,
-      data: venues,
-      meta: {
-        count: venues.length,
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-        radiusKm: radius ? parseFloat(radius) : 5,
-      },
-    };
+    return venues;
   }
 
   @Get()
@@ -73,21 +64,14 @@ export class VenuesController {
     
     const venues = await this.venuesService.findAll(req.user);
 
-    return {
-      success: true,
-      data: venues,
-      meta: { count: venues.length },
-    };
+    return venues;
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const venue = await this.venuesService.findOne(id);
 
-    return {
-      success: true,
-      data: venue,
-    };
+    return venue;
   }
 
   @Get(':id/availability')

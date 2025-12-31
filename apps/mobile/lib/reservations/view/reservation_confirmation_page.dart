@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -153,10 +152,8 @@ class _ReservationConfirmationPageState
     // Format dates
     var dateRange = '';
     if (startAt != null && endAt != null) {
-      final startDate =
-          '${startAt.month}/${startAt.day}/${startAt.year}';
-      final endDate =
-          '${endAt.month}/${endAt.day}/${endAt.year}';
+      final startDate = '${startAt.month}/${startAt.day}/${startAt.year}';
+      final endDate = '${endAt.month}/${endAt.day}/${endAt.year}';
       final startTime = _formatTime(startAt);
       final endTime = _formatTime(endAt);
 
@@ -282,7 +279,7 @@ class _ReservationConfirmationPageState
             child: SingleChildScrollView(
               child: Wrap(
                 children: <Widget>[
-                  for (var map in availableMaps)
+                  for (final map in availableMaps)
                     ListTile(
                       onTap: () => map.showMarker(
                         coords: Coords(venue.latitude!, venue.longitude!),
@@ -292,8 +289,8 @@ class _ReservationConfirmationPageState
                       title: Text(map.mapName),
                       leading: SvgPicture.asset(
                         map.icon,
-                        height: 30.0,
-                        width: 30.0,
+                        height: 30,
+                        width: 30,
                       ),
                     ),
                 ],
@@ -337,10 +334,14 @@ class _ReservationConfirmationPageState
 
   @override
   Widget build(BuildContext context) {
-    final minutes =
-        _timeLeft.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds =
-        _timeLeft.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final minutes = _timeLeft.inMinutes
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
+    final seconds = _timeLeft.inSeconds
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F8),
@@ -354,12 +355,15 @@ class _ReservationConfirmationPageState
                   // Top Bar
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     child: Row(
                       children: [
                         GestureDetector(
-                          onTap: () => Navigator.of(context)
-                              .popUntil((route) => route.isFirst),
+                          onTap: () => Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst),
                           child: Container(
                             width: 48,
                             height: 48,
@@ -419,8 +423,9 @@ class _ReservationConfirmationPageState
                           "Payment successful! You're all set.",
                           style: TextStyle(
                             fontSize: 16,
-                            color:
-                                const Color(0xFF0D141B).withValues(alpha: 0.7),
+                            color: const Color(
+                              0xFF0D141B,
+                            ).withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -451,8 +456,11 @@ class _ReservationConfirmationPageState
                             const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.qr_code_scanner,
-                                    color: Color(0xFF137FEC), size: 20),
+                                Icon(
+                                  Icons.qr_code_scanner,
+                                  color: Color(0xFF137FEC),
+                                  size: 20,
+                                ),
                                 SizedBox(width: 8),
                                 Text(
                                   'Scan at entry',
@@ -474,7 +482,8 @@ class _ReservationConfirmationPageState
                                 border: Border.all(color: Colors.grey[100]!),
                               ),
                               child: QrImageView(
-                                data: widget.reservation.qrCode ??
+                                data:
+                                    widget.reservation.qrCode ??
                                     widget.reservation.id,
                                 size: 220,
                               ),
@@ -537,7 +546,8 @@ class _ReservationConfirmationPageState
                               color: Colors.grey,
                               image: DecorationImage(
                                 image: NetworkImage(
-                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuAhDcxIexqCtdbqp2w9vaXLf-kRv43kMXLTyNOjxCKX7Xc5DghgE8pHR2GaJuVqLwE4ypiJvgK-KV5NRtnLRFYMvK2cOKvHjDbQajUBrKv1l5oCy4h_RPP0Sh510gjp19bll-xwAOu7HEd_0JlSg-EdaDN2CH8Xy9ejg8bVIavvoChCZcPIM0ZVL1w9QIXYqHuj4mTx5rNL5toCxnelnOb4XU8OPrHsahU-NUS8Nwq_5FNJM8uYdZtBhnJKfQoIm82tZr6ja2qoltEV'),
+                                  'https://lh3.googleusercontent.com/aida-public/AB6AXuAhDcxIexqCtdbqp2w9vaXLf-kRv43kMXLTyNOjxCKX7Xc5DghgE8pHR2GaJuVqLwE4ypiJvgK-KV5NRtnLRFYMvK2cOKvHjDbQajUBrKv1l5oCy4h_RPP0Sh510gjp19bll-xwAOu7HEd_0JlSg-EdaDN2CH8Xy9ejg8bVIavvoChCZcPIM0ZVL1w9QIXYqHuj4mTx5rNL5toCxnelnOb4XU8OPrHsahU-NUS8Nwq_5FNJM8uYdZtBhnJKfQoIm82tZr6ja2qoltEV',
+                                ),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -596,7 +606,9 @@ class _ReservationConfirmationPageState
                                 const SizedBox(width: 16),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF6F7F8),
                                     borderRadius: BorderRadius.circular(8),

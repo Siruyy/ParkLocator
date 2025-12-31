@@ -130,23 +130,23 @@ class Reservation extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        status,
-        amount,
-        durationHours,
-        arrivalWindowMinutes,
-        expiresAt,
-        startAt,
-        endAt,
-        checkedInAt,
-        checkedOutAt,
-        qrCode,
-        createdAt,
-        updatedAt,
-        venue,
-        level,
-        spot,
-      ];
+    id,
+    status,
+    amount,
+    durationHours,
+    arrivalWindowMinutes,
+    expiresAt,
+    startAt,
+    endAt,
+    checkedInAt,
+    checkedOutAt,
+    qrCode,
+    createdAt,
+    updatedAt,
+    venue,
+    level,
+    spot,
+  ];
 }
 
 class ReservationVenue extends Equatable {
@@ -173,8 +173,9 @@ class ReservationVenue extends Equatable {
       } else if (json['location'] is String) {
         final location = json['location'] as String;
         if (location.startsWith('POINT')) {
-          final match =
-              RegExp(r'POINT\(([^ ]+) ([^)]+)\)').firstMatch(location);
+          final match = RegExp(
+            r'POINT\(([^ ]+) ([^)]+)\)',
+          ).firstMatch(location);
           if (match != null) {
             longitude = double.tryParse(match.group(1)!);
             latitude = double.tryParse(match.group(2)!);

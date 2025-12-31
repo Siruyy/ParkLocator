@@ -21,12 +21,6 @@ class Venue extends Equatable {
     this.hasCCTV = false,
   });
 
-  final bool supportsRealTimeBooking;
-  final bool supportsFutureBooking;
-  final bool requireVehicleDetails;
-  final bool hasCoveredParking;
-  final bool hasCCTV;
-
   factory Venue.fromJson(Map<String, dynamic> json) {
     double? parseDouble(dynamic value) {
       if (value == null) return null;
@@ -48,15 +42,18 @@ class Venue extends Equatable {
 
     final configuration = json['configuration'] != null
         ? VenueConfiguration.fromJson(
-            json['configuration'] as Map<String, dynamic>)
+            json['configuration'] as Map<String, dynamic>,
+          )
         : null;
 
     var availableSpots = parseInt(json['availableSpots']);
 
     // If availableSpots is missing (detail view) and we have levels, calculate it
     if (availableSpots == null && levels != null) {
-      availableSpots =
-          levels.fold<int>(0, (sum, level) => sum + level.availableSpots);
+      availableSpots = levels.fold<int>(
+        0,
+        (sum, level) => sum + level.availableSpots,
+      );
     }
 
     double? latitude;
@@ -72,8 +69,9 @@ class Venue extends Equatable {
       } else if (json['location'] is String) {
         final location = json['location'] as String;
         if (location.startsWith('POINT')) {
-          final match =
-              RegExp(r'POINT\(([^ ]+) ([^)]+)\)').firstMatch(location);
+          final match = RegExp(
+            r'POINT\(([^ ]+) ([^)]+)\)',
+          ).firstMatch(location);
           if (match != null) {
             longitude = parseDouble(match.group(1));
             latitude = parseDouble(match.group(2));
@@ -82,12 +80,8 @@ class Venue extends Equatable {
       }
     }
 
-    if (latitude == null) {
-      latitude = parseDouble(json['latitude']);
-    }
-    if (longitude == null) {
-      longitude = parseDouble(json['longitude']);
-    }
+    latitude ??= parseDouble(json['latitude']);
+    longitude ??= parseDouble(json['longitude']);
 
     return Venue(
       id: json['id'] as String,
@@ -108,6 +102,12 @@ class Venue extends Equatable {
     );
   }
 
+  final bool supportsRealTimeBooking;
+  final bool supportsFutureBooking;
+  final bool requireVehicleDetails;
+  final bool hasCoveredParking;
+  final bool hasCCTV;
+
   final String id;
   final String name;
   final String address;
@@ -121,15 +121,15 @@ class Venue extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        address,
-        imageUrl,
-        distance,
-        availableSpots,
-        levels,
-        latitude,
-        longitude,
-        configuration,
-      ];
+    id,
+    name,
+    address,
+    imageUrl,
+    distance,
+    availableSpots,
+    levels,
+    latitude,
+    longitude,
+    configuration,
+  ];
 }

@@ -4,8 +4,10 @@ part of 'auth_bloc_impl.dart';
 enum AuthStatus {
   /// Initial state, checking for existing session
   unknown,
+
   /// User is authenticated
   authenticated,
+
   /// User is not authenticated
   unauthenticated,
 }
@@ -20,10 +22,10 @@ final class AuthState extends Equatable {
   const AuthState.unknown() : this._();
 
   const AuthState.authenticated(User user)
-      : this._(status: AuthStatus.authenticated, user: user);
+    : this._(status: AuthStatus.authenticated, user: user);
 
   const AuthState.unauthenticated()
-      : this._(status: AuthStatus.unauthenticated);
+    : this._(status: AuthStatus.unauthenticated);
 
   final AuthStatus status;
   final User? user;

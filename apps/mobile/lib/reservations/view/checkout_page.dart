@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/api/api.dart' as api;
+import 'package:mobile/profile/repository/vehicles_repository.dart';
 import 'package:mobile/reservations/repository/reservations_repository.dart';
 import 'package:mobile/reservations/view/reservation_confirmation_page.dart';
-import 'package:mobile/profile/repository/vehicles_repository.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({
@@ -74,7 +74,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Future<void> _processPaymentAndReserve() async {
     // Capture ScaffoldMessenger before any async operations
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
+
     setState(() {
       _isProcessing = true;
     });
@@ -116,9 +116,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           _isProcessing = false;
         });
       }
-      
+
       String errorMessage;
-      String title = 'Booking Failed';
+      var title = 'Booking Failed';
 
       if (e is api.ApiException) {
         errorMessage = e.message;
@@ -134,9 +134,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           errorMessage = errorMessage.replaceAll('ApiException:', '').trim();
         }
       }
-      
+
       if (mounted) {
-        showDialog(
+        showDialog<void>(
           context: context,
           builder: (context) => AlertDialog(
             title: Text(title),
@@ -170,15 +170,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
       final days = baseDurationHours ~/ 24;
       final remainingHours = baseDurationHours % 24;
       if (remainingHours > 0) {
-        durationStr = '$days ${days == 1 ? 'day' : 'days'} $remainingHours ${remainingHours == 1 ? 'hr' : 'hrs'}';
+        durationStr =
+            '$days ${days == 1 ? 'day' : 'days'} $remainingHours ${remainingHours == 1 ? 'hr' : 'hrs'}';
       } else {
         durationStr = '$days ${days == 1 ? 'day' : 'days'}';
       }
     } else {
-      durationStr = '$baseDurationHours ${baseDurationHours == 1 ? 'hour' : 'hours'}';
+      durationStr =
+          '$baseDurationHours ${baseDurationHours == 1 ? 'hour' : 'hours'}';
     }
 
-    double totalPrice = reservationFee;
+    final totalPrice = reservationFee;
 
     if (widget.startDate != null && widget.endDate != null) {
       final duration = widget.endDate!.difference(widget.startDate!);
@@ -259,7 +261,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                 : null,
                           ),
                           child: widget.venue.imageUrl == null
-                              ? const Icon(Icons.local_parking, size: 40, color: Colors.grey)
+                              ? const Icon(
+                                  Icons.local_parking,
+                                  size: 40,
+                                  color: Colors.grey,
+                                )
                               : null,
                         ),
                         const SizedBox(width: 16),
@@ -514,7 +520,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            const Icon(Icons.arrow_forward, color: Colors.white),
+                            const Icon(
+                              Icons.arrow_forward,
+                              color: Colors.white,
+                            ),
                           ],
                         ),
                 ),

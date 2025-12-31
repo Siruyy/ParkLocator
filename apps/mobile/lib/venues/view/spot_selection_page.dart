@@ -97,7 +97,7 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
       );
 
       final spots = level.spots ?? [];
-      
+
       // Group spots by their actual section name
       final sectionMap = <String, List<api.Spot>>{};
       for (final spot in spots) {
@@ -113,16 +113,21 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
 
       // Filter sections by vehicle type if specified
       if (widget.vehicleType != null) {
-        sections = sections.where((section) {
-          // Check if section has any spots matching the vehicle type
-          return section.spots.any((spot) => spot.vehicleType == widget.vehicleType);
-        }).map((section) {
-          // Keep only spots that match the vehicle type
-          final filteredSpots = section.spots
-              .where((spot) => spot.vehicleType == widget.vehicleType)
-              .toList();
-          return Section(name: section.name, spots: filteredSpots);
-        }).toList();
+        sections = sections
+            .where((section) {
+              // Check if section has any spots matching the vehicle type
+              return section.spots.any(
+                (spot) => spot.vehicleType == widget.vehicleType,
+              );
+            })
+            .map((section) {
+              // Keep only spots that match the vehicle type
+              final filteredSpots = section.spots
+                  .where((spot) => spot.vehicleType == widget.vehicleType)
+                  .toList();
+              return Section(name: section.name, spots: filteredSpots);
+            })
+            .toList();
       }
 
       // Sort sections alphabetically

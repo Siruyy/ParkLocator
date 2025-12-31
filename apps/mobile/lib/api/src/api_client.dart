@@ -11,7 +11,8 @@ class ApiClient {
     String? baseUrl,
   }) : _httpClient = httpClient ?? http.Client(),
        // Use 10.0.2.2 for Android Emulator, localhost for iOS Simulator and Web
-       _baseUrl = baseUrl ??
+       _baseUrl =
+           baseUrl ??
            (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
                ? 'http://10.0.2.2:3000/api/v1'
                : 'http://localhost:3000/api/v1');
@@ -111,7 +112,8 @@ class ApiClient {
     } else {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       throw ApiException(
-        message: body['message'] as String? ?? 'Failed to create payment intent',
+        message:
+            body['message'] as String? ?? 'Failed to create payment intent',
         statusCode: response.statusCode,
       );
     }
@@ -397,6 +399,7 @@ class ApiClient {
       );
     }
   }
+
   /// Get notifications
   Future<List<Notification>> getNotifications() async {
     final response = await _httpClient.get(
@@ -505,7 +508,7 @@ class ApiClient {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       return Vehicle.fromJson(json);
     } else {
-      String message = 'Failed to create vehicle';
+      var message = 'Failed to create vehicle';
       try {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         if (body.containsKey('message')) {
@@ -575,7 +578,7 @@ class ApiClient {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       return Vehicle.fromJson(json);
     } else {
-      String message = 'Failed to update vehicle';
+      var message = 'Failed to update vehicle';
       try {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
         if (responseBody.containsKey('message')) {
@@ -598,7 +601,7 @@ class ApiClient {
     );
 
     if (response.statusCode != 200 && response.statusCode != 204) {
-      String message = 'Failed to delete vehicle';
+      var message = 'Failed to delete vehicle';
       try {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
         if (responseBody.containsKey('message')) {

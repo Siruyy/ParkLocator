@@ -9,8 +9,8 @@ part 'sign_up_state.dart';
 class SignUpCubit extends Cubit<SignUpState> {
   SignUpCubit({
     required AuthRepository authRepository,
-  })  : _authRepository = authRepository,
-        super(const SignUpState());
+  }) : _authRepository = authRepository,
+       super(const SignUpState());
 
   final AuthRepository _authRepository;
 
@@ -49,9 +49,11 @@ class SignUpCubit extends Cubit<SignUpState> {
     }
 
     if (state.password.length < 6) {
-      emit(state.copyWith(
-        errorMessage: 'Password must be at least 6 characters',
-      ));
+      emit(
+        state.copyWith(
+          errorMessage: 'Password must be at least 6 characters',
+        ),
+      );
       return;
     }
 
@@ -69,15 +71,19 @@ class SignUpCubit extends Cubit<SignUpState> {
       );
       emit(state.copyWith(status: SignUpStatus.success));
     } on ApiException catch (e) {
-      emit(state.copyWith(
-        status: SignUpStatus.failure,
-        errorMessage: e.message,
-      ));
+      emit(
+        state.copyWith(
+          status: SignUpStatus.failure,
+          errorMessage: e.message,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        status: SignUpStatus.failure,
-        errorMessage: 'An unexpected error occurred',
-      ));
+      emit(
+        state.copyWith(
+          status: SignUpStatus.failure,
+          errorMessage: 'An unexpected error occurred',
+        ),
+      );
     }
   }
 

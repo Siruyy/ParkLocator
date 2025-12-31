@@ -40,9 +40,9 @@ class Venue {
       );
     }
 
-    double price = 50.0; // Default reservation fee
+    var price = 50.0; // Default reservation fee
     if (apiVenue.configuration != null) {
-      price = apiVenue.configuration!.reservationFee.toDouble();
+      price = apiVenue.configuration!.reservationFee;
     }
 
     return Venue(

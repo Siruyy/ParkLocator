@@ -19,16 +19,20 @@ class _SecurityPageState extends State<SecurityPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor.withOpacity(0.9),
+        backgroundColor: backgroundColor.withValues(alpha: 0.9),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -58,7 +62,10 @@ class _SecurityPageState extends State<SecurityPage> {
             children: [
               // Hero Section
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 32,
+                  horizontal: 24,
+                ),
                 child: Column(
                   children: [
                     Container(
@@ -123,7 +130,10 @@ class _SecurityPageState extends State<SecurityPage> {
                     subTextColor: subTextColor,
                     primaryColor: primaryColor,
                     trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: isDark ? Colors.grey[700] : Colors.grey[100],
                         borderRadius: BorderRadius.circular(4),
@@ -280,7 +290,7 @@ class _SecurityPageState extends State<SecurityPage> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 2,
               offset: const Offset(0, 1),
             ),
@@ -297,14 +307,21 @@ class _SecurityPageState extends State<SecurityPage> {
     return Divider(
       height: 1,
       thickness: 1,
-      color: isDark ? Colors.grey[700]!.withOpacity(0.5) : Colors.grey[100],
+      color: isDark
+          ? Colors.grey[700]!.withValues(alpha: 0.5)
+          : Colors.grey[100],
     );
   }
 
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
-    required VoidCallback onTap, required bool isDark, required Color textColor, required Color subTextColor, required Color primaryColor, String? subtitle,
+    required VoidCallback onTap,
+    required bool isDark,
+    required Color textColor,
+    required Color subTextColor,
+    required Color primaryColor,
+    String? subtitle,
     Widget? trailing,
   }) {
     return InkWell(
@@ -422,7 +439,7 @@ class _SecurityPageState extends State<SecurityPage> {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: primaryColor,
+            activeTrackColor: primaryColor,
           ),
         ],
       ),

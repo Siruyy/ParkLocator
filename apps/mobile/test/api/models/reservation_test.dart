@@ -10,8 +10,8 @@ void main() {
         'address': '123 Test St',
         'location': {
           'type': 'Point',
-          'coordinates': [-122.4194, 37.7749]
-        }
+          'coordinates': [-122.4194, 37.7749],
+        },
       };
 
       final venue = ReservationVenue.fromJson(json);
@@ -24,7 +24,7 @@ void main() {
         'id': '1',
         'name': 'Test Venue',
         'address': '123 Test St',
-        'location': 'POINT(-122.4194 37.7749)'
+        'location': 'POINT(-122.4194 37.7749)',
       };
 
       final venue = ReservationVenue.fromJson(json);
@@ -38,14 +38,14 @@ void main() {
         'name': 'Test Venue',
         'address': '123 Test St',
         'latitude': 37.7749,
-        'longitude': -122.4194
+        'longitude': -122.4194,
       };
 
       final venue = ReservationVenue.fromJson(json);
       expect(venue.latitude, 37.7749);
       expect(venue.longitude, -122.4194);
     });
-    
+
     test('fromJson handles null location', () {
       final json = {
         'id': '1',

@@ -7,8 +7,8 @@ class AuthRepository {
   AuthRepository({
     ApiClient? apiClient,
     FlutterSecureStorage? secureStorage,
-  })  : _apiClient = apiClient ?? ApiClient(),
-        _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  }) : _apiClient = apiClient ?? ApiClient(),
+       _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   final ApiClient _apiClient;
   final FlutterSecureStorage _secureStorage;

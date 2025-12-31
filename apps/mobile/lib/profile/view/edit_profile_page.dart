@@ -23,19 +23,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void initState() {
     super.initState();
     final user = context.read<AuthBloc>().state.user;
-    _nameController = TextEditingController(text: _extractNameFromEmail(user?.email ?? ''));
+    _nameController = TextEditingController(
+      text: _extractNameFromEmail(user?.email ?? ''),
+    );
     _emailController = TextEditingController(text: user?.email ?? '');
-    _phoneController = TextEditingController(text: ''); // Phone not in user model yet
+    _phoneController = TextEditingController(
+      text: '',
+    ); // Phone not in user model yet
   }
 
   String _extractNameFromEmail(String email) {
     if (email.isEmpty) return '';
     final localPart = email.split('@').first;
     final words = localPart.split(RegExp('[._]'));
-    return words.map((word) {
-      if (word.isEmpty) return '';
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
+    return words
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 
   @override
@@ -49,16 +55,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor.withOpacity(0.9),
+        backgroundColor: backgroundColor.withValues(alpha: 0.9),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -102,12 +112,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: isDark ? Colors.grey[700]! : Colors.white,
+                                    color: isDark
+                                        ? Colors.grey[700]!
+                                        : Colors.white,
                                     width: 4,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),
@@ -134,7 +148,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         blurRadius: 2,
                                       ),
                                     ],
@@ -238,7 +254,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
                     elevation: 4,
-                    shadowColor: primaryColor.withOpacity(0.4),
+                    shadowColor: primaryColor.withValues(alpha: 0.4),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -295,7 +311,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -321,7 +337,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 vertical: 16,
               ),
               hintStyle: GoogleFonts.inter(
-                color: subTextColor.withOpacity(0.5),
+                color: subTextColor.withValues(alpha: 0.5),
               ),
             ),
           ),

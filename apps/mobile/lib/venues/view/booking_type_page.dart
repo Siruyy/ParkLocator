@@ -55,7 +55,7 @@ class BookingTypePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: surfaceColor.withOpacity(0.95),
+        backgroundColor: surfaceColor.withValues(alpha: 0.95),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -94,7 +94,7 @@ class BookingTypePage extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -203,7 +203,7 @@ class BookingTypePage extends StatelessWidget {
                   iconBgColor: isFull
                       ? (isDark ? Colors.grey[800]! : Colors.grey[200]!)
                       : (isDark
-                            ? Colors.blue[900]!.withOpacity(0.3)
+                            ? Colors.blue[900]!.withValues(alpha: 0.3)
                             : Colors.blue[50]!),
                   isRecommended: !isFull && venue.supportsFutureBooking,
                   enabled: !isFull,
@@ -230,7 +230,7 @@ class BookingTypePage extends StatelessWidget {
                   icon: Icons.calendar_month,
                   iconColor: Colors.purple,
                   iconBgColor: isDark
-                      ? Colors.purple[900]!.withOpacity(0.3)
+                      ? Colors.purple[900]!.withValues(alpha: 0.3)
                       : Colors.purple[50]!,
                   isRecommended: false,
                   onTap: () {
@@ -252,8 +252,8 @@ class BookingTypePage extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? Colors.grey[800]!.withOpacity(0.5)
-                      : Colors.grey[100]!.withOpacity(0.5),
+                      ? Colors.grey[800]!.withValues(alpha: 0.5)
+                      : Colors.grey[100]!.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
@@ -334,13 +334,13 @@ class _BookingOptionCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isRecommended
-                  ? primaryColor.withOpacity(0.3)
+                  ? primaryColor.withValues(alpha: 0.3)
                   : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
               width: isRecommended ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -410,7 +410,7 @@ class _BookingOptionCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(

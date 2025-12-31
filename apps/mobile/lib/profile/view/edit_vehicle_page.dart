@@ -138,7 +138,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed ?? false) {
       setState(() => _isLoading = true);
       try {
         final repository = context.read<VehiclesRepository>();
@@ -163,16 +163,20 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor.withOpacity(0.9),
+        backgroundColor: backgroundColor.withValues(alpha: 0.9),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -227,13 +231,15 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 color: _isCarSelected
-                                    ? primaryColor.withOpacity(0.1)
+                                    ? primaryColor.withValues(alpha: 0.1)
                                     : surfaceColor,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: _isCarSelected
                                       ? primaryColor
-                                      : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+                                      : (isDark
+                                            ? Colors.grey[700]!
+                                            : Colors.grey[200]!),
                                   width: _isCarSelected ? 2 : 1,
                                 ),
                               ),
@@ -241,7 +247,9 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                                 children: [
                                   Icon(
                                     Icons.directions_car,
-                                    color: _isCarSelected ? primaryColor : subTextColor,
+                                    color: _isCarSelected
+                                        ? primaryColor
+                                        : subTextColor,
                                     size: 32,
                                   ),
                                   const SizedBox(height: 8),
@@ -249,8 +257,12 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                                     'Car',
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
-                                      fontWeight: _isCarSelected ? FontWeight.w600 : FontWeight.w500,
-                                      color: _isCarSelected ? primaryColor : textColor,
+                                      fontWeight: _isCarSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
+                                      color: _isCarSelected
+                                          ? primaryColor
+                                          : textColor,
                                     ),
                                   ),
                                 ],
@@ -266,13 +278,15 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 color: !_isCarSelected
-                                    ? primaryColor.withOpacity(0.1)
+                                    ? primaryColor.withValues(alpha: 0.1)
                                     : surfaceColor,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: !_isCarSelected
                                       ? primaryColor
-                                      : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+                                      : (isDark
+                                            ? Colors.grey[700]!
+                                            : Colors.grey[200]!),
                                   width: !_isCarSelected ? 2 : 1,
                                 ),
                               ),
@@ -280,7 +294,9 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                                 children: [
                                   Icon(
                                     Icons.two_wheeler,
-                                    color: !_isCarSelected ? primaryColor : subTextColor,
+                                    color: !_isCarSelected
+                                        ? primaryColor
+                                        : subTextColor,
                                     size: 32,
                                   ),
                                   const SizedBox(height: 8),
@@ -288,8 +304,12 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                                     'Motorcycle',
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
-                                      fontWeight: !_isCarSelected ? FontWeight.w600 : FontWeight.w500,
-                                      color: !_isCarSelected ? primaryColor : textColor,
+                                      fontWeight: !_isCarSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
+                                      color: !_isCarSelected
+                                          ? primaryColor
+                                          : textColor,
                                     ),
                                   ),
                                 ],
@@ -330,7 +350,8 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                       subTextColor: subTextColor,
                       isMonospace: true,
                       suffixIcon: Icons.featured_play_list,
-                      helperText: 'Ensure this matches your official LTO registration.',
+                      helperText:
+                          'Ensure this matches your official LTO registration.',
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
@@ -355,7 +376,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
+                            color: Colors.black.withValues(alpha: 0.02),
                             blurRadius: 2,
                             offset: const Offset(0, 1),
                           ),
@@ -388,8 +409,9 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                           ),
                           Switch.adaptive(
                             value: _isDefault,
-                            onChanged: (value) => setState(() => _isDefault = value),
-                            activeColor: primaryColor,
+                            onChanged: (value) =>
+                                setState(() => _isDefault = value),
+                            activeTrackColor: primaryColor,
                           ),
                         ],
                       ),
@@ -401,7 +423,9 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                       decoration: BoxDecoration(
                         border: Border(
                           top: BorderSide(
-                            color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                            color: isDark
+                                ? Colors.grey[800]!
+                                : Colors.grey[200]!,
                           ),
                         ),
                       ),
@@ -420,8 +444,8 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                               fontWeight: FontWeight.w500,
                             ),
                             backgroundColor: isDark
-                                ? Colors.red.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.05),
+                                ? Colors.red.withValues(alpha: 0.1)
+                                : Colors.red.withValues(alpha: 0.05),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -479,7 +503,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         elevation: 4,
-                        shadowColor: primaryColor.withOpacity(0.4),
+                        shadowColor: primaryColor.withValues(alpha: 0.4),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -538,7 +562,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -561,7 +585,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
             decoration: InputDecoration(
               hintText: placeholder,
               hintStyle: GoogleFonts.inter(
-                color: subTextColor.withOpacity(0.5),
+                color: subTextColor.withValues(alpha: 0.5),
               ),
               suffixIcon: suffixIcon != null
                   ? Icon(

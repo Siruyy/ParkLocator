@@ -1,4 +1,4 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/venues/models/venue.dart';
@@ -163,7 +163,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: surfaceColor.withOpacity(0.95),
+        backgroundColor: surfaceColor.withValues(alpha: 0.95),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -458,18 +458,22 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.blue[900]!.withOpacity(0.2)
+                            ? Colors.blue[900]!.withValues(alpha: 0.2)
                             : Colors.blue[50],
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isDark
-                              ? Colors.blue[900]!.withOpacity(0.3)
+                              ? Colors.blue[900]!.withValues(alpha: 0.3)
                               : Colors.blue[100]!,
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.schedule, size: 20, color: primaryColor),
+                          const Icon(
+                            Icons.schedule,
+                            size: 20,
+                            color: primaryColor,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Total duration: ',
@@ -560,7 +564,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.1),
+                              color: primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -629,7 +633,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 4,
-                        shadowColor: primaryColor.withOpacity(0.4),
+                        shadowColor: primaryColor.withValues(alpha: 0.4),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -730,7 +734,7 @@ class _BookForLaterPageState extends State<BookForLaterPage> {
         itemTextColor = Colors.white;
       } else if (isInRange) {
         decoration = BoxDecoration(
-          color: primaryColor.withOpacity(0.2),
+          color: primaryColor.withValues(alpha: 0.2),
         );
         itemTextColor = primaryColor;
       } else {
@@ -802,12 +806,12 @@ class _QuickSelectChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? primaryColor.withOpacity(0.1)
+              ? primaryColor.withValues(alpha: 0.1)
               : (isDark ? Colors.grey[800] : Colors.white),
           borderRadius: BorderRadius.circular(100),
           border: Border.all(
             color: isSelected
-                ? primaryColor.withOpacity(0.2)
+                ? primaryColor.withValues(alpha: 0.2)
                 : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
           ),
         ),

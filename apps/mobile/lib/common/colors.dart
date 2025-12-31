@@ -8,8 +8,10 @@ class AppColors {
   static const Color primary = Color(0xFF2E7CC2);
 
   /// Primary color variants
-  static const Color primaryLight = Color(0xFF5FA6E6); // Lighter shade of #2e7cc2
-  static const Color primaryDark = Color(0xFF1A5A94);  // Darker shade of #2e7cc2
+  static const Color primaryLight = Color(
+    0xFF5FA6E6,
+  ); // Lighter shade of #2e7cc2
+  static const Color primaryDark = Color(0xFF1A5A94); // Darker shade of #2e7cc2
 
   /// Accent color (yellow from logo)
   static const Color accent = Color(0xFFFBE709);

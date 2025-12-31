@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/api/api.dart';
@@ -8,10 +9,10 @@ import 'package:mobile/auth/repository/src/auth_repository.dart';
 import 'package:mobile/common/common.dart';
 import 'package:mobile/l10n/l10n.dart';
 import 'package:mobile/login/login.dart';
+import 'package:mobile/notifications/repository/notifications_repository.dart';
+import 'package:mobile/profile/repository/vehicles_repository.dart';
 import 'package:mobile/reservations/repository/reservations_repository.dart';
 import 'package:mobile/venues/repository/venues_repository.dart';
-import 'package:mobile/profile/repository/vehicles_repository.dart';
-import 'package:mobile/notifications/repository/notifications_repository.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -42,13 +43,13 @@ class _AppState extends State<App> {
     _notificationsRepository = NotificationsRepository(apiClient: _apiClient);
     _authBloc = AuthBloc(authRepository: _authRepository)
       ..add(const AuthCheckRequested());
-      
+
     _realtimeService.connect();
   }
 
   @override
   void dispose() {
-    _authBloc.close();
+    unawaited(_authBloc.close());
     _authRepository.dispose();
     _realtimeService.dispose();
     super.dispose();

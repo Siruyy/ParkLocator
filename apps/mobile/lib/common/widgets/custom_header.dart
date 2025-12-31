@@ -17,7 +17,9 @@ class CustomHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : const Color(0xFF0F172A); // slate-900
+    final textColor = isDark
+        ? Colors.white
+        : const Color(0xFF0F172A); // slate-900
 
     return Container(
       color: isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8),
@@ -50,7 +52,8 @@ class CustomHeader extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.notifications_outlined),
-                  onPressed: onNotificationTap ??
+                  onPressed:
+                      onNotificationTap ??
                       () {
                         Navigator.of(context).push(NotificationsPage.route());
                       },

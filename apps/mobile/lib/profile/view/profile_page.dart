@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,12 +14,14 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return BlocBuilder<AuthBloc, AuthState>(
@@ -58,7 +61,7 @@ class ProfilePage extends StatelessWidget {
                           icon: Icons.directions_car,
                           title: 'My Vehicles',
                           onTap: () {
-                            Navigator.of(context).push(MyVehiclesPage.route());
+                            unawaited(Navigator.of(context).push(MyVehiclesPage.route()));
                           },
                           isDark: isDark,
                           textColor: textColor,
@@ -94,7 +97,7 @@ class ProfilePage extends StatelessWidget {
                           icon: Icons.lock,
                           title: 'Security & Password',
                           onTap: () {
-                            Navigator.of(context).push(SecurityPage.route());
+                            unawaited(Navigator.of(context).push(SecurityPage.route()));
                           },
                           isDark: isDark,
                           textColor: textColor,
@@ -194,10 +197,12 @@ class ProfilePage extends StatelessWidget {
   String _extractNameFromEmail(String email) {
     final localPart = email.split('@').first;
     final words = localPart.split(RegExp('[._]'));
-    return words.map((word) {
-      if (word.isEmpty) return '';
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
+    return words
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 
   Widget _buildSectionHeader(String title, Color color) {
@@ -235,7 +240,7 @@ class ProfilePage extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 2,
               offset: const Offset(0, 1),
             ),
@@ -269,8 +274,9 @@ class ProfilePage extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color:
-                    isDark ? const Color(0xFF334155) : const Color(0xFFEFF6FF),
+                color: isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFEFF6FF),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -351,7 +357,7 @@ class ProfilePage extends StatelessWidget {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: primaryColor,
+            activeTrackColor: primaryColor,
           ),
         ],
       ),
@@ -362,7 +368,9 @@ class ProfilePage extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: isDark ? Colors.grey[700]!.withOpacity(0.5) : Colors.grey[100],
+      color: isDark
+          ? Colors.grey[700]!.withValues(alpha: 0.5)
+          : Colors.grey[100],
     );
   }
 }
@@ -397,14 +405,14 @@ class _ProfileHeader extends StatelessWidget {
                 height: 112,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: primaryColor.withOpacity(0.1),
+                  color: primaryColor.withValues(alpha: 0.1),
                   border: Border.all(
                     color: isDark ? Colors.grey[700]! : Colors.white,
                     width: 4,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -435,7 +443,7 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 2,
                       ),
                     ],
@@ -469,7 +477,7 @@ class _ProfileHeader extends StatelessWidget {
           const SizedBox(height: 12),
           TextButton(
             onPressed: () {
-              Navigator.of(context).push(EditProfilePage.route());
+              unawaited(Navigator.of(context).push(EditProfilePage.route()));
             },
             style: TextButton.styleFrom(
               foregroundColor: primaryColor,
@@ -515,7 +523,7 @@ class _LogoutSection extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _showLogoutDialog(context),
+              onPressed: () => unawaited(_showLogoutDialog(context)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: surfaceColor,
                 foregroundColor: Colors.red,
@@ -550,8 +558,8 @@ class _LogoutSection extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog<void>(
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(

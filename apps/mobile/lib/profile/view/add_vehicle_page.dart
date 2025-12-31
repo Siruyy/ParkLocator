@@ -89,16 +89,20 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor.withOpacity(0.9),
+        backgroundColor: backgroundColor.withValues(alpha: 0.9),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -142,7 +146,9 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                             color: surfaceColor,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+                              color: isDark
+                                  ? Colors.grey[700]!
+                                  : Colors.grey[200]!,
                               width: 2,
                             ),
                             image: _imageFile != null
@@ -224,7 +230,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
+                            color: Colors.black.withValues(alpha: 0.02),
                             blurRadius: 2,
                             offset: const Offset(0, 1),
                           ),
@@ -237,10 +243,14 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                           const SizedBox(height: 8),
                           Container(
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey[900] : const Color(0xFFF8FAFC),
+                              color: isDark
+                                  ? Colors.grey[900]
+                                  : const Color(0xFFF8FAFC),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+                                color: isDark
+                                    ? Colors.grey[700]!
+                                    : Colors.grey[200]!,
                               ),
                             ),
                             child: TextField(
@@ -255,7 +265,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                               decoration: InputDecoration(
                                 hintText: 'ABC 1234',
                                 hintStyle: GoogleFonts.sourceCodePro(
-                                  color: subTextColor.withOpacity(0.5),
+                                  color: subTextColor.withValues(alpha: 0.5),
                                   letterSpacing: 2,
                                 ),
                                 border: InputBorder.none,
@@ -340,8 +350,10 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: _isDefault
-                                ? primaryColor.withOpacity(0.5)
-                                : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+                                ? primaryColor.withValues(alpha: 0.5)
+                                : (isDark
+                                      ? Colors.grey[700]!
+                                      : Colors.grey[200]!),
                           ),
                         ),
                         child: Row(
@@ -350,12 +362,16 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                               width: 24,
                               height: 24,
                               decoration: BoxDecoration(
-                                color: _isDefault ? primaryColor : Colors.transparent,
+                                color: _isDefault
+                                    ? primaryColor
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
                                   color: _isDefault
                                       ? primaryColor
-                                      : (isDark ? Colors.grey[600]! : Colors.grey[300]!),
+                                      : (isDark
+                                            ? Colors.grey[600]!
+                                            : Colors.grey[300]!),
                                   width: 2,
                                 ),
                               ),
@@ -412,7 +428,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
@@ -427,7 +443,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
                     elevation: 4,
-                    shadowColor: primaryColor.withOpacity(0.4),
+                    shadowColor: primaryColor.withValues(alpha: 0.4),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -477,7 +493,12 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
     required TextEditingController controller,
     required String label,
     required String placeholder,
-    required bool isDark, required Color surfaceColor, required Color textColor, required Color subTextColor, required Color primaryColor, IconData? icon,
+    required bool isDark,
+    required Color surfaceColor,
+    required Color textColor,
+    required Color subTextColor,
+    required Color primaryColor,
+    IconData? icon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -511,7 +532,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
             decoration: InputDecoration(
               hintText: placeholder,
               hintStyle: GoogleFonts.inter(
-                color: subTextColor.withOpacity(0.5),
+                color: subTextColor.withValues(alpha: 0.5),
               ),
               suffixIcon: icon != null
                   ? Icon(
@@ -564,7 +585,7 @@ class _VehicleTypeCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? primaryColor.withOpacity(isDark ? 0.1 : 0.05)
+              ? primaryColor.withValues(alpha: isDark ? 0.1 : 0.05)
               : surfaceColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -599,7 +620,9 @@ class _VehicleTypeCard extends StatelessWidget {
                     label,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                       color: isSelected ? primaryColor : subTextColor,
                     ),
                   ),

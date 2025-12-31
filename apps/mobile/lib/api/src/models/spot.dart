@@ -51,5 +51,12 @@ class Spot extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, spotNumber, status, isActive, section, vehicleType];
+  List<Object?> get props => [
+    id,
+    spotNumber,
+    status,
+    isActive,
+    section,
+    vehicleType,
+  ];
 }

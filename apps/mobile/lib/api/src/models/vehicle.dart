@@ -49,14 +49,13 @@ class Vehicle extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        plateNumber,
-        make,
-        model,
-        color,
-        isDefault,
-        type,
-        photoUrl,
-      ];
+    id,
+    plateNumber,
+    make,
+    model,
+    color,
+    isDefault,
+    type,
+    photoUrl,
+  ];
 }
-

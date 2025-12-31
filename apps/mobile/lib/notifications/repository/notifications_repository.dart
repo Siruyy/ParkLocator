@@ -2,7 +2,7 @@ import 'package:mobile/api/api.dart' as api;
 
 class NotificationsRepository {
   NotificationsRepository({required api.ApiClient apiClient})
-      : _apiClient = apiClient;
+    : _apiClient = apiClient;
 
   final api.ApiClient _apiClient;
 

@@ -10,7 +10,7 @@ void main() {
         'address': '123 Test St',
         'location': {
           'type': 'Point',
-          'coordinates': [-122.4194, 37.7749]
+          'coordinates': [-122.4194, 37.7749],
         },
         'distance': 1.5,
         'availableSpots': 10,

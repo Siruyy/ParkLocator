@@ -8,8 +8,8 @@ part 'notifications_state.dart';
 
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   NotificationsBloc({required NotificationsRepository notificationsRepository})
-      : _notificationsRepository = notificationsRepository,
-        super(const NotificationsState()) {
+    : _notificationsRepository = notificationsRepository,
+      super(const NotificationsState()) {
     on<NotificationsFetched>(_onFetched);
     on<NotificationMarkedAsRead>(_onMarkedAsRead);
     on<AllNotificationsMarkedAsRead>(_onAllMarkedAsRead);
@@ -24,10 +24,12 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     emit(state.copyWith(status: NotificationsStatus.loading));
     try {
       final notifications = await _notificationsRepository.getNotifications();
-      emit(state.copyWith(
-        status: NotificationsStatus.success,
-        notifications: notifications,
-      ));
+      emit(
+        state.copyWith(
+          status: NotificationsStatus.success,
+          notifications: notifications,
+        ),
+      );
     } catch (_) {
       emit(state.copyWith(status: NotificationsStatus.failure));
     }
@@ -39,16 +41,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   ) async {
     try {
       await _notificationsRepository.markAsRead(event.id);
-      final notifications = state.notifications.map((n) {
-        if (n.id == event.id) {
-          // Since Notification is immutable, we can't copyWith unless we add it to the model.
-          // But for now, let's just re-fetch or manually construct.
-          // Actually, let's just re-fetch to be safe and simple.
-          return n; 
-        }
-        return n;
-      }).toList();
-      
+      add(NotificationsFetched());
+
       // Optimistic update could be done here if we add copyWith to Notification model
       add(NotificationsFetched());
     } catch (_) {

@@ -75,7 +75,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed ?? false) {
       try {
         final repository = context.read<VehiclesRepository>();
         await repository.deleteVehicle(vehicle.id);
@@ -120,7 +120,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor.withOpacity(0.9),
+        backgroundColor: backgroundColor.withValues(alpha: 0.9),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -210,7 +210,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: Colors.grey,
                     elevation: 2,
-                    shadowColor: primaryColor.withOpacity(0.4),
+                    shadowColor: primaryColor.withValues(alpha: 0.4),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -259,7 +259,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                       Icon(
                         Icons.directions_car_outlined,
                         size: 64,
-                        color: subTextColor.withOpacity(0.5),
+                        color: subTextColor.withValues(alpha: 0.5),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -275,7 +275,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                         'Add a vehicle to start booking parking spots',
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: subTextColor.withOpacity(0.7),
+                          color: subTextColor.withValues(alpha: 0.7),
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -400,7 +400,7 @@ class _VehicleCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -421,7 +421,9 @@ class _VehicleCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     image: vehicle.photoUrl != null
                         ? DecorationImage(
-                            image: NetworkImage('$assetBaseUrl${vehicle.photoUrl}'),
+                            image: NetworkImage(
+                              '$assetBaseUrl${vehicle.photoUrl}',
+                            ),
                             fit: BoxFit.cover,
                           )
                         : null,
@@ -505,7 +507,7 @@ class _VehicleCard extends StatelessWidget {
               border: Border(
                 top: BorderSide(
                   color: isDark
-                      ? Colors.grey[700]!.withOpacity(0.5)
+                      ? Colors.grey[700]!.withValues(alpha: 0.5)
                       : Colors.grey[100]!,
                 ),
               ),
@@ -521,7 +523,7 @@ class _VehicleCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.blue[900]!.withOpacity(0.3)
+                          ? Colors.blue[900]!.withValues(alpha: 0.3)
                           : Colors.blue[50],
                       borderRadius: BorderRadius.circular(4),
                     ),

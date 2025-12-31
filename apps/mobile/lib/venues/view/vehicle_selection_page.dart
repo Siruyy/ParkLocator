@@ -55,7 +55,6 @@ class VehicleSelectionPage extends StatefulWidget {
           initialLevelId: initialLevelId,
           startDate: startDate,
           endDate: endDate,
-          vehicleType: null, // No filter
         ),
       );
     } else {
@@ -94,7 +93,7 @@ class _VehicleSelectionPageState extends State<VehicleSelectionPage> {
       setState(() {
         _userVehicles = vehicles;
         _isLoading = false;
-        
+
         // Pre-select default vehicle if exists
         final defaultVehicle = vehicles.where((v) => v.isDefault).firstOrNull;
         if (defaultVehicle != null) {
@@ -157,16 +156,20 @@ class _VehicleSelectionPageState extends State<VehicleSelectionPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
     const primaryColor = Color(0xFF137FEC);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: surfaceColor.withOpacity(0.95),
+        backgroundColor: surfaceColor.withValues(alpha: 0.95),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -228,12 +231,18 @@ class _VehicleSelectionPageState extends State<VehicleSelectionPage> {
                       ),
                       const SizedBox(height: 12),
                       ..._userVehicles!.map((vehicle) {
-                        final normalizedType = _normalizeVehicleType(vehicle.type);
+                        final normalizedType = _normalizeVehicleType(
+                          vehicle.type,
+                        );
                         final isSelected = _selectedVehicleId == vehicle.id;
                         return _buildVehicleCard(
-                          title: '${vehicle.make ?? ''} ${vehicle.model ?? ''}'.trim().isEmpty 
-                              ? vehicle.plateNumber 
-                              : '${vehicle.make ?? ''} ${vehicle.model ?? ''}'.trim(),
+                          title:
+                              '${vehicle.make ?? ''} ${vehicle.model ?? ''}'
+                                  .trim()
+                                  .isEmpty
+                              ? vehicle.plateNumber
+                              : '${vehicle.make ?? ''} ${vehicle.model ?? ''}'
+                                    .trim(),
                           subtitle: vehicle.plateNumber,
                           type: normalizedType,
                           icon: _getVehicleIcon(vehicle.type),
@@ -269,7 +278,9 @@ class _VehicleSelectionPageState extends State<VehicleSelectionPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: isDark ? Colors.grey[700] : Colors.grey[300],
+              disabledBackgroundColor: isDark
+                  ? Colors.grey[700]
+                  : Colors.grey[300],
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -319,10 +330,14 @@ class _VehicleSelectionPageState extends State<VehicleSelectionPage> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.1) : surfaceColor,
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.1)
+              : surfaceColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? primaryColor : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+            color: isSelected
+                ? primaryColor
+                : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -332,7 +347,9 @@ class _VehicleSelectionPageState extends State<VehicleSelectionPage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: isSelected ? primaryColor.withOpacity(0.2) : (isDark ? Colors.grey[800] : Colors.grey[100]),
+                color: isSelected
+                    ? primaryColor.withValues(alpha: 0.2)
+                    : (isDark ? Colors.grey[800] : Colors.grey[100]),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -362,9 +379,12 @@ class _VehicleSelectionPageState extends State<VehicleSelectionPage> {
                       if (isDefault) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(0.1),
+                            color: primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -405,7 +425,9 @@ class _VehicleSelectionPageState extends State<VehicleSelectionPage> {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  border: Border.all(color: isDark ? Colors.grey[600]! : Colors.grey[300]!),
+                  border: Border.all(
+                    color: isDark ? Colors.grey[600]! : Colors.grey[300]!,
+                  ),
                   shape: BoxShape.circle,
                 ),
               ),

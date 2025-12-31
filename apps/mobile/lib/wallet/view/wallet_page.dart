@@ -12,7 +12,7 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
-  double _balance = 450.00;
+  double _balance = 450;
 
   void _showTopUpDialog() {
     showModalBottomSheet<void>(
@@ -57,7 +57,9 @@ class _WalletPageState extends State<WalletPage> {
                       Navigator.pop(context);
                       try {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Initiating payment...')),
+                          const SnackBar(
+                            content: Text('Initiating payment...'),
+                          ),
                         );
 
                         final apiClient = context.read<ApiClient>();
@@ -75,7 +77,8 @@ class _WalletPageState extends State<WalletPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                                'Payment Intent Created! ID: ${result['id']}'),
+                              'Payment Intent Created! ID: ${result['id']}',
+                            ),
                             backgroundColor: Colors.green,
                           ),
                         );
@@ -115,7 +118,10 @@ class _WalletPageState extends State<WalletPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.account_balance_wallet, color: Colors.blue),
+              leading: const Icon(
+                Icons.account_balance_wallet,
+                color: Colors.blue,
+              ),
               title: const Text('GCash'),
               onTap: () {
                 Navigator.pop(context);
@@ -125,7 +131,10 @@ class _WalletPageState extends State<WalletPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.account_balance_wallet, color: Colors.green),
+              leading: const Icon(
+                Icons.account_balance_wallet,
+                color: Colors.green,
+              ),
               title: const Text('Maya'),
               onTap: () {
                 Navigator.pop(context);
@@ -194,10 +203,16 @@ class _WalletPageState extends State<WalletPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101922) : const Color(0xFFF6F7F8);
+    final backgroundColor = isDark
+        ? const Color(0xFF101922)
+        : const Color(0xFFF6F7F8);
     final surfaceColor = isDark ? const Color(0xFF1A2632) : Colors.white;
-    final textColor = isDark ? Colors.white : const Color(0xFF0F172A); // slate-900
-    final subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B); // slate-400/500
+    final textColor = isDark
+        ? Colors.white
+        : const Color(0xFF0F172A); // slate-900
+    final subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B); // slate-400/500
     const primaryColor = Color(0xFF137FEC);
 
     return Scaffold(
@@ -222,7 +237,7 @@ class _WalletPageState extends State<WalletPage> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryColor.withOpacity(0.3),
+                          color: primaryColor.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -238,7 +253,7 @@ class _WalletPageState extends State<WalletPage> {
                             width: 128,
                             height: 128,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -250,7 +265,7 @@ class _WalletPageState extends State<WalletPage> {
                             width: 128,
                             height: 128,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -268,7 +283,9 @@ class _WalletPageState extends State<WalletPage> {
                                     Text(
                                       'Available Credits',
                                       style: GoogleFonts.inter(
-                                        color: Colors.white.withOpacity(0.8),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.8,
+                                        ),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -288,7 +305,7 @@ class _WalletPageState extends State<WalletPage> {
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -309,13 +326,16 @@ class _WalletPageState extends State<WalletPage> {
                                       backgroundColor: Colors.white,
                                       foregroundColor: primaryColor,
                                       elevation: 0,
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         const Icon(Icons.add, size: 20),
                                         const SizedBox(width: 8),
@@ -335,16 +355,25 @@ class _WalletPageState extends State<WalletPage> {
                                   child: OutlinedButton(
                                     onPressed: _showHistory,
                                     style: OutlinedButton.styleFrom(
-                                      backgroundColor: primaryColor.withOpacity(0.4),
+                                      backgroundColor: primaryColor.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       foregroundColor: Colors.white,
-                                      side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      side: BorderSide(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         const Icon(Icons.history, size: 20),
                                         const SizedBox(width: 8),
@@ -415,7 +444,10 @@ class _WalletPageState extends State<WalletPage> {
                         cardName: 'Visa',
                         cardNumber: '5678',
                         expiry: '09/26',
-                        gradientColors: [const Color(0xFF0F172A), const Color(0xFF334155)], // Dark blue/slate
+                        gradientColors: [
+                          const Color(0xFF0F172A),
+                          const Color(0xFF334155),
+                        ], // Dark blue/slate
                         isVisa: true,
                         textColor: textColor,
                         subTextColor: subTextColor,
@@ -426,7 +458,10 @@ class _WalletPageState extends State<WalletPage> {
                         cardName: 'Mastercard',
                         cardNumber: '1234',
                         expiry: '12/25',
-                        gradientColors: [const Color(0xFFD8B4FE), const Color(0xFFFCA5A5)], // Pastel gradient
+                        gradientColors: [
+                          const Color(0xFFD8B4FE),
+                          const Color(0xFFFCA5A5),
+                        ], // Pastel gradient
                         isVisa: false,
                         textColor: textColor,
                         subTextColor: subTextColor,
@@ -439,7 +474,10 @@ class _WalletPageState extends State<WalletPage> {
 
                 // Link E-Wallet Button
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: Column(
                     children: [
                       ElevatedButton(
@@ -448,7 +486,11 @@ class _WalletPageState extends State<WalletPage> {
                           backgroundColor: surfaceColor,
                           foregroundColor: textColor,
                           elevation: 0,
-                          side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[300]!),
+                          side: BorderSide(
+                            color: isDark
+                                ? Colors.grey[800]!
+                                : Colors.grey[300]!,
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -515,7 +557,9 @@ class _WalletPageState extends State<WalletPage> {
                         iconColor: Colors.blue,
                         amountColor: textColor,
                         surfaceColor: surfaceColor,
-                        borderColor: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                        borderColor: isDark
+                            ? Colors.grey[800]!
+                            : Colors.grey[200]!,
                         textColor: textColor,
                         subTextColor: subTextColor,
                       ),
@@ -529,7 +573,9 @@ class _WalletPageState extends State<WalletPage> {
                         iconColor: Colors.green,
                         amountColor: Colors.green,
                         surfaceColor: surfaceColor,
-                        borderColor: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                        borderColor: isDark
+                            ? Colors.grey[800]!
+                            : Colors.grey[200]!,
                         textColor: textColor,
                         subTextColor: subTextColor,
                       ),
@@ -543,7 +589,9 @@ class _WalletPageState extends State<WalletPage> {
                         iconColor: Colors.blue,
                         amountColor: textColor,
                         surfaceColor: surfaceColor,
-                        borderColor: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                        borderColor: isDark
+                            ? Colors.grey[800]!
+                            : Colors.grey[200]!,
                         textColor: textColor,
                         subTextColor: subTextColor,
                       ),
@@ -559,7 +607,9 @@ class _WalletPageState extends State<WalletPage> {
                           iconColor: Colors.grey,
                           amountColor: textColor,
                           surfaceColor: surfaceColor,
-                          borderColor: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                          borderColor: isDark
+                              ? Colors.grey[800]!
+                              : Colors.grey[200]!,
                           textColor: textColor,
                           subTextColor: subTextColor,
                         ),
@@ -589,8 +639,6 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
-
-
   Widget _buildCreditCard({
     required BuildContext context,
     required String cardName,
@@ -616,7 +664,7 @@ class _WalletPageState extends State<WalletPage> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -634,7 +682,7 @@ class _WalletPageState extends State<WalletPage> {
                     Text(
                       'Visa',
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         fontStyle: FontStyle.italic,
@@ -647,7 +695,7 @@ class _WalletPageState extends State<WalletPage> {
                           width: 12,
                           height: 12,
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.9),
+                            color: Colors.red.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -657,7 +705,7 @@ class _WalletPageState extends State<WalletPage> {
                             width: 12,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: Colors.yellow.withOpacity(0.9),
+                              color: Colors.yellow.withValues(alpha: 0.9),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -677,7 +725,7 @@ class _WalletPageState extends State<WalletPage> {
                   Text(
                     'Card Number',
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -686,10 +734,39 @@ class _WalletPageState extends State<WalletPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('••••', style: GoogleFonts.sourceCodePro(color: Colors.white, fontSize: 18, letterSpacing: 2)),
-                      Text('••••', style: GoogleFonts.sourceCodePro(color: Colors.white, fontSize: 18, letterSpacing: 2)),
-                      Text('••••', style: GoogleFonts.sourceCodePro(color: Colors.white, fontSize: 18, letterSpacing: 2)),
-                      Text(cardNumber, style: GoogleFonts.sourceCodePro(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                      Text(
+                        '••••',
+                        style: GoogleFonts.sourceCodePro(
+                          color: Colors.white,
+                          fontSize: 18,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      Text(
+                        '••••',
+                        style: GoogleFonts.sourceCodePro(
+                          color: Colors.white,
+                          fontSize: 18,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      Text(
+                        '••••',
+                        style: GoogleFonts.sourceCodePro(
+                          color: Colors.white,
+                          fontSize: 18,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      Text(
+                        cardNumber,
+                        style: GoogleFonts.sourceCodePro(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -725,7 +802,11 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
-  Widget _buildAddNewCard(BuildContext context, bool isDark, Color primaryColor) {
+  Widget _buildAddNewCard(
+    BuildContext context,
+    bool isDark,
+    Color primaryColor,
+  ) {
     return Column(
       children: [
         Container(
@@ -742,7 +823,9 @@ class _WalletPageState extends State<WalletPage> {
           child: InkWell(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Add new card feature coming soon!')),
+                const SnackBar(
+                  content: Text('Add new card feature coming soon!'),
+                ),
               );
             },
             borderRadius: BorderRadius.circular(12),
@@ -793,7 +876,7 @@ class _WalletPageState extends State<WalletPage> {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -808,7 +891,7 @@ class _WalletPageState extends State<WalletPage> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

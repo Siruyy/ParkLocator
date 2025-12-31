@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Level } from './level.entity';
 
@@ -29,6 +30,7 @@ export class Spot {
     enum: SpotStatus,
     default: SpotStatus.AVAILABLE,
   })
+  @Index()
   status: SpotStatus;
 
   @Column({ name: 'is_active', default: true })
@@ -41,6 +43,7 @@ export class Spot {
   vehicleType: string;
 
   @Column({ name: 'level_id' })
+  @Index()
   levelId: string;
 
   @ManyToOne(() => Level, (level) => level.spots, { onDelete: 'CASCADE' })
