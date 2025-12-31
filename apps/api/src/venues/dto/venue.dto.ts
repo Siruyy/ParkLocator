@@ -170,6 +170,17 @@ export class NearbyVenueDto extends VenueResponseDto {
   levelsCount: number;
   totalCapacity: number;
   availableSpots: number;
+  supportsRealTimeBooking?: boolean;
+  supportsFutureBooking?: boolean;
+  requireVehicleDetails?: boolean;
+  hasCoveredParking?: boolean;
+  hasCCTV?: boolean;
+  configuration?: {
+    reservationFee: number;
+    baseRate: number;
+    baseDuration: number;
+    succeedingHourRate: number;
+  } | null;
 }
 
 export class FindNearbyDto {

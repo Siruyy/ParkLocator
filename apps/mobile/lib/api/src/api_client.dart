@@ -424,12 +424,10 @@ class ApiClient {
       headers: _headers,
     );
 
-    if (response.statusCode != 200) {
-      throw ApiException(
-        message: 'Failed to mark notification as read',
-        statusCode: response.statusCode,
-      );
-    }
+    _checkResponse(
+      response,
+      errorMessage: 'Failed to mark notification as read',
+    );
   }
 
   /// Mark all notifications as read
@@ -439,9 +437,21 @@ class ApiClient {
       headers: _headers,
     );
 
-    if (response.statusCode != 201 && response.statusCode != 200) {
+    _checkResponse(
+      response,
+      errorMessage: 'Failed to mark all notifications as read',
+      allowedStatusCodes: [200, 201],
+    );
+  }
+
+  void _checkResponse(
+    http.Response response, {
+    required String errorMessage,
+    List<int> allowedStatusCodes = const [200],
+  }) {
+    if (!allowedStatusCodes.contains(response.statusCode)) {
       throw ApiException(
-        message: 'Failed to mark all notifications as read',
+        message: errorMessage,
         statusCode: response.statusCode,
       );
     }

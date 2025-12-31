@@ -97,11 +97,6 @@ abstract class AppLocalizations {
     Locale('es')
   ];
 
-  /// Text shown in the AppBar of the Counter Page
-  ///
-  /// In en, this message translates to:
-  /// **'Counter'**
-  String get counterAppBarTitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

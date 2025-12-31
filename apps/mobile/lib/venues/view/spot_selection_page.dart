@@ -508,14 +508,6 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
                         color: Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      currentLevel.name,
-                      style: const TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 14,
-                      ),
-                    ),
                   ],
                 ),
                 Container(

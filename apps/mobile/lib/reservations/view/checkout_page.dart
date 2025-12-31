@@ -249,9 +249,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             image: widget.venue.imageUrl != null
                                 ? DecorationImage(
                                     image: NetworkImage(
-                                      '${context.read<api.ApiClient>().baseUrl.replaceAll('/api/v1', '')}${widget.venue.imageUrl}',
+                                      widget.venue.imageUrl!.startsWith('http')
+                                          ? widget.venue.imageUrl!
+                                          : '${context.read<api.ApiClient>().baseUrl.replaceAll('/api/v1', '')}${widget.venue.imageUrl}',
                                     ),
                                     fit: BoxFit.cover,
+                                    onError: (_, __) {},
                                   )
                                 : null,
                           ),
@@ -359,6 +362,62 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ],
               ),
             ),
+            if (config != null) ...[
+              const SizedBox(height: 24),
+              const Text(
+                'Rate Information',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildSummaryRow(
+                      'Base Rate',
+                      '₱${config.baseRate.toStringAsFixed(2)} (${config.baseDuration} ${config.baseDuration == 1 ? 'hr' : 'hrs'})',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSummaryRow(
+                      'Succeeding Rate',
+                      '₱${config.succeedingHourRate.toStringAsFixed(2)} /hr',
+                    ),
+                    if (config.isWeekendSurchargeActive &&
+                        config.weekendSurcharge > 0 &&
+                        _isWeekend(widget.startDate, widget.endDate)) ...[
+                      const SizedBox(height: 12),
+                      _buildSummaryRow(
+                        'Weekend Surcharge',
+                        '₱${config.weekendSurcharge.toStringAsFixed(2)}',
+                      ),
+                    ],
+                    if (config.isMotorcycleFlatRateActive &&
+                        config.motorcycleFlatRate > 0) ...[
+                      const SizedBox(height: 12),
+                      _buildSummaryRow(
+                        'Motorcycle Flat Rate',
+                        '₱${config.motorcycleFlatRate.toStringAsFixed(2)}',
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             const Text(
               'Payment Method',
@@ -680,5 +739,34 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
       ),
     );
+  }
+
+  bool _isWeekend(DateTime? start, DateTime? end) {
+    if (start == null) return false;
+
+    // Check start date
+    if (start.weekday == DateTime.saturday ||
+        start.weekday == DateTime.sunday) {
+      return true;
+    }
+
+    // Check end date
+    if (end != null &&
+        (end.weekday == DateTime.saturday || end.weekday == DateTime.sunday)) {
+      return true;
+    }
+
+    // Check if duration spans a weekend
+    if (end != null) {
+      var d = start.add(const Duration(days: 1));
+      while (d.isBefore(end)) {
+        if (d.weekday == DateTime.saturday || d.weekday == DateTime.sunday) {
+          return true;
+        }
+        d = d.add(const Duration(days: 1));
+      }
+    }
+
+    return false;
   }
 }

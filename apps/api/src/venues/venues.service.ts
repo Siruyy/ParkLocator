@@ -223,6 +223,7 @@ export class VenuesService {
     const venues = await this.venuesRepository
       .createQueryBuilder('venue')
       .leftJoinAndSelect('venue.levels', 'level', 'level.is_active = true')
+      .leftJoinAndSelect('venue.configuration', 'configuration')
       .addSelect(
         `ST_Distance(venue.location::geography, ST_MakePoint(:lng, :lat)::geography)`,
         'distance',
@@ -267,6 +268,14 @@ export class VenuesService {
         requireVehicleDetails: venue.requireVehicleDetails,
         hasCoveredParking: venue.hasCoveredParking,
         hasCCTV: venue.hasCCTV,
+        configuration: venue.configuration
+          ? {
+              reservationFee: Number(venue.configuration.reservationFee),
+              baseRate: Number(venue.configuration.baseRate),
+              baseDuration: Number(venue.configuration.baseDuration),
+              succeedingHourRate: Number(venue.configuration.succeedingHourRate),
+            }
+          : null,
       };
     });
   }
