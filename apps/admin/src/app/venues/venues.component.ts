@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, F
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
-import { VenuesService, Venue } from '../core/services/venues.service';
+import { VenuesService, Venue, Spot } from '../core/services/venues.service';
 import { AuthService } from '../core/services/auth.service';
 import { ActivityTrackerService } from '../core/services/activity-tracker.service';
 
@@ -29,7 +29,7 @@ import { CheckboxModule } from 'primeng/checkbox';
     FormsModule, 
     ReactiveFormsModule, 
     RouterModule, 
-    SidebarComponent, 
+    SidebarComponent,
     HeaderComponent,
     TableModule,
     ButtonModule,
@@ -71,9 +71,14 @@ export class VenuesComponent implements OnInit {
   
   // Level Management
   showAddLevelModal = false;
+  isEditingLevel = false;
+  editingLevelId: string | null = null;
   levelForm: FormGroup;
   isSubmitting = false;
   isSubmittingLevel = false;
+
+  // Spot Management - Properties moved to method section for grouping
+
 
   constructor() {
     this.propertyForm = this.fb.group({
@@ -121,11 +126,11 @@ export class VenuesComponent implements OnInit {
     return this.levelForm.get('sections') as FormArray;
   }
 
-  addSection() {
+  addSection(data?: any) {
     const section = this.fb.group({
-      name: ['', Validators.required],
-      totalCapacity: [10, [Validators.required, Validators.min(1)]],
-      vehicleType: ['Car', Validators.required]
+      name: [data?.name || '', Validators.required],
+      totalCapacity: [data?.totalCapacity || 10, [Validators.required, Validators.min(1)]],
+      vehicleType: [data?.vehicleType || 'Car', Validators.required]
     });
     this.sections.push(section);
     this.updateTotalCapacity();
@@ -239,6 +244,11 @@ export class VenuesComponent implements OnInit {
   }
 
   closeAddPropertyModal() {
+    if (this.propertyForm.dirty) {
+      if (!confirm('You have unsaved changes. Are you sure you want to close?')) {
+        return;
+      }
+    }
     this.showAddPropertyModal = false;
   }
 
@@ -254,48 +264,61 @@ export class VenuesComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // If editing and no file selected, we might want to send JSON instead of FormData?
-    // Or just send FormData without file.
-    // Backend handles partial updates?
-    // The updateVenue in service takes Partial<Venue>.
-    // But if we use FormData for update, we need to change service method signature or logic.
-    // Let's check if update endpoint supports FormData.
-    // The controller uses @Body() updateVenueDto: UpdateVenueDto. It does NOT use FileInterceptor for update.
-    // So update does not support image upload currently?
-    // Wait, I checked the controller earlier.
-    // @Patch(':id') ... async update(@Body() updateVenueDto: UpdateVenueDto)
-    // It does NOT have @UseInterceptors(FileInterceptor('image'...))
-    // So image update is not supported in the current backend implementation for update.
-    // I will proceed with JSON update for now, and FormData for create.
-
     if (this.isEditingProperty && this.editingVenueId) {
-      // Use FormData for update as well to support image upload
-      const formData = new FormData();
-      Object.keys(this.propertyForm.value).forEach(key => {
-        const value = this.propertyForm.value[key];
-        if (value !== null && value !== undefined) {
-          formData.append(key, value);
-        }
-      });
-
+      // If a file is selected, use FormData; otherwise use JSON to preserve boolean types
       if (this.selectedFile) {
-        formData.append('image', this.selectedFile);
-      }
+        const formData = new FormData();
+        
+        Object.keys(this.propertyForm.value).forEach(key => {
+          // Skip imageUrl - it should only be set by the backend when a new file is uploaded
+          if (key === 'imageUrl') return;
+          
+          const value = this.propertyForm.value[key];
+          if (value !== null && value !== undefined) {
+            formData.append(key, String(value));
+          }
+        });
 
-      // We need to cast to any because updateVenue expects Partial<Venue> but we are sending FormData
-      // The service needs to be updated to accept FormData for updateVenue as well
-      // Or we can just cast it here if the HTTP client handles it correctly (Angular HttpClient does)
-      this.venuesService.updateVenue(this.editingVenueId, formData).subscribe({
-        next: (updatedVenue) => {
-          this.isSubmitting = false;
-          this.showAddPropertyModal = false;
-          this.loadVenues();
-        },
-        error: (err) => {
-          console.error('Failed to update venue', err);
-          this.isSubmitting = false;
-        }
-      });
+        formData.append('image', this.selectedFile);
+
+        this.venuesService.updateVenue(this.editingVenueId, formData).subscribe({
+          next: () => {
+            this.isSubmitting = false;
+            this.showAddPropertyModal = false;
+            this.propertyForm.markAsPristine();
+            this.loadVenues();
+          },
+          error: (err) => {
+            console.error('Failed to update venue', err);
+            this.isSubmitting = false;
+          }
+        });
+      } else {
+        // No file - send JSON to preserve boolean types
+        const updateData: any = {};
+        Object.keys(this.propertyForm.value).forEach(key => {
+          // Skip imageUrl when no new file is selected
+          if (key === 'imageUrl') return;
+          
+          const value = this.propertyForm.value[key];
+          if (value !== null && value !== undefined) {
+            updateData[key] = value;
+          }
+        });
+
+        this.venuesService.updateVenueJson(this.editingVenueId, updateData).subscribe({
+          next: () => {
+            this.isSubmitting = false;
+            this.showAddPropertyModal = false;
+            this.propertyForm.markAsPristine();
+            this.loadVenues();
+          },
+          error: (err) => {
+            console.error('Failed to update venue', err);
+            this.isSubmitting = false;
+          }
+        });
+      }
     } else {
       const formData = new FormData();
       Object.keys(this.propertyForm.value).forEach(key => {
@@ -346,33 +369,116 @@ export class VenuesComponent implements OnInit {
 
   // Level Management
   openAddLevelModal() {
+    this.isEditingLevel = false;
+    this.editingLevelId = null;
     this.levelForm.reset({
       levelNumber: (this.parkingLevels.length > 0 ? Math.max(...this.parkingLevels.map(l => l.levelNumber)) + 1 : 1),
       name: '',
-      totalCapacity: 50
+      totalCapacity: 50,
+      isCovered: false,
+      vehicleTypes: ['Car']
     });
+    this.sections.clear();
+    this.showAddLevelModal = true;
+  }
+
+  openEditLevelModal(level: any) {
+    this.isEditingLevel = true;
+    this.editingLevelId = level.id;
+    
+    this.levelForm.patchValue({
+      levelNumber: level.levelNumber,
+      name: level.name,
+      totalCapacity: level.capacity,
+      isCovered: level.type === 'Covered',
+      vehicleTypes: level.vehicleTypes || ['Car']
+    });
+    
+    this.sections.clear();
+    
+    // Fetch spots to populate sections
+    this.venuesService.getSpots(level.id).subscribe(spots => {
+      const groups: { [key: string]: { count: number, vehicleType: string } } = {};
+      
+      spots.forEach(spot => {
+        const sectionName = spot.section || 'General';
+        if (!groups[sectionName]) {
+          groups[sectionName] = { count: 0, vehicleType: spot.vehicleType };
+        }
+        groups[sectionName].count++;
+      });
+
+      Object.keys(groups).sort().forEach(name => {
+        this.addSection({
+          name: name,
+          totalCapacity: groups[name].count,
+          vehicleType: groups[name].vehicleType
+        });
+      });
+      
+      // If no sections found (legacy data), add a default one
+      if (this.sections.length === 0 && level.capacity > 0) {
+        this.addSection({
+          name: 'General',
+          totalCapacity: level.capacity,
+          vehicleType: level.vehicleTypes?.[0] || 'Car'
+        });
+      }
+    });
+
     this.showAddLevelModal = true;
   }
 
   closeAddLevelModal() {
     this.showAddLevelModal = false;
+    this.isEditingLevel = false;
+    this.editingLevelId = null;
   }
 
   onSubmitLevel() {
     if (this.levelForm.invalid || !this.selectedProperty) return;
 
-    this.isSubmitting = true;
-    this.venuesService.createLevel(this.selectedProperty, this.levelForm.value).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.closeAddLevelModal();
-        this.loadVenues(); // Reload to get updated levels
-      },
-      error: (err) => {
-        console.error('Failed to create level', err);
-        this.isSubmitting = false;
-      }
-    });
+    this.isSubmittingLevel = true;
+
+    if (this.isEditingLevel && this.editingLevelId) {
+      const updateDto = {
+        name: this.levelForm.value.name,
+        isCovered: this.levelForm.value.isCovered,
+        vehicleTypes: this.levelForm.value.vehicleTypes,
+        sections: this.sections.value,
+        totalCapacity: this.levelForm.value.totalCapacity // Send total capacity as well, though backend recalculates
+      };
+
+      this.venuesService.updateLevel(this.editingLevelId, updateDto).subscribe({
+        next: () => {
+          this.isSubmittingLevel = false;
+          this.closeAddLevelModal();
+          this.loadVenues();
+        },
+        error: (err) => {
+          console.error('Failed to update level', err);
+          this.isSubmittingLevel = false;
+          alert(err.error?.message || 'Failed to update level. Ensure you are not deleting occupied spots.');
+        }
+      });
+    } else {
+      const levelData = {
+        ...this.levelForm.value,
+        sections: this.sections.value
+      };
+
+      this.venuesService.createLevel(this.selectedProperty, levelData).subscribe({
+        next: () => {
+          this.isSubmittingLevel = false;
+          this.closeAddLevelModal();
+          this.loadVenues();
+        },
+        error: (err) => {
+          console.error('Failed to create level', err);
+          this.isSubmittingLevel = false;
+        }
+      });
+    }
   }
 
   updateLevelCapacity(level: any) {
@@ -414,6 +520,86 @@ export class VenuesComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to delete level', err);
+      }
+    });
+  }
+
+  // Spot Management
+  spots: Spot[] = [];
+  groupedSpots: { section: string, spots: Spot[] }[] = [];
+  searchTerm: string = '';
+  selectedLevelId: string | null = null;
+  showManageSpotsModal = false;
+  isLoadingSpots = false;
+
+  openManageSpotsModal(level: any) {
+    this.selectedLevelId = level.id;
+    this.showManageSpotsModal = true;
+    this.searchTerm = '';
+    this.loadSpots(level.id);
+  }
+
+  loadSpots(levelId: string) {
+    this.isLoadingSpots = true;
+    this.venuesService.getSpots(levelId).subscribe({
+      next: (spots) => {
+        this.spots = spots.sort((a, b) => a.spotNumber.localeCompare(b.spotNumber, undefined, { numeric: true }));
+        this.filterSpots();
+        this.isLoadingSpots = false;
+      },
+      error: (err) => {
+        console.error('Failed to load spots', err);
+        this.isLoadingSpots = false;
+      }
+    });
+  }
+
+  filterSpots() {
+    let filtered = this.spots;
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = this.spots.filter(s => 
+        s.spotNumber.toLowerCase().includes(term) || 
+        (s.section && s.section.toLowerCase().includes(term))
+      );
+    }
+    
+    // Group by section
+    const groups: { [key: string]: Spot[] } = {};
+    filtered.forEach(spot => {
+      const section = spot.section || 'General';
+      if (!groups[section]) {
+        groups[section] = [];
+      }
+      groups[section].push(spot);
+    });
+    
+    this.groupedSpots = Object.keys(groups).sort().map(section => ({
+      section,
+      spots: groups[section]
+    }));
+  }
+
+  closeManageSpotsModal() {
+    this.showManageSpotsModal = false;
+    this.spots = [];
+    this.groupedSpots = [];
+    this.selectedLevelId = null;
+    this.searchTerm = '';
+    this.loadVenues();
+  }
+
+  toggleSpotMaintenance(spot: Spot) {
+    const newStatus = spot.status === 'maintenance' ? 'available' : 'maintenance';
+    
+    // Optimistic update
+    const oldStatus = spot.status;
+    spot.status = newStatus;
+    
+    this.venuesService.updateSpotStatus(spot.id, newStatus).subscribe({
+      error: (err) => {
+        console.error('Failed to update spot status', err);
+        spot.status = oldStatus; // Revert
       }
     });
   }

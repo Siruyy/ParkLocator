@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/api/api.dart' as api;
 import 'package:mobile/venues/models/venue.dart';
 import 'package:mobile/venues/repository/venues_repository.dart';
-import 'package:mobile/venues/view/spot_selection_page.dart';
+import 'package:mobile/venues/view/vehicle_selection_page.dart';
 import 'package:mobile/venues/widgets/level_card.dart';
 
 class VenueDetailPage extends StatefulWidget {
@@ -245,14 +245,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                       final availableSpots = _getAvailableSpotsForLevel(level);
                       return GestureDetector(
                         onTap: () {
-                          Navigator.push(
+                          VehicleSelectionPage.navigateToSpotSelection(
                             context,
-                            SpotSelectionPage.route(
-                              venue: _venue!,
-                              initialLevelId: level.id,
-                              startDate: widget.startDate,
-                              endDate: widget.endDate,
-                            ),
+                            venue: _venue!,
+                            initialLevelId: level.id,
+                            startDate: widget.startDate,
+                            endDate: widget.endDate,
                           );
                         },
                         child: LevelCard(

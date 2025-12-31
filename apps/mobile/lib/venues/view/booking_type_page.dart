@@ -15,6 +15,28 @@ class BookingTypePage extends StatelessWidget {
     );
   }
 
+  /// Smart navigation - skips this page if only one booking option is available
+  static void navigateToBooking(BuildContext context, Venue venue) {
+    final isFull = venue.status == VenueStatus.full;
+    final canBookNow = venue.supportsRealTimeBooking && !isFull;
+    final canBookLater = venue.supportsFutureBooking;
+
+    // If only Book Now is available, go directly to venue detail
+    if (canBookNow && !canBookLater) {
+      Navigator.of(context).push(VenueDetailPage.route(venueId: venue.id));
+      return;
+    }
+
+    // If only Book for Later is available, go directly to book for later
+    if (!canBookNow && canBookLater) {
+      Navigator.of(context).push(BookForLaterPage.route(venue: venue));
+      return;
+    }
+
+    // If both or neither are available, show selection page
+    Navigator.of(context).push(BookingTypePage.route(venue: venue));
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -169,56 +191,59 @@ class BookingTypePage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Book Now Button
-              _BookingOptionCard(
-                title: isFull ? 'Full Now' : 'Book Now',
-                description: isFull
-                    ? 'This venue is currently full. Please check back later or book for a future time.'
-                    : 'Start parking immediately. Your timer begins once you enter the facility. Best for current trips.',
-                icon: Icons.timer,
-                iconColor: isFull ? Colors.grey : primaryColor,
-                iconBgColor: isFull
-                    ? (isDark ? Colors.grey[800]! : Colors.grey[200]!)
-                    : (isDark
-                          ? Colors.blue[900]!.withOpacity(0.3)
-                          : Colors.blue[50]!),
-                isRecommended: !isFull,
-                enabled: !isFull,
-                onTap: () {
-                  Navigator.of(context).push(
-                    VenueDetailPage.route(venueId: venue.id),
-                  );
-                },
-                isDark: isDark,
-                surfaceColor: surfaceColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-                primaryColor: primaryColor,
-              ),
-              const SizedBox(height: 16),
+              // Book Now Button - only show if venue supports real-time booking
+              if (venue.supportsRealTimeBooking)
+                _BookingOptionCard(
+                  title: isFull ? 'Full Now' : 'Book Now',
+                  description: isFull
+                      ? 'This venue is currently full. Please check back later or book for a future time.'
+                      : 'Start parking immediately. Your timer begins once you enter the facility. Best for current trips.',
+                  icon: Icons.timer,
+                  iconColor: isFull ? Colors.grey : primaryColor,
+                  iconBgColor: isFull
+                      ? (isDark ? Colors.grey[800]! : Colors.grey[200]!)
+                      : (isDark
+                            ? Colors.blue[900]!.withOpacity(0.3)
+                            : Colors.blue[50]!),
+                  isRecommended: !isFull && venue.supportsFutureBooking,
+                  enabled: !isFull,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      VenueDetailPage.route(venueId: venue.id),
+                    );
+                  },
+                  isDark: isDark,
+                  surfaceColor: surfaceColor,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  primaryColor: primaryColor,
+                ),
+              if (venue.supportsRealTimeBooking && venue.supportsFutureBooking)
+                const SizedBox(height: 16),
 
-              // Book for Later Button
-              _BookingOptionCard(
-                title: 'Book for Later',
-                description:
-                    'Reserve a specific date and time slot in advance. Secure your spot for future appointments or events.',
-                icon: Icons.calendar_month,
-                iconColor: Colors.purple,
-                iconBgColor: isDark
-                    ? Colors.purple[900]!.withOpacity(0.3)
-                    : Colors.purple[50]!,
-                isRecommended: false,
-                onTap: () {
-                  Navigator.of(context).push(
-                    BookForLaterPage.route(venue: venue),
-                  );
-                },
-                isDark: isDark,
-                surfaceColor: surfaceColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-                primaryColor: primaryColor,
-              ),
+              // Book for Later Button - only show if venue supports future booking
+              if (venue.supportsFutureBooking)
+                _BookingOptionCard(
+                  title: 'Book for Later',
+                  description:
+                      'Reserve a specific date and time slot in advance. Secure your spot for future appointments or events.',
+                  icon: Icons.calendar_month,
+                  iconColor: Colors.purple,
+                  iconBgColor: isDark
+                      ? Colors.purple[900]!.withOpacity(0.3)
+                      : Colors.purple[50]!,
+                  isRecommended: false,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      BookForLaterPage.route(venue: venue),
+                    );
+                  },
+                  isDark: isDark,
+                  surfaceColor: surfaceColor,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  primaryColor: primaryColor,
+                ),
 
               const SizedBox(height: 32),
 

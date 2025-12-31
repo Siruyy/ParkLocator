@@ -71,6 +71,12 @@ export class UpdateLevelDto {
   @IsString({ each: true })
   @IsOptional()
   vehicleTypes?: string[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SectionDto)
+  @IsOptional()
+  sections?: SectionDto[];
 }
 
 export class LevelResponseDto {

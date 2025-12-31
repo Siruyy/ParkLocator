@@ -83,4 +83,7 @@ class Venue {
 
   bool get hasCoveredParking => apiVenue.hasCoveredParking;
   bool get hasCCTV => apiVenue.hasCCTV;
+  bool get supportsRealTimeBooking => apiVenue.supportsRealTimeBooking;
+  bool get supportsFutureBooking => apiVenue.supportsFutureBooking;
+  bool get requireVehicleDetails => apiVenue.requireVehicleDetails;
 }

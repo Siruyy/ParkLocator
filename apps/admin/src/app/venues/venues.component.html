@@ -176,11 +176,10 @@
                             </ng-template>
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th>Level ID</th>
                                     <th>Zone Name</th>
                                     <th>Type</th>
                                     <th>Vehicle Type</th>
-                                    <th class="w-40">Capacity (Edit)</th>
+                                    <th class="w-40">Capacity</th>
                                     <th>Occupancy</th>
                                     <th>Status</th>
                                     <th class="text-right">Actions</th>
@@ -191,7 +190,6 @@
                                     [class.opacity-60]="!level.isActive"
                                     [class.bg-gray-50]="!level.isActive"
                                     [class.dark:bg-white/5]="!level.isActive">
-                                    <td class="text-body font-medium">{{ level.id }}</td>
                                     <td>
                                         <div class="flex flex-col">
                                             <span class="text-body font-medium">{{ level.name }}</span>
@@ -217,13 +215,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="relative group/edit" [class.pointer-events-none]="!level.isActive">
-                                            <input pInputText class="w-24 !px-3 !py-1.5 !text-sm !font-bold text-right" 
-                                                   type="number" 
-                                                   [(ngModel)]="level.capacity"
-                                                   (change)="updateLevelCapacity(level)"
-                                                   [disabled]="!level.isActive"/>
-                                        </div>
+                                        <span class="text-body font-bold">{{ level.capacity }}</span>
                                     </td>
                                     <td class="text-body font-medium">
                                         {{ level.occupancy }} <span class="text-muted font-normal">({{ level.occupancyPercent }}%)</span>
@@ -240,9 +232,17 @@
                                         </label>
                                     </td>
                                     <td class="text-right">
-                                        <button (click)="deleteLevel(level)" class="btn-icon hover:!text-red-500" pTooltip="Delete Level" tooltipPosition="top">
-                                            <span class="material-symbols-outlined">delete</span>
-                                        </button>
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button (click)="openManageSpotsModal(level)" class="btn-icon hover:!text-primary" pTooltip="Manage Spots" tooltipPosition="top">
+                                                <span class="material-symbols-outlined">grid_view</span>
+                                            </button>
+                                            <button (click)="openEditLevelModal(level)" class="btn-icon hover:!text-blue-500" pTooltip="Edit Level" tooltipPosition="top">
+                                                <span class="material-symbols-outlined">edit</span>
+                                            </button>
+                                            <button (click)="deleteLevel(level)" class="btn-icon hover:!text-red-500" pTooltip="Delete Level" tooltipPosition="top">
+                                                <span class="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </ng-template>
@@ -260,7 +260,7 @@
 </div>
 
 <!-- Add/Edit Property Modal -->
-<p-dialog [(visible)]="showAddPropertyModal" [modal]="true" [header]="isEditingProperty ? 'Edit Property' : 'Add New Property'" [style]="{ width: '50rem' }" [draggable]="false" [resizable]="false" (onHide)="closeAddPropertyModal()">
+<p-dialog [visible]="showAddPropertyModal" (visibleChange)="!$event ? closeAddPropertyModal() : null" [modal]="true" [header]="isEditingProperty ? 'Edit Property' : 'Add New Property'" [style]="{ width: '50rem' }" [draggable]="false" [resizable]="false">
     <form [formGroup]="propertyForm" (ngSubmit)="onSubmitProperty()" class="flex flex-col gap-4">
         <!-- Name -->
         <div class="input-group">
@@ -365,7 +365,7 @@
 </p-dialog>
 
 <!-- Add Level Modal -->
-<p-dialog [(visible)]="showAddLevelModal" [modal]="true" header="Add New Level" [style]="{ width: '40rem' }" [draggable]="false" [resizable]="false" (onHide)="closeAddLevelModal()">
+<p-dialog [(visible)]="showAddLevelModal" [modal]="true" [header]="isEditingLevel ? 'Edit Level' : 'Add New Level'" [style]="{ width: '40rem' }" [draggable]="false" [resizable]="false" (onHide)="closeAddLevelModal()">
     <form [formGroup]="levelForm" (ngSubmit)="onSubmitLevel()">
         <div class="flex flex-col gap-4">
             <!-- Level Name -->
@@ -419,7 +419,7 @@
                 </label>
             </div>
 
-            <!-- Sections -->
+            <!-- Sections (Create & Edit Mode) -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <label class="input-label">Sections</label>
@@ -429,7 +429,7 @@
                 <div formArrayName="sections" class="space-y-3">
                     <div *ngFor="let section of sections.controls; let i=index" [formGroupName]="i" class="flex gap-3 items-start">
                         <div class="flex-1">
-                            <input pInputText type="text" formControlName="name" placeholder="Section Name (e.g. A)" class="w-full !text-sm">
+                            <input pInputText type="text" formControlName="name" placeholder="Section Name (e.g. A)" class="w-full !text-sm" [readonly]="isEditingLevel">
                         </div>
                         <div class="w-32">
                             <p-select formControlName="vehicleType" [options]="['Car', 'Motorcycle', 'Truck']" placeholder="Type" styleClass="w-full !text-sm"></p-select>
@@ -437,7 +437,7 @@
                         <div class="w-24">
                             <input pInputText type="number" formControlName="totalCapacity" placeholder="Cap" class="w-full !text-sm">
                         </div>
-                        <button pButton type="button" icon="pi pi-trash" (click)="removeSection(i)" class="p-button-danger p-button-text p-button-rounded"></button>
+                        <button *ngIf="!isEditingLevel" pButton type="button" icon="pi pi-trash" (click)="removeSection(i)" class="p-button-danger p-button-text p-button-rounded"></button>
                     </div>
                     <div *ngIf="sections.length === 0" class="text-center py-4 text-muted border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
                         No sections defined. Spots will be numbered sequentially.
@@ -445,19 +445,93 @@
                 </div>
             </div>
 
-            <!-- Total Capacity (Read Only if sections exist) -->
+            <!-- Total Capacity (Read Only) -->
             <div class="input-group">
                 <label class="input-label">Total Capacity</label>
-                <input pInputText type="number" formControlName="totalCapacity" [readonly]="sections.length > 0"
-                       [class.opacity-50]="sections.length > 0"
-                       class="w-full">
-                <small *ngIf="levelForm.get('totalCapacity')?.touched && levelForm.get('totalCapacity')?.invalid" class="input-error">Valid capacity is required</small>
+                <input pInputText type="number" formControlName="totalCapacity" readonly class="w-full opacity-60 bg-gray-100 dark:bg-gray-800 cursor-not-allowed">
+            </div>
+
+            <!-- Edit Mode Note -->
+            <div *ngIf="isEditingLevel" class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-sm text-blue-700 dark:text-blue-300">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-lg">info</span>
+                    <span class="font-bold">Note</span>
+                </div>
+                Modifying section capacity will automatically add or remove spots. You cannot reduce capacity if it would require removing currently occupied or reserved spots.
             </div>
         </div>
 
         <div class="form-actions mt-6">
             <button pButton type="button" label="Cancel" (click)="closeAddLevelModal()" class="btn-ghost"></button>
-            <button pButton type="submit" [label]="isSubmittingLevel ? 'Adding...' : 'Add Level'" [disabled]="levelForm.invalid || isSubmittingLevel" [icon]="isSubmittingLevel ? 'pi pi-spin pi-spinner' : ''" class="btn-primary"></button>
+            <button pButton type="submit" [label]="isSubmittingLevel ? (isEditingLevel ? 'Updating...' : 'Creating...') : (isEditingLevel ? 'Update Level' : 'Create Level')" [disabled]="levelForm.invalid || isSubmittingLevel" class="btn-primary"></button>
         </div>
     </form>
+</p-dialog>
+
+<!-- Manage Spots Modal -->
+<p-dialog [(visible)]="showManageSpotsModal" [modal]="true" header="Manage Spots" [style]="{ width: '60rem' }" [draggable]="false" [resizable]="false" (onHide)="closeManageSpotsModal()">
+    <div class="flex flex-col gap-4">
+        <!-- Search Bar -->
+        <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10">search</span>
+            <input pInputText type="text" [(ngModel)]="searchTerm" (ngModelChange)="filterSpots()" placeholder="Search spots by number or section..." class="w-full !pl-10 !rounded-xl placeholder:text-gray-400">
+        </div>
+
+        <div class="flex items-center justify-between">
+            <p class="text-secondary">Click on a spot to toggle maintenance mode.</p>
+            <div class="flex gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded bg-green-100 border border-green-200"></div>
+                    <span>Available</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded bg-red-100 border border-red-200"></div>
+                    <span>Occupied</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded bg-blue-100 border border-blue-200"></div>
+                    <span>Reserved</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded bg-gray-200 border border-gray-300"></div>
+                    <span>Maintenance</span>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="isLoadingSpots" class="flex justify-center py-12">
+            <i class="pi pi-spin pi-spinner text-2xl text-primary"></i>
+        </div>
+
+        <div *ngIf="!isLoadingSpots" class="max-h-[60vh] overflow-y-auto p-2">
+            <div *ngFor="let group of groupedSpots" class="mb-6">
+                <h4 class="font-bold text-lg mb-3 text-gray-700 dark:text-gray-300 sticky top-0 bg-white dark:bg-gray-800 py-2 z-10 border-b border-gray-100 dark:border-gray-700">{{ group.section }}</h4>
+                <div class="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+                    <div *ngFor="let spot of group.spots" 
+                         (click)="spot.status !== 'occupied' && spot.status !== 'reserved' ? toggleSpotMaintenance(spot) : null"
+                         class="aspect-square rounded-lg border flex items-center justify-center cursor-pointer transition-all hover:scale-105 select-none"
+                         [class.bg-green-50]="spot.status === 'available'"
+                         [class.border-green-200]="spot.status === 'available'"
+                         [class.text-green-700]="spot.status === 'available'"
+                         [class.bg-red-50]="spot.status === 'occupied'"
+                         [class.border-red-200]="spot.status === 'occupied'"
+                         [class.text-red-700]="spot.status === 'occupied'"
+                         [class.bg-blue-50]="spot.status === 'reserved'"
+                         [class.border-blue-200]="spot.status === 'reserved'"
+                         [class.text-blue-700]="spot.status === 'reserved'"
+                         [class.bg-gray-100]="spot.status === 'maintenance'"
+                         [class.border-gray-300]="spot.status === 'maintenance'"
+                         [class.text-gray-500]="spot.status === 'maintenance'"
+                         [class.opacity-50]="spot.status === 'occupied' || spot.status === 'reserved'"
+                         [class.cursor-not-allowed]="spot.status === 'occupied' || spot.status === 'reserved'">
+                        <span class="text-xs font-bold">{{ spot.spotNumber.split('-')[1] || spot.spotNumber }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div *ngIf="groupedSpots.length === 0" class="text-center py-8 text-muted">
+                No spots found matching your search.
+            </div>
+        </div>
+    </div>
 </p-dialog>

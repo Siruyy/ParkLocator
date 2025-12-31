@@ -19,7 +19,7 @@ class ApiClient {
   final http.Client _httpClient;
   final String _baseUrl;
   String? _authToken;
-  
+
   String get baseUrl => _baseUrl;
   String get assetBaseUrl => _baseUrl.replaceAll('/api/v1', '');
 
@@ -474,6 +474,7 @@ class ApiClient {
     String? model,
     String? color,
     bool isDefault = false,
+    String type = 'car',
   }) async {
     final body = <String, dynamic>{
       'plateNumber': plateNumber,
@@ -481,6 +482,7 @@ class ApiClient {
       'model': model,
       'color': color,
       'isDefault': isDefault,
+      'type': type,
     };
 
     final response = await _httpClient.post(
@@ -543,6 +545,7 @@ class ApiClient {
     String? model,
     String? color,
     bool? isDefault,
+    String? type,
   }) async {
     final body = <String, dynamic>{};
     if (plateNumber != null) body['plateNumber'] = plateNumber;
@@ -550,6 +553,7 @@ class ApiClient {
     if (model != null) body['model'] = model;
     if (color != null) body['color'] = color;
     if (isDefault != null) body['isDefault'] = isDefault;
+    if (type != null) body['type'] = type;
 
     final response = await _httpClient.patch(
       Uri.parse('$_baseUrl/users/me/vehicles/$vehicleId'),

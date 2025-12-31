@@ -54,6 +54,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
         model: _modelController.text,
         color: _colorController.text,
         isDefault: _isDefault,
+        type: _isCarSelected ? 'car' : 'motorcycle',
       );
 
       if (_imageFile != null) {

@@ -307,6 +307,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                             plateNumber: vehicle.plateNumber,
                             color: vehicle.color ?? '',
                             isDefault: vehicle.isDefault,
+                            type: vehicle.type,
                           ),
                         );
                         _fetchVehicles();

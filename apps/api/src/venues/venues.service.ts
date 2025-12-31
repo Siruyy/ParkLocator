@@ -523,11 +523,130 @@ export class VenuesService {
   ): Promise<Level> {
     const level = await this.findLevel(levelId);
 
-    // If capacity is being increased, add new spots
-    if (
+    // Handle Section Updates
+    if (updateLevelDto.sections) {
+      const existingSpots = await this.spotsRepository.find({ where: { levelId: level.id } });
+      
+      // Group existing spots by section
+      const spotsBySection: { [key: string]: Spot[] } = {};
+      existingSpots.forEach(spot => {
+        const sectionName = spot.section || 'General';
+        if (!spotsBySection[sectionName]) spotsBySection[sectionName] = [];
+        spotsBySection[sectionName].push(spot);
+      });
+
+      let newTotalCapacity = 0;
+      let newAvailableSpots = 0;
+
+      // Process each section in the update
+      for (const sectionDto of updateLevelDto.sections) {
+        const sectionName = sectionDto.name;
+        const targetCapacity = sectionDto.totalCapacity;
+        const currentSpots = spotsBySection[sectionName] || [];
+        const currentCount = currentSpots.length;
+
+        newTotalCapacity += targetCapacity;
+
+        if (targetCapacity > currentCount) {
+          // Add spots
+          const spotsToAdd = targetCapacity - currentCount;
+          const newSpots: Partial<Spot>[] = [];
+          for (let i = 1; i <= spotsToAdd; i++) {
+            // Find next available number for this section
+            // Simple approach: just append. Better approach: find gaps or max number.
+            // We'll use max number + 1 based on existing spots in this section
+            const maxNum = currentSpots.reduce((max, s) => {
+              const parts = s.spotNumber.split('-');
+              const num = parseInt(parts[parts.length - 1]);
+              return isNaN(num) ? max : Math.max(max, num);
+            }, 0);
+
+            newSpots.push({
+              spotNumber: `${sectionName}-${(maxNum + i).toString().padStart(3, '0')}`,
+              levelId: level.id,
+              status: SpotStatus.AVAILABLE,
+              section: sectionName,
+              vehicleType: sectionDto.vehicleType || 'Car',
+            });
+          }
+          await this.spotsRepository.save(newSpots);
+          newAvailableSpots += spotsToAdd; // Newly added spots are available
+        } else if (targetCapacity < currentCount) {
+          // Remove spots
+          const spotsToRemoveCount = currentCount - targetCapacity;
+          
+          // Sort spots to remove: Available first, then Maintenance. 
+          // We should NOT remove Occupied or Reserved spots if possible.
+          const sortedSpots = currentSpots.sort((a, b) => {
+            const score = (s: Spot) => {
+              if (s.status === SpotStatus.AVAILABLE) return 0;
+              if (s.status === SpotStatus.MAINTENANCE) return 1;
+              return 2; // Occupied/Reserved
+            };
+            return score(a) - score(b);
+          });
+
+          const spotsToRemove = sortedSpots.slice(0, spotsToRemoveCount);
+          
+          // Check if we are about to delete occupied spots
+          const hasOccupied = spotsToRemove.some(s => s.status === SpotStatus.OCCUPIED || s.status === SpotStatus.RESERVED);
+          if (hasOccupied) {
+            throw new BadRequestException(`Cannot reduce capacity for section ${sectionName}. Some spots are currently occupied or reserved.`);
+          }
+
+          await this.spotsRepository.remove(spotsToRemove);
+          // We removed spots, so we don't add to available count here (they are gone)
+        }
+        
+        // Count available spots for this section after changes
+        // We need to re-fetch or calculate carefully. 
+        // Simpler: Just count how many of the *remaining* spots are available.
+        // But we just modified the DB.
+        // Let's rely on the final aggregation.
+      }
+
+      // Handle removed sections (sections in DB but not in DTO)
+      const updatedSectionNames = new Set(updateLevelDto.sections.map(s => s.name));
+      for (const sectionName of Object.keys(spotsBySection)) {
+        if (!updatedSectionNames.has(sectionName)) {
+          const spotsToDelete = spotsBySection[sectionName];
+          const hasOccupied = spotsToDelete.some(s => s.status === SpotStatus.OCCUPIED || s.status === SpotStatus.RESERVED);
+          if (hasOccupied) {
+             throw new BadRequestException(`Cannot remove section ${sectionName}. Some spots are currently occupied or reserved.`);
+          }
+          await this.spotsRepository.remove(spotsToDelete);
+        }
+      }
+
+      // Recalculate total available spots for the level
+      // We need to fetch fresh state because we did multiple operations
+      const freshSpots = await this.spotsRepository.find({ where: { levelId: level.id } });
+      level.totalCapacity = freshSpots.length;
+      level.availableSpots = freshSpots.filter(s => s.status === SpotStatus.AVAILABLE).length;
+      
+      // Update level properties
+      if (updateLevelDto.name) level.name = updateLevelDto.name;
+      if (updateLevelDto.isCovered !== undefined) level.isCovered = updateLevelDto.isCovered;
+      if (updateLevelDto.vehicleTypes) level.vehicleTypes = updateLevelDto.vehicleTypes;
+      if (updateLevelDto.isActive !== undefined) level.isActive = updateLevelDto.isActive;
+
+      const updatedLevel = await this.levelsRepository.save(level);
+      
+      await this.auditService.log(
+        'UPDATE_LEVEL',
+        `Updated level ${level.levelNumber} with section changes`,
+        currentUserId,
+        level.id,
+        'Level'
+      );
+      
+      return updatedLevel;
+
+    } else if (
       updateLevelDto.totalCapacity &&
       updateLevelDto.totalCapacity > level.totalCapacity
     ) {
+      // Legacy simple capacity update (only supports increase)
       const spotsToAdd = updateLevelDto.totalCapacity - level.totalCapacity;
       const existingSpotCount = level.totalCapacity;
 
@@ -544,20 +663,16 @@ export class VenuesService {
 
       // Update available spots count
       level.availableSpots += spotsToAdd;
+      
+      Object.assign(level, updateLevelDto);
+      const updatedLevel = await this.levelsRepository.save(level);
+      return updatedLevel;
+    } else {
+      // Simple update without capacity/section changes
+      Object.assign(level, updateLevelDto);
+      const updatedLevel = await this.levelsRepository.save(level);
+      return updatedLevel;
     }
-
-    Object.assign(level, updateLevelDto);
-    const updatedLevel = await this.levelsRepository.save(level);
-
-    await this.auditService.log(
-      'UPDATE_LEVEL',
-      `Updated level ${level.levelNumber}`,
-      currentUserId,
-      level.id,
-      'Level'
-    );
-
-    return updatedLevel;
   }
 
   async removeLevel(id: string, currentUserId: string): Promise<void> {
@@ -576,6 +691,36 @@ export class VenuesService {
       id,
       'Level'
     );
+  }
+
+  async updateSpotStatus(
+    spotId: string,
+    status: SpotStatus,
+    currentUserId: string,
+  ): Promise<Spot> {
+    const spot = await this.spotsRepository.findOne({ where: { id: spotId } });
+
+    if (!spot) {
+      throw new NotFoundException(`Spot with ID ${spotId} not found`);
+    }
+
+    spot.status = status;
+    const updatedSpot = await this.spotsRepository.save(spot);
+
+    // Recalculate available spots for the level
+    const level = await this.levelsRepository.findOne({ where: { id: spot.levelId } });
+    if (level) {
+      const availableCount = await this.spotsRepository.count({
+        where: {
+          levelId: level.id,
+          status: SpotStatus.AVAILABLE,
+        },
+      });
+      level.availableSpots = availableCount;
+      await this.levelsRepository.save(level);
+    }
+
+    return updatedSpot;
   }
 
   // ==================== HELPERS ====================

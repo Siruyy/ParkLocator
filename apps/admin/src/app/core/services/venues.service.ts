@@ -15,6 +15,16 @@ export interface Level {
   sections?: { name: string; totalCapacity: number; vehicleType?: string }[];
 }
 
+export interface Spot {
+  id: string;
+  spotNumber: string;
+  status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+  isActive: boolean;
+  vehicleType: string;
+  levelId: string;
+  section?: string;
+}
+
 export interface Venue {
   id: string;
   name: string;
@@ -89,6 +99,14 @@ export class VenuesService {
     );
   }
 
+  updateVenueJson(id: string, venue: Partial<Venue>): Observable<Venue> {
+    return this.http.patch<ApiResponse<Venue>>(`${this.apiUrl}/${id}`, venue, {
+      headers: { 'Content-Type': 'application/json' }
+    }).pipe(
+      map(response => this.transformVenue(response.data))
+    );
+  }
+
   private transformVenue(venue: Venue): Venue {
     if (venue.imageUrl && !venue.imageUrl.startsWith('http')) {
       const baseUrl = environment.apiUrl.replace('/api/v1', '');
@@ -144,6 +162,18 @@ export class VenuesService {
   deleteLevel(levelId: string): Observable<void> {
     return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/levels/${levelId}`).pipe(
       map(() => void 0)
+    );
+  }
+
+  getSpots(levelId: string): Observable<Spot[]> {
+    return this.http.get<ApiResponse<Level>>(`${environment.apiUrl}/levels/${levelId}`).pipe(
+      map(response => (response.data as any).spots || [])
+    );
+  }
+
+  updateSpotStatus(spotId: string, status: string): Observable<Spot> {
+    return this.http.patch<ApiResponse<Spot>>(`${environment.apiUrl}/spots/${spotId}`, { status }).pipe(
+      map(response => response.data)
     );
   }
 }

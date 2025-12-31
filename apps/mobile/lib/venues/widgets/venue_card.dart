@@ -136,9 +136,7 @@ class VenueCard extends StatelessWidget {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).push(
-                          BookingTypePage.route(venue: venue),
-                        );
+                        BookingTypePage.navigateToBooking(context, venue);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(

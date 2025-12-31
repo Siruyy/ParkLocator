@@ -5,7 +5,14 @@ import 'package:mobile/profile/repository/vehicles_repository.dart';
 
 class EditVehiclePage extends StatefulWidget {
   const EditVehiclePage({
-    required this.vehicleId, required this.make, required this.model, required this.plateNumber, required this.color, required this.isDefault, super.key,
+    required this.vehicleId,
+    required this.make,
+    required this.model,
+    required this.plateNumber,
+    required this.color,
+    required this.isDefault,
+    required this.type,
+    super.key,
   });
 
   final String vehicleId;
@@ -14,6 +21,7 @@ class EditVehiclePage extends StatefulWidget {
   final String plateNumber;
   final String color;
   final bool isDefault;
+  final String type;
 
   static Route<void> route({
     required String vehicleId,
@@ -22,6 +30,7 @@ class EditVehiclePage extends StatefulWidget {
     required String plateNumber,
     required String color,
     required bool isDefault,
+    required String type,
   }) {
     return MaterialPageRoute<void>(
       builder: (_) => EditVehiclePage(
@@ -31,6 +40,7 @@ class EditVehiclePage extends StatefulWidget {
         plateNumber: plateNumber,
         color: color,
         isDefault: isDefault,
+        type: type,
       ),
     );
   }
@@ -45,6 +55,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
   late final TextEditingController _plateController;
   late final TextEditingController _colorController;
   late bool _isDefault;
+  late bool _isCarSelected;
   bool _isLoading = false;
 
   @override
@@ -55,6 +66,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
     _plateController = TextEditingController(text: widget.plateNumber);
     _colorController = TextEditingController(text: widget.color);
     _isDefault = widget.isDefault;
+    _isCarSelected = widget.type.toLowerCase() != 'motorcycle';
   }
 
   @override
@@ -85,6 +97,7 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
         model: _modelController.text,
         color: _colorController.text,
         isDefault: _isDefault,
+        type: _isCarSelected ? 'car' : 'motorcycle',
       );
 
       if (mounted) {
@@ -192,6 +205,101 @@ class _EditVehiclePageState extends State<EditVehiclePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 8),
+                    // Vehicle Type Section
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 6),
+                      child: Text(
+                        'Vehicle Type',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.grey[300] : Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _isCarSelected = true),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color: _isCarSelected
+                                    ? primaryColor.withOpacity(0.1)
+                                    : surfaceColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _isCarSelected
+                                      ? primaryColor
+                                      : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+                                  width: _isCarSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.directions_car,
+                                    color: _isCarSelected ? primaryColor : subTextColor,
+                                    size: 32,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Car',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: _isCarSelected ? FontWeight.w600 : FontWeight.w500,
+                                      color: _isCarSelected ? primaryColor : textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _isCarSelected = false),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color: !_isCarSelected
+                                    ? primaryColor.withOpacity(0.1)
+                                    : surfaceColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: !_isCarSelected
+                                      ? primaryColor
+                                      : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+                                  width: !_isCarSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.two_wheeler,
+                                    color: !_isCarSelected ? primaryColor : subTextColor,
+                                    size: 32,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Motorcycle',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: !_isCarSelected ? FontWeight.w600 : FontWeight.w500,
+                                      color: !_isCarSelected ? primaryColor : textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
                     _buildTextField(
                       controller: _makeController,
                       label: 'Vehicle Make',

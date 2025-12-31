@@ -16,6 +16,7 @@ class VehiclesRepository {
     String? model,
     String? color,
     bool isDefault = false,
+    String type = 'car',
   }) async {
     return _apiClient.createVehicle(
       plateNumber: plateNumber,
@@ -23,6 +24,7 @@ class VehiclesRepository {
       model: model,
       color: color,
       isDefault: isDefault,
+      type: type,
     );
   }
 
@@ -37,6 +39,7 @@ class VehiclesRepository {
     String? model,
     String? color,
     bool? isDefault,
+    String? type,
   }) async {
     return _apiClient.updateVehicle(
       vehicleId,
@@ -45,6 +48,7 @@ class VehiclesRepository {
       model: model,
       color: color,
       isDefault: isDefault,
+      type: type,
     );
   }
 

@@ -24,9 +24,11 @@ import {
   UpdateLevelDto,
   UpdateVenueConfigurationDto,
 } from './dto';
+import { SpotStatus } from './entities';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, ROLES_KEY } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import type { AuthUser } from '../auth/types/auth-user.type';
@@ -177,15 +179,18 @@ export class VenuesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  @UseInterceptors(FileInterceptor('image', {
-    storage: diskStorage({
-      destination: './uploads/venues',
-      filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-        return cb(null, `${randomName}${extname(file.originalname)}`);
-      }
+  @UseInterceptors(
+    LoggingInterceptor,
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/venues',
+        filename: (req, file, cb) => {
+          const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+          return cb(null, `${randomName}${extname(file.originalname)}`);
+        }
+      })
     })
-  }))
+  )
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateVenueDto: UpdateVenueDto,
@@ -296,7 +301,7 @@ export class LevelsController {
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const level = await this.venuesService.findLevel(id);
+    const level = await this.venuesService.findLevelWithSpots(id);
 
     return {
       success: true,
@@ -333,6 +338,28 @@ export class LevelsController {
     return {
       success: true,
       message: 'Level deleted successfully',
+    };
+  }
+}
+
+@Controller('spots')
+export class SpotsController {
+  constructor(private readonly venuesService: VenuesService) {}
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('status') status: SpotStatus,
+    @CurrentUser() currentUser: AuthUser,
+  ) {
+    const spot = await this.venuesService.updateSpotStatus(id, status, currentUser.userId);
+
+    return {
+      success: true,
+      data: spot,
+      message: 'Spot status updated successfully',
     };
   }
 }

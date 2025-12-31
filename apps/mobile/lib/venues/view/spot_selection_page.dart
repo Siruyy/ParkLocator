@@ -14,6 +14,7 @@ class SpotSelectionPage extends StatefulWidget {
     required this.initialLevelId,
     this.startDate,
     this.endDate,
+    this.vehicleType,
     super.key,
   });
 
@@ -21,12 +22,14 @@ class SpotSelectionPage extends StatefulWidget {
   final String initialLevelId;
   final DateTime? startDate;
   final DateTime? endDate;
+  final String? vehicleType; // Filter sections by this vehicle type
 
   static Route<void> route({
     required Venue venue,
     required String initialLevelId,
     DateTime? startDate,
     DateTime? endDate,
+    String? vehicleType,
   }) {
     return MaterialPageRoute<void>(
       builder: (_) => SpotSelectionPage(
@@ -34,6 +37,7 @@ class SpotSelectionPage extends StatefulWidget {
         initialLevelId: initialLevelId,
         startDate: startDate,
         endDate: endDate,
+        vehicleType: vehicleType,
       ),
     );
   }
@@ -93,23 +97,40 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
       );
 
       final spots = level.spots ?? [];
-      final sectionA = <api.Spot>[];
-      final sectionB = <api.Spot>[];
-
-      for (var i = 0; i < spots.length; i++) {
-        if (i.isEven) {
-          sectionA.add(spots[i]);
-        } else {
-          sectionB.add(spots[i]);
-        }
+      
+      // Group spots by their actual section name
+      final sectionMap = <String, List<api.Spot>>{};
+      for (final spot in spots) {
+        final sectionName = spot.section ?? 'General';
+        sectionMap.putIfAbsent(sectionName, () => []);
+        sectionMap[sectionName]!.add(spot);
       }
+
+      // Convert to Section objects and filter by vehicle type if specified
+      var sections = sectionMap.entries.map((entry) {
+        return Section(name: entry.key, spots: entry.value);
+      }).toList();
+
+      // Filter sections by vehicle type if specified
+      if (widget.vehicleType != null) {
+        sections = sections.where((section) {
+          // Check if section has any spots matching the vehicle type
+          return section.spots.any((spot) => spot.vehicleType == widget.vehicleType);
+        }).map((section) {
+          // Keep only spots that match the vehicle type
+          final filteredSpots = section.spots
+              .where((spot) => spot.vehicleType == widget.vehicleType)
+              .toList();
+          return Section(name: section.name, spots: filteredSpots);
+        }).toList();
+      }
+
+      // Sort sections alphabetically
+      sections.sort((a, b) => a.name.compareTo(b.name));
 
       if (mounted) {
         setState(() {
-          _sections = [
-            Section(name: 'Section A', spots: sectionA),
-            Section(name: 'Section B', spots: sectionB),
-          ];
+          _sections = sections;
           _isLoading = false;
         });
       }
@@ -194,13 +215,26 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Select Parking Spot',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+        title: Column(
+          children: [
+            const Text(
+              'Select Parking Spot',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            if (widget.vehicleType != null)
+              Text(
+                widget.vehicleType!,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+          ],
         ),
         centerTitle: true,
       ),
@@ -265,7 +299,41 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _sections == null || _sections!.isEmpty
-                ? const Center(child: Text('No sections available'))
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.local_parking,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            widget.vehicleType != null
+                                ? 'No ${widget.vehicleType} parking available on this level'
+                                : 'No sections available',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try selecting a different level',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
                 : ListView.separated(
                     padding: const EdgeInsets.all(24),
                     itemCount: _sections!.length,
@@ -442,7 +510,7 @@ class _SpotSelectionPageState extends State<SpotSelectionPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${currentLevel.name} • Standard',
+                      currentLevel.name,
                       style: const TextStyle(
                         color: Color(0xFF64748B),
                         fontSize: 14,
