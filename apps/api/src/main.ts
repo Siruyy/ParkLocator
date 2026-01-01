@@ -3,10 +3,14 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import helmet from 'helmet';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Security Headers
+  app.use(helmet());
 
   // Serve static assets
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
@@ -14,6 +18,7 @@ async function bootstrap() {
   });
 
   // Enable CORS for Angular admin and mobile app
+  // TODO: In production, replace 'true' with specific origins (e.g., ['https://admin.parklocator.com'])
   app.enableCors({
     origin: true, // Allow all origins for development
     credentials: true,

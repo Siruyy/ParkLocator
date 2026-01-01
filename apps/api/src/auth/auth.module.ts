@@ -16,8 +16,10 @@ import { User } from '../users/entities/user.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const secret =
-          configService.get<string>('JWT_SECRET') || 'default-secret';
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET environment variable is not defined');
+        }
         const expiresIn = configService.get<string>('JWT_EXPIRES_IN') || '7d';
         return {
           secret,
