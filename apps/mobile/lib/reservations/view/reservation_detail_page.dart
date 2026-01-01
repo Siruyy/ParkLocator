@@ -394,7 +394,7 @@ class _ReservationDetailPageState extends State<ReservationDetailPage> {
                       child: Column(
                         children: [
                           // Map Placeholder
-                          // TODO: Replace with dynamic Google Maps Static API URL
+                          // TODO(developer): Replace with dynamic Google Maps Static API URL
                           Container(
                             height: 128,
                             width: double.infinity,

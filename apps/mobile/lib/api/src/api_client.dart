@@ -19,23 +19,18 @@ class ApiClient {
 
   final http.Client _httpClient;
   final String _baseUrl;
-  String? _authToken;
+  String? authToken;
 
   String get baseUrl => _baseUrl;
   String get assetBaseUrl => _baseUrl.replaceAll('/api/v1', '');
-
-  /// Set the auth token for authenticated requests
-  void setAuthToken(String? token) {
-    _authToken = token;
-  }
 
   /// Get default headers including auth token if set
   Map<String, String> get _headers {
     final headers = <String, String>{
       'Content-Type': 'application/json',
     };
-    if (_authToken != null) {
-      headers['Authorization'] = 'Bearer $_authToken';
+    if (authToken != null) {
+      headers['Authorization'] = 'Bearer $authToken';
     }
     return headers;
   }
@@ -530,8 +525,8 @@ class ApiClient {
       Uri.parse('$_baseUrl/users/me/vehicles/$vehicleId/photo'),
     );
 
-    if (_authToken != null) {
-      request.headers['Authorization'] = 'Bearer $_authToken';
+    if (authToken != null) {
+      request.headers['Authorization'] = 'Bearer $authToken';
     }
 
     request.files.add(await http.MultipartFile.fromPath('file', filePath));

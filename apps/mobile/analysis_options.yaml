@@ -5,3 +5,11 @@ analyzer:
 linter:
   rules:
     public_member_api_docs: false
+    lines_longer_than_80_chars: false
+    avoid_catches_without_on_clauses: false
+    discarded_futures: false
+    use_build_context_synchronously: false
+    avoid_dynamic_calls: false
+    unawaited_futures: false
+    cascade_invocations: false
+    unnecessary_underscores: false

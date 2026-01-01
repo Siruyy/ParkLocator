@@ -352,7 +352,7 @@ class BookingExpiredPage extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () {
-                        // TODO: Implement rebook logic
+                        // TODO(developer): Implement rebook logic
                         Navigator.of(context).pop();
                         Navigator.push(context, VenueSearchPage.route());
                       },
@@ -376,7 +376,7 @@ class BookingExpiredPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   GestureDetector(
                     onTap: () {
-                      // TODO: Contact support
+                      // TODO(developer): Contact support
                     },
                     child: RichText(
                       text: const TextSpan(

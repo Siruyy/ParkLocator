@@ -31,7 +31,7 @@ class AuthRepository {
       final token = await _secureStorage.read(key: _tokenKey);
       if (token == null) return null;
 
-      _apiClient.setAuthToken(token);
+      _apiClient.authToken = token;
       final user = await _apiClient.getProfile();
       _currentUser = user;
       _authStateController.add(user);
@@ -79,7 +79,7 @@ class AuthRepository {
 
   Future<void> _saveAuthData(AuthResponse response) async {
     await _secureStorage.write(key: _tokenKey, value: response.accessToken);
-    _apiClient.setAuthToken(response.accessToken);
+    _apiClient.authToken = response.accessToken;
     _currentUser = response.user;
     _authStateController.add(response.user);
   }
@@ -87,7 +87,7 @@ class AuthRepository {
   Future<void> _clearStorage() async {
     await _secureStorage.delete(key: _tokenKey);
     await _secureStorage.delete(key: _userKey);
-    _apiClient.setAuthToken(null);
+    _apiClient.authToken = null;
   }
 
   /// Dispose resources
