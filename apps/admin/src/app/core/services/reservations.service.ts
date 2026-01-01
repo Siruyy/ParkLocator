@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface Reservation {
@@ -56,8 +56,10 @@ export class ReservationsService {
 
   constructor(private http: HttpClient) {}
 
-  getReservations(): Observable<ReservationsResponse> {
-    return this.http.get<ReservationsResponse>(`${this.apiUrl}/admin/all`);
+  getReservations(): Observable<Reservation[]> {
+    return this.http.get<{ data: Reservation[], meta: any }>(`${this.apiUrl}/admin/all`).pipe(
+      map(response => response.data)
+    );
   }
 
   cancelReservation(id: string): Observable<any> {

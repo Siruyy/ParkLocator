@@ -3,16 +3,64 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
-import { TableModule } from 'primeng/table';
+import { TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { Select } from 'primeng/select';
-import { FinanceService, Log } from '../core/services/finance.service';
+import { FinanceService, Log, AuditLog } from '../core/services/finance.service';
 import { AuthService } from '../core/services/auth.service';
 import { VenuesService } from '../core/services/venues.service';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
+interface QRLog {
+  timestamp: string;
+  venue: string;
+  gateId: string;
+  reservationId: string;
+  result: string;
+  reason: string;
+  originalLog: Log;
+}
+
+interface AdminLog {
+  user: {
+    name: string;
+    initials: string;
+    color: string;
+    role: string;
+  };
+  venue: string;
+  action: string;
+  details: string;
+  timestamp: string;
+  entity: string;
+  severity: string;
+  changes: any[];
+  resourceId: string;
+  originalLog: AuditLog;
+}
+
+interface LogDetails {
+  user?: {
+    name: string;
+    initials: string;
+    color: string;
+    role: string;
+  };
+  action?: string;
+  details?: string;
+  timestamp: string;
+  entity?: string;
+  resourceId?: string;
+  changes?: any[];
+  venue?: string;
+  gateId?: string;
+  reservationId?: string;
+  result?: string;
+  reason?: string;
+}
 
 @Component({
   selector: 'app-logs',
@@ -52,14 +100,14 @@ export class LogsComponent implements OnInit, OnDestroy {
   searchTerm = '';
   
   detailsVisible: boolean = false;
-  selectedLog: any = null;
+  selectedLog: LogDetails | null = null;
 
   venues = ['All Venues'];
   private venueMap: Map<string, string> = new Map(); // venueId -> venueName
 
-  qrLogs: any[] = [];
-  adminLogs: any[] = [];
-  venueLogs: any[] = []; // New array for venue logs
+  qrLogs: QRLog[] = [];
+  adminLogs: AdminLog[] = [];
+  venueLogs: AdminLog[] = []; // New array for venue logs
 
   ngOnInit() {
     this.loadLogs({ first: 0, rows: this.pageSize });
@@ -144,11 +192,13 @@ export class LogsComponent implements OnInit, OnDestroy {
     return Array.from({length: end - start + 1}, (_, i) => start + i);
   }
 
-  loadLogs(event: any) {
+  loadLogs(event: TableLazyLoadEvent) {
     this.loading = true;
-    this.currentPage = (event.first / event.rows) + 1;
+    const first = event.first ?? 0;
+    const rows = event.rows ?? this.pageSize;
+    this.currentPage = (first / rows) + 1;
     
-    this.financeService.getLogs(this.currentPage, event.rows, this.searchTerm).subscribe(response => {
+    this.financeService.getLogs(this.currentPage, rows, this.searchTerm).subscribe(response => {
       this.logs = response.data;
       
       // Map API logs to QR Logs format for display
@@ -174,9 +224,11 @@ export class LogsComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadAuditLogs(event: any) {
+  loadAuditLogs(event: TableLazyLoadEvent) {
     this.loading = true;
-    this.financeService.getAuditLogs(this.currentPage, event.rows, this.searchTerm).subscribe(response => {
+    const first = event.first ?? 0;
+    const rows = event.rows ?? this.pageSize;
+    this.financeService.getAuditLogs(this.currentPage, rows, this.searchTerm).subscribe(response => {
       this.adminLogs = response.data.map(log => {
         // Determine venue name from resourceId if resourceType is Venue
         let venueName = 'N/A';
@@ -219,9 +271,11 @@ export class LogsComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadVenueLogs(event: any) {
-    const page = (event.first / event.rows) + 1;
-    this.financeService.getAuditLogs(page, event.rows, this.searchTerm, 'DELETE_VENUE').subscribe(response => {
+  loadVenueLogs(event: TableLazyLoadEvent) {
+    const first = event.first ?? 0;
+    const rows = event.rows ?? this.pageSize;
+    const page = (first / rows) + 1;
+    this.financeService.getAuditLogs(page, rows, this.searchTerm, 'DELETE_VENUE').subscribe(response => {
       this.venueLogs = response.data.map(log => {
         return {
           user: log.user ? {
@@ -270,27 +324,44 @@ export class LogsComponent implements OnInit, OnDestroy {
     return 'Main Gate';
   }
 
-  showDetails(log: any) {
-    const original = log.originalLog || log;
+  showDetails(log: QRLog | AdminLog) {
+    // Determine if it's an AdminLog (has originalLog of type AuditLog)
+    const isAdminLog = 'entity' in log;
     
-    // Normalize for dialog display since API data structure differs from Mock data
-    this.selectedLog = {
-        ...original,
-        ...log, // Include the mapped properties from loadAuditLogs
-        user: log.user || (typeof original.user === 'string' ? {
-            name: original.user,
-            initials: original.user.substring(0, 2).toUpperCase(),
-            color: 'blue',
-            role: 'User'
-        } : original.user) || { name: 'System', initials: 'SY', color: 'blue', role: 'System' },
-        action: log.action || original.action || 'Unknown Action',
-        details: log.details || original.details || '',
-        timestamp: log.timestamp || (original.createdAt ? new Date(original.createdAt).toLocaleString() : ''),
-        entity: log.entity || original.resourceType || 'Activity',
-        resourceId: original.resourceId || null,
-        ipAddress: original.ipAddress || null,
-        changes: original.changes || []
-    };
+    if (isAdminLog) {
+      const adminLog = log as AdminLog;
+      this.selectedLog = {
+        user: adminLog.user,
+        action: adminLog.action,
+        details: adminLog.details,
+        timestamp: adminLog.timestamp,
+        entity: adminLog.entity,
+        resourceId: adminLog.resourceId,
+        changes: adminLog.changes,
+        venue: adminLog.venue
+      };
+    } else {
+      const qrLog = log as QRLog;
+      const original = qrLog.originalLog;
+      
+      this.selectedLog = {
+        user: {
+          name: original.user,
+          initials: original.user.substring(0, 2).toUpperCase(),
+          color: 'blue',
+          role: 'User'
+        },
+        action: original.action,
+        details: original.details,
+        timestamp: qrLog.timestamp,
+        entity: 'QR Scan',
+        venue: qrLog.venue,
+        gateId: qrLog.gateId,
+        reservationId: qrLog.reservationId,
+        result: qrLog.result,
+        reason: qrLog.reason
+      };
+    }
     
     this.detailsVisible = true;
   }

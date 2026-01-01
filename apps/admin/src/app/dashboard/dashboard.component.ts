@@ -5,8 +5,9 @@ import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { HeaderComponent } from '../layout/header/header.component';
 import { ChartModule } from 'primeng/chart';
 import { ButtonModule } from 'primeng/button';
-import { DashboardService, DashboardStats } from '../core/services/dashboard.service';
+import { DashboardService, DashboardStats, Activity } from '../core/services/dashboard.service';
 import { interval, Subscription } from 'rxjs';
+import { ChartData, ChartOptions, ScriptableContext, TooltipItem, ChartTypeRegistry } from 'chart.js';
 
 interface Alert {
   title: string;
@@ -41,7 +42,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   activeReservations = 0;
   todaysRevenue = 0;
   revenueTrend = 0;
-  recentActivities: any[] = [];
+  recentActivities: Activity[] = [];
   alerts: Alert[] = [];
   
   // Date/Time
@@ -50,8 +51,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Chart
   chartPeriod: '24h' | '7d' = '24h';
-  occupancyChartData: any;
-  chartOptions: any;
+  occupancyChartData: ChartData<'line'> | null = null;
+  chartOptions: ChartOptions<'line'> | null = null;
 
   loading = true;
 
@@ -132,7 +133,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
         tooltip: {
           callbacks: {
-            label: (context: any) => `${context.parsed.y}% occupancy`
+            label: (context: TooltipItem<'line'>) => `${context.parsed.y}% occupancy`
           }
         }
       },
@@ -152,11 +153,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
           ticks: {
             color: '#9ca3af',
             font: { size: 10 },
-            callback: (value: number) => `${value}%`
+            callback: (value: string | number) => `${value}%`
           },
           grid: {
-            color: 'rgba(156, 163, 175, 0.1)',
-            drawBorder: false
+            color: 'rgba(156, 163, 175, 0.1)'
           }
         }
       },
@@ -217,7 +217,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           pointHoverBackgroundColor: '#1c1c0d',
           pointHoverBorderColor: '#f9f506',
           pointHoverBorderWidth: 2,
-          backgroundColor: (context: any) => {
+          backgroundColor: (context: ScriptableContext<'line'>) => {
             const ctx = context.chart.ctx;
             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
             gradient.addColorStop(0, 'rgba(249, 245, 6, 0.3)');

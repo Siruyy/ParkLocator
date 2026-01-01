@@ -76,26 +76,26 @@ export class VenuesService {
   constructor(private http: HttpClient) {}
 
   getVenues(): Observable<Venue[]> {
-    return this.http.get<ApiResponse<Venue[]>>(this.apiUrl).pipe(
-      map(response => response.data.map(venue => this.transformVenue(venue)))
+    return this.http.get<Venue[]>(this.apiUrl).pipe(
+      map(venues => venues.map(venue => this.transformVenue(venue)))
     );
   }
 
   getVenue(id: string): Observable<Venue> {
-    return this.http.get<ApiResponse<Venue>>(`${this.apiUrl}/${id}`).pipe(
-      map(response => this.transformVenue(response.data))
+    return this.http.get<Venue>(`${this.apiUrl}/${id}`).pipe(
+      map(venue => this.transformVenue(venue))
     );
   }
 
   createVenue(venue: FormData): Observable<Venue> {
-    return this.http.post<ApiResponse<Venue>>(this.apiUrl, venue).pipe(
-      map(response => this.transformVenue(response.data))
+    return this.http.post<Venue>(this.apiUrl, venue).pipe(
+      map(venue => this.transformVenue(venue))
     );
   }
 
   updateVenue(id: string, venue: Partial<Venue> | FormData): Observable<Venue> {
-    return this.http.patch<ApiResponse<Venue>>(`${this.apiUrl}/${id}`, venue).pipe(
-      map(response => this.transformVenue(response.data))
+    return this.http.patch<Venue>(`${this.apiUrl}/${id}`, venue).pipe(
+      map(venue => this.transformVenue(venue))
     );
   }
 

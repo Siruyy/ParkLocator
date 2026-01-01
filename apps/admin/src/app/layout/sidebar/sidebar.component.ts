@@ -51,9 +51,9 @@ export class SidebarComponent implements OnInit {
 
   loadReservationStats() {
     this.reservationsService.getReservations().subscribe({
-      next: (response) => {
+      next: (reservations) => {
         // Count pending reservations
-        const pendingCount = response.data.filter(r => r.status === 'pending').length;
+        const pendingCount = reservations.filter(r => r.status === 'pending').length;
         
         this.menuItems.update(items => items.map(item => {
           if (item.label === 'Reservations') {

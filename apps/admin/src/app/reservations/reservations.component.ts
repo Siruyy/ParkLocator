@@ -90,8 +90,8 @@ export class ReservationsComponent implements OnInit {
   loadReservations() {
     this.loading = true;
     this.reservationsService.getReservations().subscribe({
-      next: (response) => {
-        this.reservations = response.data.map(r => {
+      next: (reservations) => {
+        this.reservations = reservations.map(r => {
           // Safe date parsing
           const parseDate = (dateStr: any): Date | null => {
             if (!dateStr) return null;

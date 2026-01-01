@@ -3,6 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface Activity {
+  title: string;
+  time: string | Date;
+  icon: string;
+  iconBg: string;
+  iconColor: string;
+  details: string;
+}
+
 export interface DashboardStats {
   userStats: {
     totalUsers: number;
@@ -23,14 +32,7 @@ export interface DashboardStats {
   activeReservations: number;
   todaysRevenue: number;
   revenueTrend?: number;
-  recentActivities: {
-    title: string;
-    time: string | Date;
-    icon: string;
-    iconBg: string;
-    iconColor: string;
-    details: string;
-  }[];
+  recentActivities: Activity[];
 }
 
 @Injectable({

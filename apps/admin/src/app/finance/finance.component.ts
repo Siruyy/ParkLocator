@@ -10,6 +10,7 @@ import { Select } from 'primeng/select';
 import { FinanceService, RevenueStat, Transaction, FinanceSummary } from '../core/services/finance.service';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ChartData, ChartOptions, ScriptableContext } from 'chart.js';
 
 @Component({
   selector: 'app-finance',
@@ -38,8 +39,8 @@ export class FinanceComponent implements OnInit, OnDestroy {
   summary: FinanceSummary | null = null;
 
   // Chart Data
-  revenueData: any;
-  chartOptions: any;
+  revenueData: ChartData<'line'> | null = null;
+  chartOptions: ChartOptions<'line'> | null = null;
   currentPeriod: 'day' | 'month' = 'day';
 
   // Table Data
@@ -92,7 +93,7 @@ export class FinanceComponent implements OnInit, OnDestroy {
 
   loadSummary() {
     this.financeService.getSummary().subscribe(response => {
-      this.summary = response.data;
+      this.summary = response;
     });
   }
 
@@ -118,8 +119,7 @@ export class FinanceComponent implements OnInit, OnDestroy {
             color: textColorSecondary
           },
           grid: {
-            color: surfaceBorder,
-            drawBorder: false
+            color: surfaceBorder
           }
         },
         y: {
@@ -127,8 +127,7 @@ export class FinanceComponent implements OnInit, OnDestroy {
             color: textColorSecondary
           },
           grid: {
-            color: surfaceBorder,
-            drawBorder: false
+            color: surfaceBorder
           }
         }
       }
@@ -137,7 +136,7 @@ export class FinanceComponent implements OnInit, OnDestroy {
 
   loadRevenueData(period: 'day' | 'month') {
     this.financeService.getRevenueStats(period).subscribe(response => {
-      const stats = response.data;
+      const stats = response;
       
       this.revenueData = {
         labels: stats.map(s => s.date),
@@ -148,7 +147,7 @@ export class FinanceComponent implements OnInit, OnDestroy {
             fill: true,
             borderColor: '#4CAF50',
             tension: 0.4,
-            backgroundColor: (context: any) => {
+            backgroundColor: (context: ScriptableContext<'line'>) => {
               const ctx = context.chart.ctx;
               const gradient = ctx.createLinearGradient(0, 0, 0, 400);
               gradient.addColorStop(0, 'rgba(76, 175, 80, 0.2)');
