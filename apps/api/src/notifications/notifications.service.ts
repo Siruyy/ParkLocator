@@ -10,7 +10,12 @@ export class NotificationsService {
     private notificationsRepository: Repository<Notification>,
   ) {}
 
-  async create(userId: string, title: string, message: string, type: NotificationType = NotificationType.INFO) {
+  async create(
+    userId: string,
+    title: string,
+    message: string,
+    type: NotificationType = NotificationType.INFO,
+  ) {
     const notification = this.notificationsRepository.create({
       userId,
       title,
@@ -33,7 +38,10 @@ export class NotificationsService {
   }
 
   async markAllAsRead(userId: string) {
-    await this.notificationsRepository.update({ userId, isRead: false }, { isRead: true });
+    await this.notificationsRepository.update(
+      { userId, isRead: false },
+      { isRead: true },
+    );
     return { success: true };
   }
 }

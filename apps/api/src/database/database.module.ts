@@ -20,7 +20,17 @@ import { Notification } from '../notifications/entities/notification.entity';
         username: configService.get('DB_USER'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Vehicle, Venue, Level, Spot, VenueConfiguration, Reservation, AuditLog, Notification],
+        entities: [
+          User,
+          Vehicle,
+          Venue,
+          Level,
+          Spot,
+          VenueConfiguration,
+          Reservation,
+          AuditLog,
+          Notification,
+        ],
         synchronize: true, // Enabled for dev to update schema
       }),
     }),

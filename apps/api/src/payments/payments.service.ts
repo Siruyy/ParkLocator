@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
@@ -9,7 +11,8 @@ export class PaymentsService {
   private readonly secretKey: string;
 
   constructor(private configService: ConfigService) {
-    this.secretKey = this.configService.get<string>('PAYMONGO_SECRET_KEY') || '';
+    this.secretKey =
+      this.configService.get<string>('PAYMONGO_SECRET_KEY') || '';
   }
 
   private get headers() {

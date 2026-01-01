@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User, UserRole, UserStatus } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -31,7 +31,10 @@ export class UsersService {
     private readonly auditService: AuditService,
   ) {}
 
-  async findAll(query: QueryUsersDto, currentUser?: User): Promise<PaginatedUsers> {
+  async findAll(
+    query: QueryUsersDto,
+    currentUser?: User,
+  ): Promise<PaginatedUsers> {
     const { search, role, venueId, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
@@ -40,10 +43,12 @@ export class UsersService {
     // Filter by venue if Manager
     if (currentUser && currentUser.role === UserRole.MANAGER) {
       if (currentUser.venueId) {
-        queryBuilder.andWhere('user.venueId = :venueId', { venueId: currentUser.venueId });
+        queryBuilder.andWhere('user.venueId = :venueId', {
+          venueId: currentUser.venueId,
+        });
       } else {
         // Manager with no venue sees nothing (or maybe just themselves?)
-        queryBuilder.andWhere('1 = 0'); 
+        queryBuilder.andWhere('1 = 0');
       }
     } else if (venueId) {
       // Super Admin filtering by venue
@@ -74,7 +79,7 @@ export class UsersService {
         'user.createdAt',
         'user.updatedAt',
         'venue.name',
-        'venue.id'
+        'venue.id',
       ])
       .orderBy('user.createdAt', 'DESC')
       .skip(skip)
@@ -93,10 +98,15 @@ export class UsersService {
     };
   }
 
-  async create(createUserDto: CreateUserDto, currentUserId: string): Promise<Omit<User, 'password'>> {
+  async create(
+    createUserDto: CreateUserDto,
+    currentUserId: string,
+  ): Promise<Omit<User, 'password'>> {
     const { email, password, role, venueId } = createUserDto;
-    
-    const existingUser = await this.usersRepository.findOne({ where: { email } });
+
+    const existingUser = await this.usersRepository.findOne({
+      where: { email },
+    });
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
@@ -106,7 +116,7 @@ export class UsersService {
       email,
       password: hashedPassword,
       role,
-      venueId
+      venueId,
     });
 
     await this.usersRepository.save(user);
@@ -116,9 +126,9 @@ export class UsersService {
       `Created user ${email} with role ${role}`,
       currentUserId,
       user.id,
-      'User'
+      'User',
     );
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = user;
     return result;
@@ -139,19 +149,23 @@ export class UsersService {
     return result;
   }
 
-  async updateProfile(id: string, updateUserDto: UpdateUserDto, currentUserId?: string): Promise<Omit<User, 'password'>> {
+  async updateProfile(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    currentUserId?: string,
+  ): Promise<Omit<User, 'password'>> {
     const beforeUser = await this.usersRepository.findOne({ where: { id } });
-    
+
     await this.usersRepository.update(id, updateUserDto);
-    
+
     if (currentUserId && beforeUser) {
-      const afterUser = await this.usersRepository.findOne({ where: { id } });
+      // const afterUser = await this.usersRepository.findOne({ where: { id } });
       const changes = this.auditService.calculateChanges(
         beforeUser,
         { ...beforeUser, ...updateUserDto },
-        Object.keys(updateUserDto)
+        Object.keys(updateUserDto),
       );
-      
+
       await this.auditService.log(
         'UPDATE_USER',
         `Updated profile for user ${beforeUser.email}`,
@@ -159,7 +173,7 @@ export class UsersService {
         id,
         'User',
         undefined,
-        changes
+        changes,
       );
     }
 
@@ -193,10 +207,11 @@ export class UsersService {
       user.id,
       'User',
       undefined,
-      [{ field: 'role', before: oldRole, after: newRole }]
+      [{ field: 'role', before: oldRole, after: newRole }],
     );
 
     // Return user without password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
     return result;
   }
@@ -228,10 +243,11 @@ export class UsersService {
       user.id,
       'User',
       undefined,
-      [{ field: 'status', before: oldStatus, after: newStatus }]
+      [{ field: 'status', before: oldStatus, after: newStatus }],
     );
 
     // Return user without password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
     return result;
   }
@@ -255,7 +271,7 @@ export class UsersService {
       `Deleted user ${user.email}`,
       currentUserId,
       id,
-      'User'
+      'User',
     );
   }
 
@@ -268,7 +284,7 @@ export class UsersService {
 
     const salt = await bcrypt.genSalt();
     user.password = await bcrypt.hash(newPassword, salt);
-    
+
     await this.usersRepository.save(user);
 
     await this.auditService.log(
@@ -276,7 +292,7 @@ export class UsersService {
       'User changed their password',
       id,
       id,
-      'User'
+      'User',
     );
   }
 }

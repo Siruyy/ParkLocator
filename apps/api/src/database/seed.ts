@@ -1,4 +1,3 @@
-import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User, UserRole } from '../users/entities/user.entity';
 import { AppDataSource } from './data-source';
@@ -11,7 +10,9 @@ async function seed() {
     const userRepository = AppDataSource.getRepository(User);
 
     const superAdminEmail = 'admin@parklocator.com';
-    const existingAdmin = await userRepository.findOne({ where: { email: superAdminEmail } });
+    const existingAdmin = await userRepository.findOne({
+      where: { email: superAdminEmail },
+    });
 
     if (existingAdmin) {
       console.log('Super Admin already exists.');
@@ -41,4 +42,4 @@ async function seed() {
   }
 }
 
-seed();
+void seed();

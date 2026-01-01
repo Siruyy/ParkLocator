@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Controller, Get, Query, UseGuards, Request } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -64,7 +65,12 @@ export class ReportsController {
     @Query('search') search?: string,
   ) {
     // For MVP, logs are essentially reservation history/events
-    const { data, total } = await this.reportsService.getLogs(page, limit, req.user, search);
+    const { data, total } = await this.reportsService.getLogs(
+      page,
+      limit,
+      req.user,
+      search,
+    );
     return {
       success: true,
       data,
@@ -84,7 +90,12 @@ export class ReportsController {
     @Query('search') search?: string,
     @Query('action') action?: string,
   ) {
-    const { data, total } = await this.reportsService.getAuditLogs(page, limit, search, action);
+    const { data, total } = await this.reportsService.getAuditLogs(
+      page,
+      limit,
+      search,
+      action,
+    );
     return {
       success: true,
       data,

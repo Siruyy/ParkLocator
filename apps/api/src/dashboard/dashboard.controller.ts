@@ -12,7 +12,8 @@ export class DashboardController {
 
   @Get('stats')
   @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
-  async getStats(@Request() req) {
+  async getStats(@Request() req: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     return this.dashboardService.getStats(req.user);
   }
 }

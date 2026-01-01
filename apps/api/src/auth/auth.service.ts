@@ -47,11 +47,16 @@ export class AuthService {
       `New user registered: ${email}`,
       user.id,
       user.id,
-      'User'
+      'User',
     );
 
     // Generate JWT
-    const payload = { sub: user.id, email: user.email, role: user.role, venueId: user.venueId };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      venueId: user.venueId,
+    };
     const access_token = await this.jwtService.signAsync(payload);
 
     return {
@@ -80,7 +85,12 @@ export class AuthService {
     }
 
     // Generate JWT
-    const payload = { sub: user.id, email: user.email, role: user.role, venueId: user.venueId };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      venueId: user.venueId,
+    };
     const access_token = await this.jwtService.signAsync(payload);
 
     await this.auditService.log(
@@ -88,7 +98,7 @@ export class AuthService {
       `User logged in: ${email}`,
       user.id,
       user.id,
-      'User'
+      'User',
     );
 
     return {

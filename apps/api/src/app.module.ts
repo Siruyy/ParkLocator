@@ -26,8 +26,8 @@ import { PaymentsModule } from './payments/payments.module';
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        store: redisStore,
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore as any,
         host: configService.get('REDIS_HOST', 'localhost'),
         port: configService.get('REDIS_PORT', 6379),
         ttl: 600, // 10 minutes default

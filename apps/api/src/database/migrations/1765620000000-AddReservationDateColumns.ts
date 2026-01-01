@@ -1,8 +1,11 @@
-import { MigrationInterface, QueryRunner, TableColumn, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  TableColumn,
+  TableIndex,
+} from 'typeorm';
 
-export class AddReservationDateColumns1765620000000
-  implements MigrationInterface
-{
+export class AddReservationDateColumns1765620000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add start_at column
     await queryRunner.addColumn(

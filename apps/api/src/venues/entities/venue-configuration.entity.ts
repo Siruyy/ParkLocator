@@ -22,34 +22,70 @@ export class VenueConfiguration {
   venue: Venue;
 
   // Standard Rates
-  @Column({ name: 'reservation_fee', type: 'decimal', precision: 10, scale: 2, default: 0.00 })
+  @Column({
+    name: 'reservation_fee',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0.0,
+  })
   reservationFee: number;
 
-  @Column({ name: 'base_rate', type: 'decimal', precision: 10, scale: 2, default: 40.00 })
+  @Column({
+    name: 'base_rate',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 40.0,
+  })
   baseRate: number;
 
   @Column({ name: 'base_duration', default: 1 })
   baseDuration: number; // hours
 
-  @Column({ name: 'succeeding_hour_rate', type: 'decimal', precision: 10, scale: 2, default: 20.00 })
+  @Column({
+    name: 'succeeding_hour_rate',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 20.0,
+  })
   succeedingHourRate: number;
 
   // Weekend Surcharge
-  @Column({ name: 'weekend_surcharge', type: 'decimal', precision: 10, scale: 2, default: 0.00 })
+  @Column({
+    name: 'weekend_surcharge',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0.0,
+  })
   weekendSurcharge: number;
 
   @Column({ name: 'is_weekend_surcharge_active', default: false })
   isWeekendSurchargeActive: boolean;
 
   // Motorcycle Flat Rate
-  @Column({ name: 'motorcycle_flat_rate', type: 'decimal', precision: 10, scale: 2, default: 30.00 })
+  @Column({
+    name: 'motorcycle_flat_rate',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 30.0,
+  })
   motorcycleFlatRate: number;
 
   @Column({ name: 'is_motorcycle_flat_rate_active', default: false })
   isMotorcycleFlatRateActive: boolean;
 
   // Overnight Parking
-  @Column({ name: 'overnight_flat_rate', type: 'decimal', precision: 10, scale: 2, default: 300.00 })
+  @Column({
+    name: 'overnight_flat_rate',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 300.0,
+  })
   overnightFlatRate: number;
 
   @Column({ name: 'overnight_start_hour', default: '22:00' })
@@ -72,10 +108,22 @@ export class VenueConfiguration {
   maxReservationHold: number; // minutes
 
   // Penalties
-  @Column({ name: 'lost_ticket_penalty', type: 'decimal', precision: 10, scale: 2, default: 500.00 })
+  @Column({
+    name: 'lost_ticket_penalty',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 500.0,
+  })
   lostTicketPenalty: number;
 
-  @Column({ name: 'illegal_parking_penalty', type: 'decimal', precision: 10, scale: 2, default: 1000.00 })
+  @Column({
+    name: 'illegal_parking_penalty',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 1000.0,
+  })
   illegalParkingPenalty: number;
 
   @CreateDateColumn({ name: 'created_at' })

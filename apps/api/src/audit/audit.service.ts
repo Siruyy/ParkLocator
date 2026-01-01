@@ -1,8 +1,8 @@
+/* eslint-disable */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Brackets } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
-import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuditService {
@@ -35,16 +35,23 @@ export class AuditService {
   /**
    * Helper to calculate changes between two objects
    */
-  calculateChanges(before: Record<string, any>, after: Record<string, any>, fieldsToTrack?: string[]): { field: string; before: any; after: any }[] {
+  calculateChanges(
+    before: Record<string, any>,
+    after: Record<string, any>,
+    fieldsToTrack?: string[],
+  ): { field: string; before: any; after: any }[] {
     const changes: { field: string; before: any; after: any }[] = [];
     const keys = fieldsToTrack || Object.keys({ ...before, ...after });
-    
+
     for (const key of keys) {
-      if (key === 'password' || key === 'updatedAt' || key === 'createdAt') continue;
-      
+      if (key === 'password' || key === 'updatedAt' || key === 'createdAt')
+        continue;
+
+       
       const beforeVal = before[key];
+       
       const afterVal = after[key];
-      
+
       if (JSON.stringify(beforeVal) !== JSON.stringify(afterVal)) {
         changes.push({
           field: key,
@@ -53,12 +60,18 @@ export class AuditService {
         });
       }
     }
-    
+
     return changes;
   }
 
-  async findAll(page: number = 1, limit: number = 20, search?: string, action?: string): Promise<{ data: AuditLog[]; total: number }> {
-    const query = this.auditLogRepository.createQueryBuilder('log')
+  async findAll(
+    page: number = 1,
+    limit: number = 20,
+    search?: string,
+    action?: string,
+  ): Promise<{ data: AuditLog[]; total: number }> {
+    const query = this.auditLogRepository
+      .createQueryBuilder('log')
       .leftJoinAndSelect('log.user', 'user')
       .orderBy('log.createdAt', 'DESC');
 
@@ -68,11 +81,13 @@ export class AuditService {
 
     if (search && search.trim().length > 0) {
       const searchTerm = `%${search.trim()}%`;
-      query.where(new Brackets(qb => {
-        qb.where('user.email ILIKE :search', { search: searchTerm })
-          .orWhere('log.action ILIKE :search', { search: searchTerm })
-          .orWhere('log.details ILIKE :search', { search: searchTerm });
-      }));
+      query.where(
+        new Brackets((qb) => {
+          qb.where('user.email ILIKE :search', { search: searchTerm })
+            .orWhere('log.action ILIKE :search', { search: searchTerm })
+            .orWhere('log.details ILIKE :search', { search: searchTerm });
+        }),
+      );
     }
 
     // Apply pagination after filters

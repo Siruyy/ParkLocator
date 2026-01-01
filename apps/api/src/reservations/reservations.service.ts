@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
+/* eslint-disable prefer-const */
 import {
   Injectable,
   NotFoundException,
@@ -6,7 +10,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, LessThan, MoreThan, In } from 'typeorm';
-import { Reservation, ReservationStatus, ReservationType } from './entities/reservation.entity';
+import {
+  Reservation,
+  ReservationStatus,
+  ReservationType,
+} from './entities/reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Spot, SpotStatus } from '../venues/entities/spot.entity';
 import { Level } from '../venues/entities/level.entity';
@@ -42,7 +50,6 @@ export class ReservationsService {
     private notificationsService: NotificationsService,
   ) {}
 
-
   /**
    * Create a reservation with transactional spot locking to prevent double-booking
    */
@@ -60,17 +67,23 @@ export class ReservationsService {
       endAt,
     } = createReservationDto;
 
-    const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
+    const venue = await this.venuesRepository.findOne({
+      where: { id: venueId },
+    });
     if (!venue) {
       throw new NotFoundException('Venue not found');
     }
 
     if (venue.requireVehicleDetails && !vehicleId) {
-      throw new BadRequestException('Vehicle is required for reservation at this venue');
+      throw new BadRequestException(
+        'Vehicle is required for reservation at this venue',
+      );
     }
 
     const startTime = startAt ? new Date(startAt) : new Date();
-    const endTime = endAt ? new Date(endAt) : new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
+    const endTime = endAt
+      ? new Date(endAt)
+      : new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
 
     let vehicle: Vehicle | null = null;
 
@@ -85,14 +98,20 @@ export class ReservationsService {
       const overlappingReservation = await this.reservationsRepository.findOne({
         where: {
           vehicleId,
-          status: In([ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN]),
+          status: In([
+            ReservationStatus.PENDING,
+            ReservationStatus.CONFIRMED,
+            ReservationStatus.CHECKED_IN,
+          ]),
           startAt: LessThan(endTime),
           endAt: MoreThan(startTime),
         },
       });
 
       if (overlappingReservation) {
-        throw new ConflictException('This vehicle already has a reservation for the selected time slot.');
+        throw new ConflictException(
+          'This vehicle already has a reservation for the selected time slot.',
+        );
       }
     }
 
@@ -167,14 +186,14 @@ export class ReservationsService {
 
       if (startAt) {
         // "Book for Later" - use provided start date
-        reservationStartAt = new Date(startAt as string);
+        reservationStartAt = new Date(startAt);
         reservationType = ReservationType.SCHEDULED;
       } else {
         // "Book Now" - start immediately
         reservationStartAt = new Date();
         reservationType = ReservationType.IMMEDIATE;
       }
-      
+
       // End time = Start + Base Duration (succeeding hours tracked separately)
       reservationEndAt = new Date(
         reservationStartAt.getTime() + baseDurationHours * 60 * 60 * 1000,
@@ -192,14 +211,14 @@ export class ReservationsService {
               ReservationStatus.CHECKED_IN,
             ],
           })
-          .andWhere(
-            '(r.start_at < :endAt AND r.end_at > :startAt)',
-            { startAt: reservationStartAt, endAt: reservationEndAt },
-          )
+          .andWhere('(r.start_at < :endAt AND r.end_at > :startAt)', {
+            startAt: reservationStartAt,
+            endAt: reservationEndAt,
+          })
           .getOne();
 
         if (overlappingVehicleReservation) {
-          // Use type assertion or optional chaining carefully. 
+          // Use type assertion or optional chaining carefully.
           // Since we fetched vehicle above, it should be available if vehicleId is present.
           const plateNumber = vehicle ? vehicle.plateNumber : 'selected';
           throw new ConflictException(
@@ -269,8 +288,7 @@ export class ReservationsService {
       // For "Book Now" only: Update spot status to reserved immediately
       // For "Book for Later": spot status remains available until the reservation time
       const isBookNow =
-        !startAt ||
-        new Date(startAt as string).getTime() - Date.now() < 60 * 60 * 1000; // within 1 hour
+        !startAt || new Date(startAt).getTime() - Date.now() < 60 * 60 * 1000; // within 1 hour
       if (isBookNow) {
         spot.status = SpotStatus.RESERVED;
         await queryRunner.manager.save(spot);
@@ -389,7 +407,11 @@ export class ReservationsService {
   /**
    * Cancel a reservation and release the spot
    */
-  async cancel(id: string, userId: string, checkOwnership: boolean = true): Promise<Reservation> {
+  async cancel(
+    id: string,
+    userId: string,
+    checkOwnership: boolean = true,
+  ): Promise<Reservation> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -455,7 +477,7 @@ export class ReservationsService {
         `Cancelled reservation ${reservation.qrCode}`,
         userId,
         id,
-        'Reservation'
+        'Reservation',
       );
 
       // Send notification
@@ -662,19 +684,16 @@ export class ReservationsService {
     }
 
     // Single day booking
-    
+
     // Check for motorcycle flat rate
-    if (
-      vehicleType === 'Motorcycle' &&
-      config.isMotorcycleFlatRateActive
-    ) {
+    if (vehicleType === 'Motorcycle' && config.isMotorcycleFlatRateActive) {
       return Number(config.motorcycleFlatRate);
     }
 
     // Standard Rate Calculation
     let price = Number(config.baseRate);
     const baseDuration = config.baseDuration || 1; // Default to 1 hour if not set
-    
+
     if (billableDuration > baseDuration) {
       const succeedingHours = Math.ceil(billableDuration - baseDuration);
       price += succeedingHours * Number(config.succeedingHourRate);

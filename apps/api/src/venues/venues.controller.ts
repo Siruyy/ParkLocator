@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
   Controller,
   Get,
@@ -26,7 +29,7 @@ import {
 } from './dto';
 import { SpotStatus } from './entities';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard, ROLES_KEY } from '../auth/guards/roles.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -61,7 +64,7 @@ export class VenuesController {
     // For now, let's assume public can see all, but if logged in as manager, we filter.
     // Actually, the mobile app calls this publicly.
     // So we need to check if req.user exists.
-    
+
     const venues = await this.venuesService.findAll(req.user);
 
     return venues;
@@ -83,7 +86,11 @@ export class VenuesController {
     const startDate = startAt ? new Date(startAt) : undefined;
     const endDate = endAt ? new Date(endAt) : undefined;
 
-    const availability = await this.venuesService.getAvailability(id, startDate, endDate);
+    const availability = await this.venuesService.getAvailability(
+      id,
+      startDate,
+      endDate,
+    );
 
     return {
       success: true,
@@ -134,15 +141,20 @@ export class VenuesController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
-  @UseInterceptors(FileInterceptor('image', {
-    storage: diskStorage({
-      destination: './uploads/venues',
-      filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-        return cb(null, `${randomName}${extname(file.originalname)}`);
-      }
-    })
-  }))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/venues',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          return cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
   async create(
     @Body() createVenueDto: CreateVenueDto,
     @UploadedFile() file: Express.Multer.File,
@@ -151,7 +163,10 @@ export class VenuesController {
     if (file) {
       createVenueDto.imageUrl = `/uploads/venues/${file.filename}`;
     }
-    const venue = await this.venuesService.create(createVenueDto, currentUser.userId);
+    const venue = await this.venuesService.create(
+      createVenueDto,
+      currentUser.userId,
+    );
 
     return {
       success: true,
@@ -169,11 +184,14 @@ export class VenuesController {
       storage: diskStorage({
         destination: './uploads/venues',
         filename: (req, file, cb) => {
-          const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
           return cb(null, `${randomName}${extname(file.originalname)}`);
-        }
-      })
-    })
+        },
+      }),
+    }),
   )
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -184,7 +202,11 @@ export class VenuesController {
     if (file) {
       updateVenueDto.imageUrl = `/uploads/venues/${file.filename}`;
     }
-    const venue = await this.venuesService.update(id, updateVenueDto, currentUser.userId);
+    const venue = await this.venuesService.update(
+      id,
+      updateVenueDto,
+      currentUser.userId,
+    );
 
     return {
       success: true,
@@ -224,8 +246,6 @@ export class VenuesController {
     };
   }
 
-
-
   @Post(':id/levels')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MANAGER, UserRole.SUPER_ADMIN)
@@ -234,7 +254,11 @@ export class VenuesController {
     @Body() createLevelDto: CreateLevelDto,
     @CurrentUser() currentUser: AuthUser,
   ) {
-    const level = await this.venuesService.createLevel(id, createLevelDto, currentUser.userId);
+    const level = await this.venuesService.createLevel(
+      id,
+      createLevelDto,
+      currentUser.userId,
+    );
 
     return {
       success: true,
@@ -301,7 +325,11 @@ export class LevelsController {
     @Body() updateLevelDto: UpdateLevelDto,
     @CurrentUser() currentUser: AuthUser,
   ) {
-    const level = await this.venuesService.updateLevel(id, updateLevelDto, currentUser.userId);
+    const level = await this.venuesService.updateLevel(
+      id,
+      updateLevelDto,
+      currentUser.userId,
+    );
 
     return {
       success: true,
@@ -338,7 +366,11 @@ export class SpotsController {
     @Body('status') status: SpotStatus,
     @CurrentUser() currentUser: AuthUser,
   ) {
-    const spot = await this.venuesService.updateSpotStatus(id, status, currentUser.userId);
+    const spot = await this.venuesService.updateSpotStatus(
+      id,
+      status,
+      currentUser.userId,
+    );
 
     return {
       success: true,

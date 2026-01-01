@@ -2,11 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReportsService } from './reports.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Reservation, ReservationStatus } from '../reservations/entities/reservation.entity';
+import { Reservation } from '../reservations/entities/reservation.entity';
 import { DataSource } from 'typeorm';
 import { UserRole } from '../users/entities/user.entity';
 
@@ -66,7 +66,10 @@ describe('ReportsService', () => {
 
       await service.getFinanceSummary(user);
 
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith('r.venueId = :venueId', { venueId: 'venue-123' });
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'r.venueId = :venueId',
+        { venueId: 'venue-123' },
+      );
     });
 
     it('should NOT filter by venueId for SUPER_ADMIN', async () => {
@@ -79,7 +82,7 @@ describe('ReportsService', () => {
 
       // Check that andWhere was NOT called with venueId
       const calls = queryBuilder.andWhere.mock.calls;
-      const venueCall = calls.find(call => call[0].includes('venueId'));
+      const venueCall = calls.find((call) => call[0].includes('venueId'));
       expect(venueCall).toBeUndefined();
     });
   });
@@ -91,9 +94,11 @@ describe('ReportsService', () => {
 
       await service.getTransactions(1, 10, user);
 
-      expect(repositoryMock.findAndCount).toHaveBeenCalledWith(expect.objectContaining({
-        where: { venue: { id: 'venue-123' } }
-      }));
+      expect(repositoryMock.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { venue: { id: 'venue-123' } },
+        }),
+      );
     });
 
     it('should NOT filter by venueId for SUPER_ADMIN', async () => {
@@ -102,9 +107,11 @@ describe('ReportsService', () => {
 
       await service.getTransactions(1, 10, user);
 
-      expect(repositoryMock.findAndCount).toHaveBeenCalledWith(expect.objectContaining({
-        where: {}
-      }));
+      expect(repositoryMock.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {},
+        }),
+      );
     });
   });
 });

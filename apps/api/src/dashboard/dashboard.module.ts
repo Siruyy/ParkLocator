@@ -8,9 +8,7 @@ import { Level } from '../venues/entities/level.entity';
 import { Reservation } from '../reservations/entities/reservation.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, Venue, Level, Reservation]),
-  ],
+  imports: [TypeOrmModule.forFeature([User, Venue, Level, Reservation])],
   controllers: [DashboardController],
   providers: [DashboardService],
 })

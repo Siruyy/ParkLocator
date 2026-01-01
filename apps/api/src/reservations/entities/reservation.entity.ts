@@ -116,10 +116,22 @@ export class Reservation {
   @Column({ name: 'checked_out_at', type: 'timestamp', nullable: true })
   checkedOutAt: Date | null;
 
-  @Column({ name: 'actual_duration_hours', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'actual_duration_hours',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
   actualDurationHours: number | null;
 
-  @Column({ name: 'final_amount', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'final_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
   finalAmount: number | null;
 
   @Column({ name: 'qr_code', type: 'varchar', nullable: true, unique: true })

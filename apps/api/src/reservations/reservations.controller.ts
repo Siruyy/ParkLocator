@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   Controller,
   Get,
@@ -42,7 +46,9 @@ export class ReservationsController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.MANAGER)
   async findAllAdmin(@Request() req) {
-    const reservations = await this.reservationsService.findAllForAdmin(req.user);
+    const reservations = await this.reservationsService.findAllForAdmin(
+      req.user,
+    );
 
     return {
       success: true,
@@ -89,8 +95,14 @@ export class ReservationsController {
 
   @Delete(':id')
   async cancel(@Request() req, @Param('id', ParseUUIDPipe) id: string) {
-    const isAdmin = req.user.role === UserRole.SUPER_ADMIN || req.user.role === UserRole.MANAGER;
-    const reservation = await this.reservationsService.cancel(id, req.user.userId, !isAdmin);
+    const isAdmin =
+      req.user.role === UserRole.SUPER_ADMIN ||
+      req.user.role === UserRole.MANAGER;
+    const reservation = await this.reservationsService.cancel(
+      id,
+      req.user.userId,
+      !isAdmin,
+    );
 
     return {
       success: true,

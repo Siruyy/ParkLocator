@@ -1,4 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 
@@ -22,7 +29,10 @@ export class AuthController {
       this.logger.log(`Login successful for: ${loginDto.email}`);
       return result;
     } catch (error) {
-      this.logger.error(`Login failed for ${loginDto.email}:`, error.stack);
+      this.logger.error(
+        `Login failed for ${loginDto.email}:`,
+        (error as Error).stack,
+      );
       throw error;
     }
   }

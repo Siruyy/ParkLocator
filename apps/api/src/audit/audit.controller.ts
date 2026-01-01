@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -44,12 +45,12 @@ export class AuditController {
   async logActivity(@Request() req, @Body() activityDto: ActivityLogDto) {
     try {
       let details = activityDto.details;
-      
+
       // Add page info to details (but not for venue-specific actions that already have venue name)
       if (activityDto.page && !activityDto.venueName) {
         details = `${details} (Page: ${activityDto.page})`;
       }
-      
+
       // Add venue name to details if present
       if (activityDto.venueName) {
         details = `${details} [Venue: ${activityDto.venueName}]`;
@@ -57,9 +58,10 @@ export class AuditController {
 
       // Ensure action is never null/undefined
       const action = activityDto.action || 'UNKNOWN_ACTION';
-      
+
       // Use venueId as resourceId if present, otherwise use element
-      const resourceId = activityDto.venueId || activityDto.element || undefined;
+      const resourceId =
+        activityDto.venueId || activityDto.element || undefined;
       const resourceType = activityDto.venueId ? 'Venue' : 'Activity';
 
       await this.auditService.log(

@@ -43,26 +43,38 @@ export class UsersController {
     @CurrentUser() currentUser: AuthUser,
     @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<{ message: string }> {
-    await this.usersService.changePassword(currentUser.userId, changePasswordDto.newPassword);
+    await this.usersService.changePassword(
+      currentUser.userId,
+      changePasswordDto.newPassword,
+    );
     return { message: 'Password updated successfully' };
   }
 
   @Post('profile/avatar')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads/avatars',
-      filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-        return cb(null, `${randomName}${extname(file.originalname)}`);
-      }
-    })
-  }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/avatars',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          return cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
   async uploadAvatar(
     @CurrentUser() currentUser: AuthUser,
     @UploadedFile() file: Express.Multer.File,
   ) {
     const avatarUrl = `/uploads/avatars/${file.filename}`;
-    return this.usersService.updateProfile(currentUser.userId, { avatarUrl }, currentUser.userId);
+    return this.usersService.updateProfile(
+      currentUser.userId,
+      { avatarUrl },
+      currentUser.userId,
+    );
   }
 
   /**
@@ -90,7 +102,7 @@ export class UsersController {
   ): Promise<Omit<User, 'password'>> {
     // If Manager, force venueId to be their venue
     if (currentUser.role === UserRole.MANAGER) {
-       createUserDto.venueId = currentUser.venueId || undefined;
+      createUserDto.venueId = currentUser.venueId || undefined;
     }
     return this.usersService.create(createUserDto, currentUser.id);
   }
@@ -115,7 +127,11 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() currentUser: User,
   ): Promise<Omit<User, 'password'>> {
-    return this.usersService.updateProfile(currentUser.id, updateUserDto, currentUser.id);
+    return this.usersService.updateProfile(
+      currentUser.id,
+      updateUserDto,
+      currentUser.id,
+    );
   }
 
   /**
@@ -129,7 +145,11 @@ export class UsersController {
     @Body() updateRoleDto: UpdateRoleDto,
     @CurrentUser() currentUser: AuthUser,
   ): Promise<Omit<User, 'password'>> {
-    return this.usersService.updateRole(id, updateRoleDto.role, currentUser.userId);
+    return this.usersService.updateRole(
+      id,
+      updateRoleDto.role,
+      currentUser.userId,
+    );
   }
 
   /**
@@ -143,7 +163,11 @@ export class UsersController {
     @Body() updateStatusDto: UpdateStatusDto,
     @CurrentUser() currentUser: AuthUser,
   ): Promise<Omit<User, 'password'>> {
-    return this.usersService.updateStatus(id, updateStatusDto.status, currentUser.userId);
+    return this.usersService.updateStatus(
+      id,
+      updateStatusDto.status,
+      currentUser.userId,
+    );
   }
 
   /**

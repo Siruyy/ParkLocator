@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
   Injectable,
   NotFoundException,
@@ -40,11 +43,22 @@ export class VenuesService {
 
   // ==================== VENUE OPERATIONS ====================
 
-  async create(createVenueDto: CreateVenueDto, currentUserId: string): Promise<Venue> {
-    const { 
-      latitude, longitude, name, address, description, imageUrl,
-      supportsRealTimeBooking, supportsFutureBooking, requireVehicleDetails,
-      hasCoveredParking, hasCCTV
+  async create(
+    createVenueDto: CreateVenueDto,
+    currentUserId: string,
+  ): Promise<Venue> {
+    const {
+      latitude,
+      longitude,
+      name,
+      address,
+      description,
+      imageUrl,
+      supportsRealTimeBooking,
+      supportsFutureBooking,
+      requireVehicleDetails,
+      hasCoveredParking,
+      hasCCTV,
     } = createVenueDto;
 
     // Use raw query to insert with PostGIS geography
@@ -67,7 +81,7 @@ export class VenuesService {
         supportsFutureBooking ?? false,
         requireVehicleDetails ?? true,
         hasCoveredParking ?? false,
-        hasCCTV ?? false
+        hasCCTV ?? false,
       ],
     );
 
@@ -78,7 +92,7 @@ export class VenuesService {
       `Created venue ${venue.name}`,
       currentUserId,
       venue.id,
-      'Venue'
+      'Venue',
     );
 
     return venue;
@@ -113,18 +127,26 @@ export class VenuesService {
     return venue;
   }
 
-  async update(id: string, updateVenueDto: UpdateVenueDto, currentUserId: string): Promise<Venue> {
+  async update(
+    id: string,
+    updateVenueDto: UpdateVenueDto,
+    currentUserId: string,
+  ): Promise<Venue> {
     const beforeVenue = await this.findOne(id);
     const beforeSnapshot = { ...beforeVenue };
 
     const { latitude, longitude, ...rest } = updateVenueDto;
 
-    console.log('[VenuesService.update] Received update:', { latitude, longitude, rest });
-    console.log('[VenuesService.update] Types:', { 
-      latType: typeof latitude, 
+    console.log('[VenuesService.update] Received update:', {
+      latitude,
+      longitude,
+      rest,
+    });
+    console.log('[VenuesService.update] Types:', {
+      latType: typeof latitude,
       lngType: typeof longitude,
       latValue: latitude,
-      lngValue: longitude 
+      lngValue: longitude,
     });
 
     // Update other fields FIRST (before location update, to avoid overwriting)
@@ -133,8 +155,10 @@ export class VenuesService {
 
     // Update location AFTER save if coordinates provided (handle both number and string)
     // This must come after save() because save() would overwrite the raw SQL location update
-    const lat = latitude !== undefined && latitude !== null ? Number(latitude) : null;
-    const lng = longitude !== undefined && longitude !== null ? Number(longitude) : null;
+    const lat =
+      latitude !== undefined && latitude !== null ? Number(latitude) : null;
+    const lng =
+      longitude !== undefined && longitude !== null ? Number(longitude) : null;
 
     if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
       console.log('[VenuesService.update] Updating location to:', { lat, lng });
@@ -143,7 +167,9 @@ export class VenuesService {
         [lng, lat, id],
       );
     } else {
-      console.log('[VenuesService.update] NOT updating location - invalid values');
+      console.log(
+        '[VenuesService.update] NOT updating location - invalid values',
+      );
     }
 
     // Re-fetch the venue to get updated location coordinates
@@ -152,7 +178,7 @@ export class VenuesService {
     const changes = this.auditService.calculateChanges(
       beforeSnapshot,
       updatedVenue,
-      Object.keys(updateVenueDto)
+      Object.keys(updateVenueDto),
     );
 
     await this.auditService.log(
@@ -162,7 +188,7 @@ export class VenuesService {
       id,
       'Venue',
       undefined,
-      changes
+      changes,
     );
 
     return updatedVenue;
@@ -170,7 +196,7 @@ export class VenuesService {
 
   async remove(id: string, currentUserId: string): Promise<void> {
     const venue = await this.findOne(id);
-    
+
     // Use softRemove to set deleted_at timestamp
     await this.venuesRepository.softRemove(venue);
 
@@ -179,7 +205,7 @@ export class VenuesService {
       `Deleted venue ${venue.name}`,
       currentUserId,
       id,
-      'Venue'
+      'Venue',
     );
   }
 
@@ -202,13 +228,11 @@ export class VenuesService {
       `Restored venue ${venue.name}`,
       currentUserId,
       id,
-      'Venue'
+      'Venue',
     );
 
     return venue;
   }
-
-
 
   // ==================== NEARBY SEARCH ====================
 
@@ -238,7 +262,7 @@ export class VenuesService {
 
     return venues.entities.map((venue) => {
       const raw = venues.raw.find((r) => r.venue_id === venue.id);
-      const distance = raw ? raw.distance : 0;
+      // const distance = raw ? raw.distance : 0;
       const totalCapacity = venue.levels.reduce(
         (sum, level) => sum + level.totalCapacity,
         0,
@@ -273,7 +297,9 @@ export class VenuesService {
               reservationFee: Number(venue.configuration.reservationFee),
               baseRate: Number(venue.configuration.baseRate),
               baseDuration: Number(venue.configuration.baseDuration),
-              succeedingHourRate: Number(venue.configuration.succeedingHourRate),
+              succeedingHourRate: Number(
+                venue.configuration.succeedingHourRate,
+              ),
             }
           : null,
       };
@@ -321,7 +347,7 @@ export class VenuesService {
 
     for (const level of venue.levels.filter((l) => l.isActive)) {
       // Count spots that have overlapping reservations for the requested time range
-      const reservedSpotsCount = (await this.dataSource
+      const reservedSpotsCount = await this.dataSource
         .createQueryBuilder(Reservation, 'r')
         .select('COUNT(DISTINCT r.spot_id)', 'count')
         .innerJoin(Spot, 's', 's.id = r.spot_id')
@@ -338,7 +364,7 @@ export class VenuesService {
           '(r.start_at < :endAt AND r.end_at > :startAt)',
           { startAt, endAt },
         )
-        .getRawOne()) as { count: string } | undefined;
+        .getRawOne();
 
       const reservedCount = parseInt(reservedSpotsCount?.count || '0', 10);
       const availableSpots = Math.max(0, level.totalCapacity - reservedCount);
@@ -395,7 +421,7 @@ export class VenuesService {
 
       // Create individual spots for the level
       const spots: Partial<Spot>[] = [];
-      
+
       if (createLevelDto.sections && createLevelDto.sections.length > 0) {
         // Create spots based on sections
         for (const section of createLevelDto.sections) {
@@ -412,9 +438,10 @@ export class VenuesService {
       } else {
         // Default behavior: create spots sequentially
         // Use the first vehicle type from the level, or default to 'Car'
-        const defaultVehicleType = (createLevelDto.vehicleTypes && createLevelDto.vehicleTypes.length > 0) 
-          ? createLevelDto.vehicleTypes[0] 
-          : 'Car';
+        const defaultVehicleType =
+          createLevelDto.vehicleTypes && createLevelDto.vehicleTypes.length > 0
+            ? createLevelDto.vehicleTypes[0]
+            : 'Car';
 
         for (let i = 1; i <= createLevelDto.totalCapacity; i++) {
           spots.push({
@@ -433,7 +460,7 @@ export class VenuesService {
         `Created level ${savedLevel.levelNumber} for venue ${venue.name}`,
         currentUserId,
         savedLevel.id,
-        'Level'
+        'Level',
       );
 
       return savedLevel;
@@ -534,18 +561,20 @@ export class VenuesService {
 
     // Handle Section Updates
     if (updateLevelDto.sections) {
-      const existingSpots = await this.spotsRepository.find({ where: { levelId: level.id } });
-      
+      const existingSpots = await this.spotsRepository.find({
+        where: { levelId: level.id },
+      });
+
       // Group existing spots by section
       const spotsBySection: { [key: string]: Spot[] } = {};
-      existingSpots.forEach(spot => {
+      existingSpots.forEach((spot) => {
         const sectionName = spot.section || 'General';
         if (!spotsBySection[sectionName]) spotsBySection[sectionName] = [];
         spotsBySection[sectionName].push(spot);
       });
 
-      let newTotalCapacity = 0;
-      let newAvailableSpots = 0;
+      // let newTotalCapacity = 0;
+      // let newAvailableSpots = 0;
 
       // Process each section in the update
       for (const sectionDto of updateLevelDto.sections) {
@@ -554,7 +583,7 @@ export class VenuesService {
         const currentSpots = spotsBySection[sectionName] || [];
         const currentCount = currentSpots.length;
 
-        newTotalCapacity += targetCapacity;
+        // newTotalCapacity += targetCapacity;
 
         if (targetCapacity > currentCount) {
           // Add spots
@@ -579,12 +608,12 @@ export class VenuesService {
             });
           }
           await this.spotsRepository.save(newSpots);
-          newAvailableSpots += spotsToAdd; // Newly added spots are available
+          // newAvailableSpots += spotsToAdd; // Newly added spots are available
         } else if (targetCapacity < currentCount) {
           // Remove spots
           const spotsToRemoveCount = currentCount - targetCapacity;
-          
-          // Sort spots to remove: Available first, then Maintenance. 
+
+          // Sort spots to remove: Available first, then Maintenance.
           // We should NOT remove Occupied or Reserved spots if possible.
           const sortedSpots = currentSpots.sort((a, b) => {
             const score = (s: Spot) => {
@@ -596,32 +625,46 @@ export class VenuesService {
           });
 
           const spotsToRemove = sortedSpots.slice(0, spotsToRemoveCount);
-          
+
           // Check if we are about to delete occupied spots
-          const hasOccupied = spotsToRemove.some(s => s.status === SpotStatus.OCCUPIED || s.status === SpotStatus.RESERVED);
+          const hasOccupied = spotsToRemove.some(
+            (s) =>
+              s.status === SpotStatus.OCCUPIED ||
+              s.status === SpotStatus.RESERVED,
+          );
           if (hasOccupied) {
-            throw new BadRequestException(`Cannot reduce capacity for section ${sectionName}. Some spots are currently occupied or reserved.`);
+            throw new BadRequestException(
+              `Cannot reduce capacity for section ${sectionName}. Some spots are currently occupied or reserved.`,
+            );
           }
 
           await this.spotsRepository.remove(spotsToRemove);
           // We removed spots, so we don't add to available count here (they are gone)
         }
-        
+
         // Count available spots for this section after changes
-        // We need to re-fetch or calculate carefully. 
+        // We need to re-fetch or calculate carefully.
         // Simpler: Just count how many of the *remaining* spots are available.
         // But we just modified the DB.
         // Let's rely on the final aggregation.
       }
 
       // Handle removed sections (sections in DB but not in DTO)
-      const updatedSectionNames = new Set(updateLevelDto.sections.map(s => s.name));
+      const updatedSectionNames = new Set(
+        updateLevelDto.sections.map((s) => s.name),
+      );
       for (const sectionName of Object.keys(spotsBySection)) {
         if (!updatedSectionNames.has(sectionName)) {
           const spotsToDelete = spotsBySection[sectionName];
-          const hasOccupied = spotsToDelete.some(s => s.status === SpotStatus.OCCUPIED || s.status === SpotStatus.RESERVED);
+          const hasOccupied = spotsToDelete.some(
+            (s) =>
+              s.status === SpotStatus.OCCUPIED ||
+              s.status === SpotStatus.RESERVED,
+          );
           if (hasOccupied) {
-             throw new BadRequestException(`Cannot remove section ${sectionName}. Some spots are currently occupied or reserved.`);
+            throw new BadRequestException(
+              `Cannot remove section ${sectionName}. Some spots are currently occupied or reserved.`,
+            );
           }
           await this.spotsRepository.remove(spotsToDelete);
         }
@@ -629,28 +672,34 @@ export class VenuesService {
 
       // Recalculate total available spots for the level
       // We need to fetch fresh state because we did multiple operations
-      const freshSpots = await this.spotsRepository.find({ where: { levelId: level.id } });
+      const freshSpots = await this.spotsRepository.find({
+        where: { levelId: level.id },
+      });
       level.totalCapacity = freshSpots.length;
-      level.availableSpots = freshSpots.filter(s => s.status === SpotStatus.AVAILABLE).length;
-      
+      level.availableSpots = freshSpots.filter(
+        (s) => s.status === SpotStatus.AVAILABLE,
+      ).length;
+
       // Update level properties
       if (updateLevelDto.name) level.name = updateLevelDto.name;
-      if (updateLevelDto.isCovered !== undefined) level.isCovered = updateLevelDto.isCovered;
-      if (updateLevelDto.vehicleTypes) level.vehicleTypes = updateLevelDto.vehicleTypes;
-      if (updateLevelDto.isActive !== undefined) level.isActive = updateLevelDto.isActive;
+      if (updateLevelDto.isCovered !== undefined)
+        level.isCovered = updateLevelDto.isCovered;
+      if (updateLevelDto.vehicleTypes)
+        level.vehicleTypes = updateLevelDto.vehicleTypes;
+      if (updateLevelDto.isActive !== undefined)
+        level.isActive = updateLevelDto.isActive;
 
       const updatedLevel = await this.levelsRepository.save(level);
-      
+
       await this.auditService.log(
         'UPDATE_LEVEL',
         `Updated level ${level.levelNumber} with section changes`,
         currentUserId,
         level.id,
-        'Level'
+        'Level',
       );
-      
-      return updatedLevel;
 
+      return updatedLevel;
     } else if (
       updateLevelDto.totalCapacity &&
       updateLevelDto.totalCapacity > level.totalCapacity
@@ -672,7 +721,7 @@ export class VenuesService {
 
       // Update available spots count
       level.availableSpots += spotsToAdd;
-      
+
       Object.assign(level, updateLevelDto);
       const updatedLevel = await this.levelsRepository.save(level);
       return updatedLevel;
@@ -698,13 +747,14 @@ export class VenuesService {
       `Deleted level ${level.levelNumber}`,
       currentUserId,
       id,
-      'Level'
+      'Level',
     );
   }
 
   async updateSpotStatus(
     spotId: string,
     status: SpotStatus,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     currentUserId: string,
   ): Promise<Spot> {
     const spot = await this.spotsRepository.findOne({ where: { id: spotId } });
@@ -717,7 +767,9 @@ export class VenuesService {
     const updatedSpot = await this.spotsRepository.save(spot);
 
     // Recalculate available spots for the level
-    const level = await this.levelsRepository.findOne({ where: { id: spot.levelId } });
+    const level = await this.levelsRepository.findOne({
+      where: { id: spot.levelId },
+    });
     if (level) {
       const availableCount = await this.spotsRepository.count({
         where: {
@@ -802,7 +854,7 @@ export class VenuesService {
       `Updated configuration for venue ${venueId}`,
       currentUserId,
       config.id,
-      'VenueConfiguration'
+      'VenueConfiguration',
     );
 
     return savedConfig;

@@ -21,6 +21,7 @@ import { User } from '../users/entities/user.entity';
         const expiresIn = configService.get<string>('JWT_EXPIRES_IN') || '7d';
         return {
           secret,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           signOptions: { expiresIn } as any,
         };
       },

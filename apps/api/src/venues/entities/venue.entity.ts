@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -59,7 +61,9 @@ export class Venue {
   @OneToMany(() => User, (user) => user.venue)
   users: User[];
 
-  @OneToOne(() => VenueConfiguration, (config) => config.venue, { cascade: true })
+  @OneToOne(() => VenueConfiguration, (config) => config.venue, {
+    cascade: true,
+  })
   configuration: VenueConfiguration;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -80,7 +84,10 @@ export class Venue {
     if (!this.location) return;
 
     // Handle GeoJSON object (TypeORM default for geography)
-    if (typeof this.location === 'object' && (this.location as any).type === 'Point') {
+    if (
+      typeof this.location === 'object' &&
+      (this.location as any).type === 'Point'
+    ) {
       const coords = (this.location as any).coordinates;
       if (Array.isArray(coords) && coords.length === 2) {
         this.longitude = coords[0];
@@ -88,7 +95,10 @@ export class Venue {
       }
     }
     // Handle WKT string (e.g. "POINT(-122.4 37.7)")
-    else if (typeof this.location === 'string' && this.location.startsWith('POINT')) {
+    else if (
+      typeof this.location === 'string' &&
+      this.location.startsWith('POINT')
+    ) {
       const match = this.location.match(/POINT\(([^ ]+) ([^)]+)\)/);
       if (match) {
         this.longitude = parseFloat(match[1]);
