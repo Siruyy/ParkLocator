@@ -11,6 +11,7 @@ class ApiClient {
     String? baseUrl,
   }) : _httpClient = httpClient ?? http.Client(),
        // Use 10.0.2.2 for Android Emulator, localhost for iOS Simulator and Web
+       // TODO(developer): Use HTTPS in production
        _baseUrl =
            baseUrl ??
            (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
