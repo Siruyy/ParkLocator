@@ -9,9 +9,13 @@ class AuthResponse extends Equatable {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    // Handle wrapped response format: { success: true, data: { ... } }
+    final data =
+        json['data'] != null ? json['data'] as Map<String, dynamic> : json;
+
     return AuthResponse(
-      accessToken: json['access_token'] as String,
-      user: User.fromJson(json['user'] as Map<String, dynamic>),
+      accessToken: data['access_token'] as String,
+      user: User.fromJson(data['user'] as Map<String, dynamic>),
     );
   }
 

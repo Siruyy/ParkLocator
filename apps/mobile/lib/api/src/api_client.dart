@@ -15,8 +15,8 @@ class ApiClient {
        _baseUrl =
            baseUrl ??
            (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
-               ? 'http://10.0.2.2:3000/api/v1'
-               : 'http://localhost:3000/api/v1');
+               ? 'http://10.0.2.2:3333/api/v1'
+               : 'http://localhost:3333/api/v1');
 
   final http.Client _httpClient;
   final String _baseUrl;
@@ -124,7 +124,11 @@ class ApiClient {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return User.fromJson(json['user'] as Map<String, dynamic>);
+      // Handle wrapped response format: { success: true, data: { user: {...} } }
+      final data = json['data'] != null
+          ? json['data'] as Map<String, dynamic>
+          : json;
+      return User.fromJson(data['user'] as Map<String, dynamic>);
     } else {
       throw ApiException(
         message: 'Failed to get profile',
@@ -404,8 +408,10 @@ class ApiClient {
     );
 
     if (response.statusCode == 200) {
-      final json = jsonDecode(response.body) as List;
-      return json
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      // Handle wrapped response format: { success: true, data: [...] }
+      final list = (json['data'] ?? json) as List;
+      return list
           .map((e) => Notification.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
@@ -464,7 +470,9 @@ class ApiClient {
     );
 
     if (response.statusCode == 200) {
-      final list = jsonDecode(response.body) as List;
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      // Handle wrapped response format: { success: true, data: [...] }
+      final list = (json['data'] ?? json) as List;
       return list
           .map((e) => Vehicle.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -502,7 +510,11 @@ class ApiClient {
 
     if (response.statusCode == 201) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return Vehicle.fromJson(json);
+      // Handle wrapped response format: { success: true, data: {...} }
+      final data = json['data'] != null
+          ? json['data'] as Map<String, dynamic>
+          : json;
+      return Vehicle.fromJson(data);
     } else {
       var message = 'Failed to create vehicle';
       try {
@@ -537,7 +549,11 @@ class ApiClient {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return Vehicle.fromJson(json);
+      // Handle wrapped response format: { success: true, data: {...} }
+      final data = json['data'] != null
+          ? json['data'] as Map<String, dynamic>
+          : json;
+      return Vehicle.fromJson(data);
     } else {
       throw ApiException(
         message: 'Failed to upload vehicle photo',
@@ -572,7 +588,11 @@ class ApiClient {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return Vehicle.fromJson(json);
+      // Handle wrapped response format: { success: true, data: {...} }
+      final data = json['data'] != null
+          ? json['data'] as Map<String, dynamic>
+          : json;
+      return Vehicle.fromJson(data);
     } else {
       var message = 'Failed to update vehicle';
       try {

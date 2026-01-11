@@ -100,10 +100,10 @@ export class VenuesService {
   }
 
   updateVenueJson(id: string, venue: Partial<Venue>): Observable<Venue> {
-    return this.http.patch<ApiResponse<Venue>>(`${this.apiUrl}/${id}`, venue, {
+    return this.http.patch<Venue>(`${this.apiUrl}/${id}`, venue, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
-      map(response => this.transformVenue(response.data))
+      map(venue => this.transformVenue(venue))
     );
   }
 
@@ -116,14 +116,14 @@ export class VenuesService {
   }
 
   deleteVenue(id: string): Observable<void> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       map(() => void 0)
     );
   }
 
   restoreVenue(id: string): Observable<Venue> {
-    return this.http.post<ApiResponse<Venue>>(`${this.apiUrl}/${id}/restore`, {}).pipe(
-      map(response => this.transformVenue(response.data))
+    return this.http.post<Venue>(`${this.apiUrl}/${id}/restore`, {}).pipe(
+      map(venue => this.transformVenue(venue))
     );
   }
 
@@ -131,8 +131,7 @@ export class VenuesService {
 
   getVenueConfiguration(venueId: string): Observable<VenueConfiguration> {
     return this.http
-      .get<ApiResponse<VenueConfiguration>>(`${this.apiUrl}/${venueId}/configuration`)
-      .pipe(map((response) => response.data));
+      .get<VenueConfiguration>(`${this.apiUrl}/${venueId}/configuration`);
   }
 
   updateVenueConfiguration(
@@ -140,40 +139,33 @@ export class VenuesService {
     config: Partial<VenueConfiguration>
   ): Observable<VenueConfiguration> {
     return this.http
-      .patch<ApiResponse<VenueConfiguration>>(
+      .patch<VenueConfiguration>(
         `${this.apiUrl}/${venueId}/configuration`,
         config
-      )
-      .pipe(map((response) => response.data));
+      );
   }
 
   createLevel(venueId: string, level: Partial<Level>): Observable<Level> {
-    return this.http.post<ApiResponse<Level>>(`${this.apiUrl}/${venueId}/levels`, level).pipe(
-      map(response => response.data)
-    );
+    return this.http.post<Level>(`${this.apiUrl}/${venueId}/levels`, level);
   }
 
   updateLevel(levelId: string, level: Partial<Level>): Observable<Level> {
-    return this.http.patch<ApiResponse<Level>>(`${environment.apiUrl}/levels/${levelId}`, level).pipe(
-      map(response => response.data)
-    );
+    return this.http.patch<Level>(`${environment.apiUrl}/levels/${levelId}`, level);
   }
 
   deleteLevel(levelId: string): Observable<void> {
-    return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/levels/${levelId}`).pipe(
+    return this.http.delete<void>(`${environment.apiUrl}/levels/${levelId}`).pipe(
       map(() => void 0)
     );
   }
 
   getSpots(levelId: string): Observable<Spot[]> {
-    return this.http.get<ApiResponse<Level>>(`${environment.apiUrl}/levels/${levelId}`).pipe(
-      map(response => (response.data as any).spots || [])
+    return this.http.get<any>(`${environment.apiUrl}/levels/${levelId}`).pipe(
+      map(level => level.spots || [])
     );
   }
 
   updateSpotStatus(spotId: string, status: string): Observable<Spot> {
-    return this.http.patch<ApiResponse<Spot>>(`${environment.apiUrl}/spots/${spotId}`, { status }).pipe(
-      map(response => response.data)
-    );
+    return this.http.patch<Spot>(`${environment.apiUrl}/spots/${spotId}`, { status });
   }
 }

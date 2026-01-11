@@ -5,9 +5,12 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { Venue, Level, Spot, SpotStatus, VenueConfiguration } from './entities';
 import {
   CreateVenueDto,
@@ -39,6 +42,8 @@ export class VenuesService {
     private venueConfigurationRepository: Repository<VenueConfiguration>,
     private dataSource: DataSource,
     private auditService: AuditService,
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
   ) {}
 
   // ==================== VENUE OPERATIONS ====================
@@ -241,6 +246,15 @@ export class VenuesService {
     lng: number,
     radiusKm: number = 5,
   ): Promise<NearbyVenueDto[]> {
+    // Create cache key
+    const cacheKey = `venues:nearby:${lat.toFixed(4)}:${lng.toFixed(4)}:${radiusKm}`;
+    
+    // Try to get from cache
+    const cached = await this.cacheManager.get<NearbyVenueDto[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const radiusMeters = radiusKm * 1000;
 
     // PostGIS query to find venues within radius
@@ -304,6 +318,95 @@ export class VenuesService {
           : null,
       };
     });
+
+    // Cache the results for 30 seconds
+    await this.cacheManager.set(cacheKey, venues.entities.map((venue) => {
+      const raw = venues.raw.find((r) => r.venue_id === venue.id);
+      const totalCapacity = venue.levels.reduce(
+        (sum, level) => sum + level.totalCapacity,
+        0,
+      );
+      const availableSpots = venue.levels.reduce(
+        (sum, level) => sum + level.availableSpots,
+        0,
+      );
+
+      return {
+        id: venue.id,
+        name: venue.name,
+        address: venue.address,
+        latitude: venue.latitude || 0,
+        longitude: venue.longitude || 0,
+        description: venue.description,
+        imageUrl: venue.imageUrl,
+        isActive: venue.isActive,
+        createdAt: venue.createdAt.toISOString(),
+        updatedAt: venue.updatedAt.toISOString(),
+        distance: Math.round(parseFloat(raw.distance)),
+        levelsCount: venue.levels.length,
+        totalCapacity,
+        availableSpots,
+        supportsRealTimeBooking: venue.supportsRealTimeBooking,
+        supportsFutureBooking: venue.supportsFutureBooking,
+        requireVehicleDetails: venue.requireVehicleDetails,
+        hasCoveredParking: venue.hasCoveredParking,
+        hasCCTV: venue.hasCCTV,
+        configuration: venue.configuration
+          ? {
+              reservationFee: Number(venue.configuration.reservationFee),
+              baseRate: Number(venue.configuration.baseRate),
+              baseDuration: Number(venue.configuration.baseDuration),
+              succeedingHourRate: Number(
+                venue.configuration.succeedingHourRate,
+              ),
+            }
+          : null,
+      };
+    }), 30000); // TTL: 30 seconds
+
+    return venues.entities.map((venue) => {
+      const raw = venues.raw.find((r) => r.venue_id === venue.id);
+      const totalCapacity = venue.levels.reduce(
+        (sum, level) => sum + level.totalCapacity,
+        0,
+      );
+      const availableSpots = venue.levels.reduce(
+        (sum, level) => sum + level.availableSpots,
+        0,
+      );
+
+      return {
+        id: venue.id,
+        name: venue.name,
+        address: venue.address,
+        latitude: venue.latitude || 0,
+        longitude: venue.longitude || 0,
+        description: venue.description,
+        imageUrl: venue.imageUrl,
+        isActive: venue.isActive,
+        createdAt: venue.createdAt.toISOString(),
+        updatedAt: venue.updatedAt.toISOString(),
+        distance: Math.round(parseFloat(raw.distance)),
+        levelsCount: venue.levels.length,
+        totalCapacity,
+        availableSpots,
+        supportsRealTimeBooking: venue.supportsRealTimeBooking,
+        supportsFutureBooking: venue.supportsFutureBooking,
+        requireVehicleDetails: venue.requireVehicleDetails,
+        hasCoveredParking: venue.hasCoveredParking,
+        hasCCTV: venue.hasCCTV,
+        configuration: venue.configuration
+          ? {
+              reservationFee: Number(venue.configuration.reservationFee),
+              baseRate: Number(venue.configuration.baseRate),
+              baseDuration: Number(venue.configuration.baseDuration),
+              succeedingHourRate: Number(
+                venue.configuration.succeedingHourRate,
+              ),
+            }
+          : null,
+      };
+    });
   }
 
   // ==================== AVAILABILITY ====================
@@ -318,11 +421,19 @@ export class VenuesService {
     startAt?: Date,
     endAt?: Date,
   ): Promise<LevelAvailabilityDto[]> {
+    // Create cache key
+    const cacheKey = `venue:${venueId}:availability:${startAt?.toISOString() || 'now'}:${endAt?.toISOString() || ''}`;    
+    // Try to get from cache
+    const cached = await this.cacheManager.get<LevelAvailabilityDto[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const venue = await this.findOne(venueId);
 
     // If no date range provided, return real-time availability (for "Book Now")
     if (!startAt || !endAt) {
-      return venue.levels
+      const result = venue.levels
         .filter((level) => level.isActive)
         .map((level) => ({
           id: level.id,
@@ -340,6 +451,10 @@ export class VenuesService {
                 )
               : 0,
         }));
+      
+      // Cache real-time availability for 10 seconds
+      await this.cacheManager.set(cacheKey, result, 10000);
+      return result;
     }
 
     // For "Book for Later" - calculate availability based on overlapping reservations
@@ -386,6 +501,8 @@ export class VenuesService {
       });
     }
 
+    // Cache future availability for 15 seconds (slightly longer since it's less volatile)
+    await this.cacheManager.set(cacheKey, results, 15000);
     return results;
   }
 

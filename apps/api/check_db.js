@@ -6,7 +6,7 @@ const client = new Client({
   host: 'localhost',
   database: 'parklocator',
   password: 'parklocator',
-  port: 5432,
+  port: 5433,
 });
 
 client.connect();

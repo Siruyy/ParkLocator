@@ -9,8 +9,12 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Security Headers
-  app.use(helmet());
+  // Security Headers - Configure helmet to allow cross-origin resource sharing for static assets
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   // Serve static assets
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
@@ -41,7 +45,7 @@ async function bootstrap() {
   // API prefix
   app.setGlobalPrefix('api/v1');
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? 3333;
   await app.listen(port, '0.0.0.0'); // Listen on all interfaces for mobile device access
   console.log(`🚀 API running on http://0.0.0.0:${port}/api/v1`);
 }

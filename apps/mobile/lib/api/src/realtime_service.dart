@@ -8,8 +8,8 @@ class RealtimeService {
     : _baseUrl =
           baseUrl ??
           (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
-              ? 'http://10.0.2.2:3000'
-              : 'http://localhost:3000');
+              ? 'http://10.0.2.2:3333'
+              : 'http://localhost:3333');
 
   final String _baseUrl;
   io.Socket? _socket;
