@@ -10,12 +10,12 @@ class ApiClient {
     http.Client? httpClient,
     String? baseUrl,
   }) : _httpClient = httpClient ?? http.Client(),
-       // Use 10.0.2.2 for Android Emulator, localhost for iOS Simulator and Web
-       // TODO(developer): Use HTTPS in production
+       // Use 192.168.254.168 for Physical Device testing (Network Method)
+       // TODO(developer): Revert to 10.0.2.2 if going back to Emulator
        _baseUrl =
            baseUrl ??
            (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
-               ? 'http://10.0.2.2:3333/api/v1'
+               ? 'http://192.168.254.168:3333/api/v1'
                : 'http://localhost:3333/api/v1');
 
   final http.Client _httpClient;
@@ -143,14 +143,23 @@ class ApiClient {
     required double lng,
     required double radius,
   }) async {
+    final url = '$_baseUrl/venues/nearby?lat=$lat&lng=$lng&radius=$radius';
+    print('API Call: $url');
+
     final response = await _httpClient.get(
-      Uri.parse('$_baseUrl/venues/nearby?lat=$lat&lng=$lng&radius=$radius'),
+      Uri.parse(url),
       headers: _headers,
+    );
+
+    print('API Response Status: ${response.statusCode}');
+    print(
+      'API Response Body: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}',
     );
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final jsonList = json['data'] as List<dynamic>;
+      final jsonList = json['data'] as List<dynamic>? ?? [];
+      print('Parsed ${jsonList.length} venues from response');
       return jsonList
           .map((json) => Venue.fromJson(json as Map<String, dynamic>))
           .toList();

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import {
+  FormArray,
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
@@ -16,8 +17,11 @@ import { finalize } from 'rxjs/operators';
 import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+
+import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { Observable } from 'rxjs';
@@ -35,8 +39,10 @@ import { CanComponentDeactivate } from '../../core/guards/unsaved-changes.guard'
     CardModule,
     InputNumberModule,
     ToggleSwitchModule,
+    TabsModule,
     ButtonModule,
     InputTextModule,
+    SelectModule,
     ConfirmDialogModule
   ],
   providers: [ConfirmationService],
@@ -83,9 +89,55 @@ export class RatesComponent implements OnInit, CanComponentDeactivate {
       maxReservationHold: [30, [Validators.required, Validators.min(0)]],
 
       // Penalties
-      lostTicketPenalty: [500, [Validators.required, Validators.min(0)]],
-      illegalParkingPenalty: [1000, [Validators.required, Validators.min(0)]],
+      penalties: this.fb.array([]),
+
+      // Custom Fees
+      customFees: this.fb.array([]),
     });
+  }
+
+  get penalties(): FormArray {
+    return this.configForm.get('penalties') as FormArray;
+  }
+
+  createPenaltyGroup(penalty: any = null): FormGroup {
+    return this.fb.group({
+      name: [penalty?.name || '', Validators.required],
+      price: [penalty?.price || 0, [Validators.required, Validators.min(0)]],
+    });
+  }
+
+  addPenalty(): void {
+    this.penalties.push(this.createPenaltyGroup());
+  }
+
+  removePenalty(index: number): void {
+    this.penalties.removeAt(index);
+  }
+
+  feeTriggers = [
+    { label: 'Pay Upon Entry', value: 'ENTRY' },
+    { label: 'Pay Upon Exit', value: 'EXIT' },
+  ];
+
+  get customFees(): FormArray {
+    return this.configForm.get('customFees') as FormArray;
+  }
+
+  createCustomFeeGroup(fee: any = null): FormGroup {
+    return this.fb.group({
+      name: [fee?.name || '', Validators.required],
+      price: [fee?.price || 0, [Validators.required, Validators.min(0)]],
+      trigger: [fee?.trigger || 'EXIT', Validators.required],
+    });
+  }
+
+  addCustomFee(): void {
+    this.customFees.push(this.createCustomFeeGroup());
+  }
+
+  removeCustomFee(index: number): void {
+    this.customFees.removeAt(index);
   }
 
   ngOnInit(): void {
@@ -106,7 +158,26 @@ export class RatesComponent implements OnInit, CanComponentDeactivate {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (config) => {
-          this.configForm.patchValue(config);
+          // Handle penalties FormArray
+          if (config.penalties && Array.isArray(config.penalties)) {
+            const penaltyGroups = config.penalties.map((p: any) =>
+              this.createPenaltyGroup(p)
+            );
+            this.configForm.setControl('penalties', this.fb.array(penaltyGroups));
+          }
+
+          // Handle customFees FormArray
+          if (config.customFees && Array.isArray(config.customFees)) {
+            const feeGroups = config.customFees.map((f: any) =>
+              this.createCustomFeeGroup(f)
+            );
+            this.configForm.setControl('customFees', this.fb.array(feeGroups));
+          }
+
+          // Patch other values
+          const { penalties, customFees, ...otherConfig } = config;
+          this.configForm.patchValue(otherConfig);
+
           this.initialFormValue = this.configForm.getRawValue();
         },
         error: (error) => {

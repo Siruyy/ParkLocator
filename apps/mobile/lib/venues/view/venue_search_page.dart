@@ -5,11 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/common/config.dart';
 import 'package:mobile/common/widgets/custom_header.dart';
+
 import 'package:mobile/venues/models/venue.dart';
 import 'package:mobile/venues/repository/venues_repository.dart';
 import 'package:mobile/venues/widgets/filter_chips.dart';
 import 'package:mobile/venues/widgets/venue_card.dart';
+import 'package:mobile/venues/view/triangle_clipper.dart';
 
 class VenueSearchPage extends StatefulWidget {
   const VenueSearchPage({super.key, this.isRoot = false});
@@ -34,6 +37,8 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
   String _searchQuery = '';
   String _selectedFilter = 'Nearest';
   Position? _currentPosition;
+  LatLng? _searchLocation; // Coordinates from geocoding
+  double _searchRadius = 20.0; // Default radius in km
 
   // Mock location for now (Manila approx) - used as fallback
   static const _initialLat = 14.5995;
@@ -82,6 +87,108 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
     return Geolocator.getCurrentPosition();
   }
 
+  Future<void> _performSearch(String query) async {
+    if (query.isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      LatLng? userLocation;
+      if (_currentPosition != null) {
+        userLocation = LatLng(
+          _currentPosition!.latitude,
+          _currentPosition!.longitude,
+        );
+      }
+
+      final coordinates = await context
+          .read<VenuesRepository>()
+          .searchDestination(query, userLocation: userLocation);
+
+      if (coordinates != null) {
+        setState(() {
+          _searchLocation = coordinates;
+          // Clear the text filter so we show ALL venues near this location
+          // (not just venues whose name contains the search term)
+          _searchQuery = '';
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Found Parking Near',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        Text(
+                          query,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF137FEC),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: const EdgeInsets.all(16),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+
+        // Fetch venues near the new location
+        if (mounted) {
+          await _fetchVenues();
+          // Move map to new location
+          if (_isMapView) {
+            _mapController.move(coordinates, 14);
+          }
+        }
+      } else {
+        // Fallback to text filter if no location found (optional, or show error)
+        setState(() => _isLoading = false);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not find location "$query"'),
+              duration: const Duration(seconds: 3),
+              backgroundColor: Colors.red[700],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Could not find location: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
   Future<void> _fetchVenues({bool isRefresh = false}) async {
     try {
       if (!isRefresh) {
@@ -91,35 +198,43 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
         });
       }
 
-      Position? position;
-      try {
-        position = await _determinePosition();
-        _currentPosition = position;
-      } catch (e) {
-        debugPrint('Error getting location: $e');
+      // Only get current position if we haven't searched for a specific location
+      if (_searchLocation == null && _currentPosition == null) {
+        try {
+          final position = await _determinePosition();
+          _currentPosition = position;
+        } catch (e) {
+          debugPrint('Error getting location: $e');
+        }
       }
 
       if (!mounted) return;
 
-      final lat = position?.latitude ?? _initialLat;
-      final lng = position?.longitude ?? _initialLng;
+      final lat =
+          _searchLocation?.latitude ??
+          _currentPosition?.latitude ??
+          _initialLat;
+      final lng =
+          _searchLocation?.longitude ??
+          _currentPosition?.longitude ??
+          _initialLng;
 
-      const radius = 5000.0; // 5km
+      debugPrint(
+        'Fetching venues at: lat=$lat, lng=$lng, radius=$_searchRadius',
+      );
 
       final venues = await context.read<VenuesRepository>().getNearbyVenues(
         lat: lat,
         lng: lng,
-        radius: radius,
+        radius: _searchRadius,
       );
+
+      debugPrint('Received ${venues.length} venues from API');
 
       setState(() {
         _venues = venues;
         _isLoading = false;
       });
-
-      if (_isMapView && position != null) {
-        _mapController.move(LatLng(lat, lng), 14);
-      }
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -213,19 +328,28 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                             ),
                             child: TextField(
                               controller: _searchController,
+                              textInputAction: TextInputAction.search,
+                              onSubmitted: _performSearch,
                               onChanged: (value) {
                                 setState(() {
                                   _searchQuery = value;
                                 });
                               },
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(
                                   Icons.search,
                                   color: Color(0xFF137FEC),
                                 ),
+                                suffixIcon: IconButton(
+                                  icon: const Icon(
+                                    Icons.tune,
+                                    color: Colors.grey,
+                                  ),
+                                  onPressed: _showFilterOptions,
+                                ),
                                 hintText: 'Search destination or venue...',
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   vertical: 12,
                                 ),
                               ),
@@ -261,20 +385,57 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                     FlutterMap(
                       mapController: _mapController,
                       options: MapOptions(
-                        initialCenter: _currentPosition != null
-                            ? LatLng(
-                                _currentPosition!.latitude,
-                                _currentPosition!.longitude,
-                              )
-                            : const LatLng(_initialLat, _initialLng),
+                        initialCenter:
+                            _searchLocation ??
+                            (_currentPosition != null
+                                ? LatLng(
+                                    _currentPosition!.latitude,
+                                    _currentPosition!.longitude,
+                                  )
+                                : const LatLng(_initialLat, _initialLng)),
                         initialZoom: 14,
                       ),
                       children: [
                         TileLayer(
+                          // Mapbox Dynamic Theme: Streets (Colorful) vs Dark (Night)
                           urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              'https://api.mapbox.com/styles/v1/${MediaQuery.of(context).platformBrightness == Brightness.dark ? 'mapbox/dark-v11' : 'mapbox/streets-v12'}/tiles/256/{z}/{x}/{y}@2x?access_token=${AppConfig.mapboxAccessToken}',
                           userAgentPackageName: 'com.parklocator.mobile',
                         ),
+                        // Layer for User Location (Blue Dot)
+                        MarkerLayer(
+                          markers: _currentPosition != null
+                              ? [
+                                  Marker(
+                                    point: LatLng(
+                                      _currentPosition!.latitude,
+                                      _currentPosition!.longitude,
+                                    ),
+                                    width: 24,
+                                    height: 24,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 3,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.2,
+                                            ),
+                                            blurRadius: 6,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        // Layer for Parking Venues
                         MarkerLayer(
                           markers: displayVenues
                               .where(
@@ -291,7 +452,7 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                                   height: 50,
                                   child: GestureDetector(
                                     onTap: () {
-                                      // Show venue details or navigate
+                                      // Show Tooltip / Bottom Sheet
                                       showModalBottomSheet<void>(
                                         context: context,
                                         backgroundColor: Colors.transparent,
@@ -325,36 +486,54 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                                         ),
                                       );
                                     },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: venue.availableSpots > 0
-                                            ? const Color(0xFF137FEC)
-                                            : Colors.red,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.2,
+                                    child: Column(
+                                      children: [
+                                        // "P" Icon Marker
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: venue.availableSpots > 0
+                                                ? const Color(0xFF137FEC)
+                                                : Colors.red,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 2,
                                             ),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 3),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.3,
+                                                ),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 3),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${venue.availableSpots}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
+                                          width: 36,
+                                          height: 36,
+                                          child: const Center(
+                                            child: Text(
+                                              'P',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 18,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                        // Triangle pointer (optional simple styling)
+                                        ClipPath(
+                                          clipper: TriangleClipper(),
+                                          child: Container(
+                                            color: venue.availableSpots > 0
+                                                ? const Color(0xFF137FEC)
+                                                : Colors.red,
+                                            width: 10,
+                                            height: 6,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
@@ -369,9 +548,7 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                       child: ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(16),
-                        itemCount:
-                            displayVenues.length +
-                            2, // +1 for header, +1 for footer
+                        itemCount: displayVenues.length + 1, // +1 for header
                         itemBuilder: (context, index) {
                           if (index == 0) {
                             return const Padding(
@@ -384,26 +561,6 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
                                   color: Color(0xFF94A3B8), // slate-400
                                   letterSpacing: 1,
                                 ),
-                              ),
-                            );
-                          }
-                          if (index == displayVenues.length + 1) {
-                            // Footer
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 32),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.travel_explore,
-                                    size: 48,
-                                    color: Color(0xFFCBD5E1),
-                                  ),
-                                  SizedBox(height: 12),
-                                  Text(
-                                    "That's all the nearby spots.",
-                                    style: TextStyle(color: Color(0xFF64748B)),
-                                  ),
-                                ],
                               ),
                             );
                           }
@@ -444,6 +601,102 @@ class _VenueSearchPageState extends State<VenueSearchPage> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showFilterOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Search Settings',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Search Radius',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        '${_searchRadius.toInt()} km',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF137FEC),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Slider(
+                    value: _searchRadius,
+                    min: 1,
+                    max: 50,
+                    divisions: 49,
+                    label: '${_searchRadius.toInt()} km',
+                    activeColor: const Color(0xFF137FEC),
+                    onChanged: (value) {
+                      setModalState(() {
+                        _searchRadius = value;
+                      });
+                      // Also update parent state to persist the value
+                      setState(() {
+                        _searchRadius = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _performSearch(_searchQuery); // Refresh search
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF137FEC),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Apply Filters',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

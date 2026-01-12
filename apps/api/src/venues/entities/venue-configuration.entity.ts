@@ -109,22 +109,19 @@ export class VenueConfiguration {
 
   // Penalties
   @Column({
-    name: 'lost_ticket_penalty',
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    default: 500.0,
+    type: 'jsonb',
+    default: [
+      { name: 'Lost Ticket', price: 500.0 },
+      { name: 'Illegal Parking', price: 1000.0 },
+    ],
   })
-  lostTicketPenalty: number;
+  penalties: { name: string; price: number }[];
 
   @Column({
-    name: 'illegal_parking_penalty',
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    default: 1000.0,
+    type: 'jsonb',
+    default: [],
   })
-  illegalParkingPenalty: number;
+  customFees: { name: string; price: number; trigger: 'ENTRY' | 'EXIT' }[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

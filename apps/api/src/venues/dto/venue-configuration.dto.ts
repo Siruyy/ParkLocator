@@ -1,11 +1,35 @@
 import {
+  IsArray,
   IsBoolean,
   IsNumber,
   IsOptional,
   IsString,
   Min,
+  ValidateNested,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export enum FeeTrigger {
+  ENTRY = 'ENTRY',
+  EXIT = 'EXIT',
+}
+
+export class PenaltyDto {
+  @IsString()
+  name: string;
+
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  price: number;
+}
+
+export class CustomFeeDto extends PenaltyDto {
+  @IsEnum(FeeTrigger)
+  @IsOptional()
+  trigger: FeeTrigger = FeeTrigger.EXIT;
+}
 
 export class UpdateVenueConfigurationDto {
   @IsNumber()
@@ -88,15 +112,9 @@ export class UpdateVenueConfigurationDto {
   @Type(() => Number)
   maxReservationHold?: number;
 
-  @IsNumber()
-  @Min(0)
   @IsOptional()
-  @Type(() => Number)
-  lostTicketPenalty?: number;
-
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  @Type(() => Number)
-  illegalParkingPenalty?: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CustomFeeDto)
+  customFees?: CustomFeeDto[];
 }

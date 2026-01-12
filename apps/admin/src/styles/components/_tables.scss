@@ -97,7 +97,7 @@
 
 /* Table Actions */
 .table-actions {
-  @apply flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity;
+  @apply flex justify-center items-center gap-2;
 }
 
 /* Avatar in Table */

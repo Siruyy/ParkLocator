@@ -57,8 +57,8 @@ export interface VenueConfiguration {
   entryGracePeriod: number;
   exitGracePeriod: number;
   maxReservationHold: number;
-  lostTicketPenalty: number;
-  illegalParkingPenalty: number;
+  penalties?: { name: string; price: number }[];
+  customFees?: { name: string; price: number; trigger: 'ENTRY' | 'EXIT' }[];
 }
 
 interface ApiResponse<T> {

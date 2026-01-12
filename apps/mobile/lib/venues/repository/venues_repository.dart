@@ -1,10 +1,20 @@
 import 'package:mobile/api/api.dart' as api;
+import 'package:mobile/common/services/geocoding_service.dart';
 import 'package:mobile/venues/models/venue.dart';
+import 'package:latlong2/latlong.dart';
 
 class VenuesRepository {
   VenuesRepository({required api.ApiClient apiClient}) : _apiClient = apiClient;
 
   final api.ApiClient _apiClient;
+  final GeocodingService _geocodingService = GeocodingService();
+
+  Future<LatLng?> searchDestination(
+    String query, {
+    LatLng? userLocation,
+  }) async {
+    return _geocodingService.getCoordinates(query, userLocation: userLocation);
+  }
 
   Future<List<Venue>> getNearbyVenues({
     required double lat,

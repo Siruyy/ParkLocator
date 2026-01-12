@@ -28,7 +28,7 @@ export class SidebarComponent implements OnInit {
   menuItems = signal<MenuItem[]>([
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard', roles: ['super_admin', 'manager'] },
     { label: 'User Management', icon: 'group', route: '/users', roles: ['super_admin', 'manager'] },
-    { label: 'Venue Config', icon: 'map', route: '/venues', roles: ['super_admin', 'manager'] },
+    { label: 'Venue Management', icon: 'map', route: '/venues', roles: ['super_admin', 'manager'] },
     { label: 'Reservations', icon: 'calendar_month', route: '/reservations', roles: ['super_admin', 'manager'], badge: 0 },
     { label: 'Finance', icon: 'account_balance_wallet', route: '/finance', roles: ['super_admin', 'manager'] },
     { label: 'Logs', icon: 'qr_code_scanner', route: '/logs', roles: ['super_admin', 'manager'] }
