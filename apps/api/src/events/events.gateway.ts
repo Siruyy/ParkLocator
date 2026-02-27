@@ -31,12 +31,14 @@ export class EventsGateway
     try {
       const redisHost = this.configService.get('REDIS_HOST', 'localhost');
       const redisPort = this.configService.get('REDIS_PORT', 6379);
+      const redisPassword = this.configService.get('REDIS_PASSWORD', '');
       
       const pubClient = createClient({
         socket: {
           host: redisHost,
           port: parseInt(redisPort.toString(), 10),
         },
+        ...(redisPassword ? { password: redisPassword } : {}),
       });
       
       const subClient = pubClient.duplicate();

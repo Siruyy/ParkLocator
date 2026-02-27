@@ -17,6 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: async (configService: ConfigService) => {
         const redisHost = configService.get('REDIS_HOST', 'localhost');
         const redisPort = configService.get('REDIS_PORT', 6379);
+        const redisPassword = configService.get('REDIS_PASSWORD', '');
         const cacheTTL = configService.get('CACHE_TTL', 60);
 
         console.log(`[RedisModule] Attempting to connect to Redis at ${redisHost}:${redisPort}`);
@@ -27,6 +28,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
               host: redisHost,
               port: parseInt(redisPort.toString(), 10),
             },
+            ...(redisPassword ? { password: redisPassword } : {}),
           });
 
           console.log('✅ Redis cache store connected successfully');
