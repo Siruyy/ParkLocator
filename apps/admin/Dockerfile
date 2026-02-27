@@ -19,13 +19,16 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built assets from builder stage
-# Note: Adjust the path 'dist/admin' if your angular.json output path is different
-COPY --from=builder /app/dist/admin /usr/share/nginx/html
+# Angular outputs to dist/admin/browser/ with the application builder
+COPY --from=builder /app/dist/admin/browser /usr/share/nginx/html
 
-# Copy custom Nginx config for SPA support
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy custom Nginx config template for SPA support
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Expose port 80
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# Use envsubst to substitute environment variables at runtime
+# API_URL defaults to http://localhost:3000 if not set
+ENV API_URL=http://localhost:3000
+CMD ["/bin/sh", "-c", "envsubst '${API_URL}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
