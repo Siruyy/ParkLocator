@@ -37,4 +37,4 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 3000
 
 # Set the command to start the API
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main"]
