@@ -37,4 +37,4 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 3000
 
 # Set the command to start the API
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
